@@ -340,7 +340,7 @@ namespace Xamarin.MacDev
 				if (type != MobileProvisionDistributionType.Any) {
 					PString value;
 
-					if (!profile.TryGetValue ("Distribution", out value) || !Enum.TryParse<MobileProvisionDistributionType> (value.Value, out dist))
+					if (!profile.TryGetValue ("Distribution", out value) || !Enum.TryParse (value.Value, out dist))
 						continue;
 
 					if ((type & dist) == 0)
@@ -368,7 +368,7 @@ namespace Xamarin.MacDev
 			PArray array;
 
 			if (developerCertificates == null)
-				throw new ArgumentNullException ("developerCertificates");
+				throw new ArgumentNullException (nameof (developerCertificates));
 
 			foreach (var certificate in developerCertificates)
 				thumbprints.Add (certificate.Thumbprint);
@@ -399,7 +399,7 @@ namespace Xamarin.MacDev
 				if (type != MobileProvisionDistributionType.Any) {
 					PString value;
 
-					if (!profile.TryGetValue ("Distribution", out value) || !Enum.TryParse<MobileProvisionDistributionType> (value.Value, out dist))
+					if (!profile.TryGetValue ("Distribution", out value) || !Enum.TryParse (value.Value, out dist))
 						continue;
 
 					if ((type & dist) == 0)
@@ -438,10 +438,9 @@ namespace Xamarin.MacDev
 			PString fileName;
 			PArray platforms;
 			PArray profiles;
-			PArray array;
 
 			if (bundleIdentifier == null)
-				throw new ArgumentNullException ("bundleIdentifier");
+				throw new ArgumentNullException (nameof (bundleIdentifier));
 
 			if (thumbprints.Count == 0)
 				return list;
@@ -469,7 +468,7 @@ namespace Xamarin.MacDev
 				if (type != MobileProvisionDistributionType.Any) {
 					PString value;
 
-					if (!profile.TryGetValue ("Distribution", out value) || !Enum.TryParse<MobileProvisionDistributionType> (value.Value, out dist))
+					if (!profile.TryGetValue ("Distribution", out value) || !Enum.TryParse (value.Value, out dist))
 						continue;
 
 					if ((type & dist) == 0)
@@ -519,10 +518,10 @@ namespace Xamarin.MacDev
 			PArray array;
 
 			if (bundleIdentifier == null)
-				throw new ArgumentNullException ("bundleIdentifier");
+				throw new ArgumentNullException (nameof (bundleIdentifier));
 
 			if (developerCertificates == null)
-				throw new ArgumentNullException ("developerCertificates");
+				throw new ArgumentNullException (nameof (developerCertificates));
 
 			foreach (var certificate in developerCertificates)
 				thumbprints.Add (certificate.Thumbprint);
@@ -553,7 +552,7 @@ namespace Xamarin.MacDev
 				if (type != MobileProvisionDistributionType.Any) {
 					PString value;
 
-					if (!profile.TryGetValue ("Distribution", out value) || !Enum.TryParse<MobileProvisionDistributionType> (value.Value, out dist))
+					if (!profile.TryGetValue ("Distribution", out value) || !Enum.TryParse (value.Value, out dist))
 						continue;
 
 					if ((type & dist) == 0)
