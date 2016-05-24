@@ -10,7 +10,8 @@
 namespace Xamarin.MacDev
 {
 	public enum TlsProvider {
-		Default,
 		AppleTLS,
+		Legacy,
+		Default = AppleTLS,
 	}
 }
