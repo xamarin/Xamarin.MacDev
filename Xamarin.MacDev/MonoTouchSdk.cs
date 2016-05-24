@@ -263,5 +263,9 @@ namespace Xamarin.MacDev
 		public bool LaunchUsingAppBundle {
 			get { return Version >= new IPhoneSdkVersion (9, 5, 0); }
 		}
+
+		public bool SupportsMonoSymbolArchive {
+			get { return Version >= new IPhoneSdkVersion (9, 10, 0); }
+		}
 	}
 }
