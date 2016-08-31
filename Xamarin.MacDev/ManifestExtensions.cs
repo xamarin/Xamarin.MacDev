@@ -711,6 +711,11 @@ namespace Xamarin.MacDev
 		public const string XSLaunchImageAssets = "XSLaunchImageAssets";
 		
 		public const string MapKitDirections = "MKDirectionsApplicationSupportedModes";
+
+		public const string NSAppTransportSecurity = "NSAppTransportSecurity";
+		public const string NSExceptionDomains = "NSExceptionDomains";
+		public const string NSAllowsArbitraryLoads = "NSAllowsArbitraryLoads";
+		public const string NSTemporaryExceptionAllowsInsecureHTTPLoads = "NSTemporaryExceptionAllowsInsecureHTTPLoads";
 	}
 
 	public static class WatchComplicationSupportedFamiliesStrings
