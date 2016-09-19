@@ -89,7 +89,7 @@ namespace Xamarin.MacDev
 				binary = false;
 			}
 
-			if (!string.IsNullOrEmpty (location) && location != DefaultRoots[0]) {
+			if (!string.IsNullOrEmpty (location)) {
 				plist.SetString ("AppleSdkRoot", location);
 			} else {
 				plist.Remove ("AppleSdkRoot");
