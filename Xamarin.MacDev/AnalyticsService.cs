@@ -14,9 +14,15 @@ namespace Xamarin.MacDev
 {
 	public interface ICustomAnalytics
 	{
-		void Track (string trackId, Dictionary<string, string> table);
-		IDisposable TrackTime (string trackId, Dictionary<string, string> table);
-		void IdentifyTrait (string trait, string value);
+		/// <summary>
+		/// Sends an event that contains the given trait and value
+		/// </summary>
+		void ReportContextProperty(string trait, string value);
+
+		/// <summary>
+		/// Sends a single event that contains the given traits and values. The number of traits must match the number of values
+		/// </summary>
+		void ReportContextProperty(string[] traits, string[] values);
 	}
 
 	/// <summary>
@@ -31,34 +37,53 @@ namespace Xamarin.MacDev
 			Analytics = customAnalytics;
 		}
 
+		/// <summary>
+		/// Sends an event that contains the given trait and value
+		/// </summary>
+		public static void ReportContextProperty(string trait, string value)
+		{
+			if (Analytics != null)
+			{
+				Analytics.ReportContextProperty(trait, value);
+			}
+		}
+
+		/// <summary>
+		/// Sends a single event that contains the given traits and values. The number of traits must match the number of values
+		/// </summary>
+		public static void ReportContextProperty(string[] traits, string[] values)
+		{
+			if (Analytics != null)
+			{
+				Analytics.ReportContextProperty(traits, values);
+			}
+		}
+
+		[Obsolete("This method does nothing. The telemetry API is changing and for the time being we are only sending the minimum of events that need to be processed server side.")]
 		public static void Track (string trackId, Dictionary<string, string> table = null)
 		{
-			if (Analytics != null)
-				Analytics.Track (trackId, table);
 		}
 
+		[Obsolete("This method does nothing. The telemetry API is changing and for the time being we are only sending the minimum of events that need to be processed server side.")]
 		public static void Track (string trackId, string key, string value)
 		{
-			Track (trackId, new Dictionary<string, string> () { {key, value} });
 		}
 
+		[Obsolete("This method does nothing. The telemetry API is changing and for the time being we are only sending the minimum of events that need to be processed server side.")]
 		public static IDisposable TrackTime (string trackId, Dictionary<string, string> table = null)
 		{
-			if (Analytics != null)
-				return Analytics.TrackTime (trackId, table);
-
 			return NullTimeTracker.Default;
 		}
 
+		[Obsolete("This method does nothing. The telemetry API is changing and for the time being we are only sending the minimum of events that need to be processed server side.")]
 		public static IDisposable TrackTime (string trackId, string key, string value)
 		{
 			return TrackTime (trackId, new Dictionary<string, string> () { {key, value} });
 		}
 
+		[Obsolete("This method does nothing. The telemetry API is changing and for the time being we are only sending the minimum of events that need to be processed server side.")]
 		public static void IdentifyTrait (string trait, string value)
 		{
-			if (Analytics != null)
-				Analytics.IdentifyTrait (trait, value);
 		}
 
 		class NullTimeTracker : IDisposable 
