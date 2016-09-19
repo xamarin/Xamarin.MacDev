@@ -24,11 +24,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using System;
-using System.IO;
-using System.Linq;
-using System.Xml.Linq;
-using System.Diagnostics;
 using System.Collections.Generic;
 
 namespace Xamarin.MacDev
@@ -49,6 +44,7 @@ namespace Xamarin.MacDev
 			IPhoneSdkVersion.V9_1,
 			IPhoneSdkVersion.V9_2,
 			IPhoneSdkVersion.V9_3,
+			IPhoneSdkVersion.V10_0,
 		};
 
 		protected override string SimulatorPlatformName {

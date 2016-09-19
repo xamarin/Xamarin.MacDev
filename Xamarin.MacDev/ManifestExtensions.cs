@@ -394,6 +394,26 @@ namespace Xamarin.MacDev
 				return IOSExtensionPoint.ShareServices;
 			case "com.apple.photo-editing":
 				return IOSExtensionPoint.PhotoEditing;
+			case "com.apple.broadcast-services":
+				return IOSExtensionPoint.BroadcastServices;
+			case "com.apple.callkit.call-directory":
+				return IOSExtensionPoint.CallDirectory;
+			case "com.apple.Safari.content-blocker":
+				return IOSExtensionPoint.ContentBlocker;
+			case "com.apple.intents-service":
+				return IOSExtensionPoint.IntentsService;
+			case "com.apple.intents-ui-service":
+				return IOSExtensionPoint.IntentsUIService;
+			case "com.apple.message-payload-provider":
+				return IOSExtensionPoint.MessagePayloadProvider;
+			case "com.apple.usernotifications.content-extension":
+				return IOSExtensionPoint.NotificationContent;
+			case "com.apple.usernotifications.service":
+				return IOSExtensionPoint.NotificationService;
+			case "com.apple.Safari.sharedlinks-service":
+				return IOSExtensionPoint.SharedLinks;
+			case "com.apple.spotlight.index":
+				return IOSExtensionPoint.SpotlightIndex;
 			}
 
 			return IOSExtensionPoint.Unknown;
@@ -774,6 +794,26 @@ namespace Xamarin.MacDev
 		//com.apple.share-services
 		ShareServices,
 		//com.apple.photo-editing
-		PhotoEditing
+		PhotoEditing,
+		//com.apple.broadcast-services
+		BroadcastServices,
+		//com.apple.callkit.call-directory
+		CallDirectory,
+		//com.apple.Safari.content-blocker
+		ContentBlocker,
+		//com.apple.intents-service
+		IntentsService,
+		//com.apple.intents-ui-service
+		IntentsUIService,
+		//com.apple.message-payload-provider
+		MessagePayloadProvider,
+		//com.apple.usernotifications.content-extension
+		NotificationContent,
+		//com.apple.usernotifications.service
+		NotificationService,
+		//com.apple.Safari.sharedlinks-service
+		SharedLinks,
+		//com.apple.spotlight.index
+		SpotlightIndex
 	}
 }
