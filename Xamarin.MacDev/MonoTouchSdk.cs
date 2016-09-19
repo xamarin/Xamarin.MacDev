@@ -204,7 +204,7 @@ namespace Xamarin.MacDev
 		}
 
 		public bool SupportsBackgroundFetch {
-			get { return AppleSdkSettings.XcodeVersion.Major >= 5 && Version >= new IPhoneSdkVersion (7, 1); }
+			get { return Version >= new IPhoneSdkVersion (7, 1); }
 		}
 
 		public bool SupportsXamarinIOS {
@@ -224,12 +224,7 @@ namespace Xamarin.MacDev
 		}
 
 		public bool SupportsWatchApps {
-			get {
-				if (AppleSdkSettings.XcodeVersion.Major < 6 || (AppleSdkSettings.XcodeVersion.Major == 6 && AppleSdkSettings.XcodeVersion.Minor < 2))
-					return false;
-
-				return Version >= new IPhoneSdkVersion (8, 7, 0);
-			}
+			get { return Version >= new IPhoneSdkVersion (8, 7, 0); }
 		}
 
 		public bool SupportsNoSymbolStrip {
