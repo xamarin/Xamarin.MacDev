@@ -26,6 +26,7 @@ namespace Xamarin.MacDev
 		public const string InterAppAudio = "inter-app-audio";
 		public const string GetTaskAllow = "get-task-allow";
 		public const string Siri = "com.apple.developer.siri";
+		public const string APS = "aps-environment";
 	}
 
 	public static class EntitlementExtensions
