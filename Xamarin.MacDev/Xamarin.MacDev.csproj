@@ -53,6 +53,7 @@
     <Compile Include="IMonoMacSdk.cs" />
     <Compile Include="IPhoneArchitecture.cs" />
     <Compile Include="IPhoneCertificate.cs" />
+    <Compile Include="IPhoneDeviceCapabilities.cs" />
     <Compile Include="IPhoneDeviceType.cs" />
     <Compile Include="IPhoneImageSizes.cs" />
     <Compile Include="IPhoneSdkVersion.cs" />

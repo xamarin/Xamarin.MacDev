@@ -293,6 +293,33 @@ namespace Xamarin.MacDev
 			return str ?? dict.Get<PString> (ManifestKeys.UIMainStoryboardFile);
 		}
 
+		public static IPhoneDeviceCapabilities GetUIRequiredDeviceCapabilities (this PDictionary dict)
+		{
+			var capabilities = IPhoneDeviceCapabilities.None;
+			PDictionary dictionary;
+			PObject value;
+			PArray array;
+
+			if (!dict.TryGetValue (ManifestKeys.UIRequiredDeviceCapabilities, out value))
+				return capabilities;
+
+			if ((dictionary = value as PDictionary) != null) {
+				foreach (var kvp in dictionary) {
+					var required = kvp.Value as PBoolean;
+
+					if (required == null || !required.Value)
+						continue;
+
+					capabilities |= kvp.Key.ToDeviceCapability ();
+				}
+			} else if ((array = value as PArray) != null) {
+				foreach (var capability in array.OfType<PString> ().Select (x => x.Value))
+					capabilities |= capability.ToDeviceCapability ();
+			}
+
+			return capabilities;
+		}
+
 		public static IPhoneOrientation GetUISupportedInterfaceOrientations (this PDictionary dict, string key)
 		{
 			var orientations = IPhoneOrientation.None;
