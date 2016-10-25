@@ -37,7 +37,8 @@ namespace Xamarin.MacDev
 			new MacOSXSdkVersion (new [] { 10, 8 }),
 			new MacOSXSdkVersion (new [] { 10, 9 }),
 			new MacOSXSdkVersion (new [] { 10, 10 }),
-			new MacOSXSdkVersion (new [] { 10, 11 })
+			new MacOSXSdkVersion (new [] { 10, 11 }),
+			new MacOSXSdkVersion (new [] { 10, 12 }),
 		};
 
 		static readonly Dictionary<string, DTSdkSettings> sdkSettingsCache = new Dictionary<string, DTSdkSettings> ();

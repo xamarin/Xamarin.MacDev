@@ -45,6 +45,7 @@ namespace Xamarin.MacDev
 			IPhoneSdkVersion.V9_2,
 			IPhoneSdkVersion.V9_3,
 			IPhoneSdkVersion.V10_0,
+			IPhoneSdkVersion.V10_1,
 		};
 
 		protected override string SimulatorPlatformName {

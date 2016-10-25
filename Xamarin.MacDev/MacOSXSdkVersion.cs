@@ -196,6 +196,7 @@ namespace Xamarin.MacDev
 		public static readonly MacOSXSdkVersion V10_9 = new MacOSXSdkVersion (10, 9);
 		public static readonly MacOSXSdkVersion V10_10 = new MacOSXSdkVersion (10, 10);
 		public static readonly MacOSXSdkVersion V10_11 = new MacOSXSdkVersion (10, 11);
+		public static readonly MacOSXSdkVersion V10_12 = new MacOSXSdkVersion (10, 12);
 		
 		public static readonly MacOSXSdkVersion Cheetah = V10_0;
 		public static readonly MacOSXSdkVersion Puma = V10_1;
@@ -209,6 +210,7 @@ namespace Xamarin.MacDev
 		public static readonly MacOSXSdkVersion Mavericks = V10_9;
 		public static readonly MacOSXSdkVersion Yosemite = V10_10;
 		public static readonly MacOSXSdkVersion ElCapitan = V10_11;
+		public static readonly MacOSXSdkVersion Sierra = V10_12;
 
 		public static string VersionName (MacOSXSdkVersion version)
 		{
@@ -249,6 +251,9 @@ namespace Xamarin.MacDev
 				break;
 			case "10.11":
 				versionName = "El Capitan";
+				break;
+			case "10.12":
+				versionName = "Sierra";
 				break;
 			default:
 				versionName = string.Empty;
