@@ -237,10 +237,10 @@ namespace Xamarin.MacDev
 			return false;
 		}
 
-		public static MobileProvision GetMobileProvision (MobileProvisionPlatform platform, string uuid)
+		public static MobileProvision GetMobileProvision (MobileProvisionPlatform platform, string name)
 		{
 			var extension = MobileProvision.GetFileExtension (platform);
-			var path = Path.Combine (MobileProvision.ProfileDirectory, uuid + extension);
+			var path = Path.Combine (MobileProvision.ProfileDirectory, name + extension);
 
 			if (File.Exists (path))
 				return MobileProvision.LoadFromFile (path);
@@ -256,11 +256,19 @@ namespace Xamarin.MacDev
 					if (!profile.TryGetValue ("FileName", out fileName) || !fileName.Value.EndsWith (extension, StringComparison.Ordinal))
 						continue;
 
+					if (!profile.TryGetValue ("Platforms", out platforms) || !Contains (platforms, platform))
+						continue;
+
 					if (!profile.TryGetValue ("Uuid", out value))
 						continue;
 
-					if (!profile.TryGetValue ("Platforms", out platforms) || !Contains (platforms, platform))
-						continue;
+					if (name != value.Value) {
+						if (!profile.TryGetValue ("Name", out value))
+							continue;
+
+						if (name != value.Value)
+							continue;
+					}
 
 					return MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, fileName.Value));
 				}
