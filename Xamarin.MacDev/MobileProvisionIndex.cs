@@ -34,7 +34,7 @@ namespace Xamarin.MacDev
 	public static class MobileProvisionIndex
 	{
 		static readonly string IndexFileName = Path.Combine (Environment.GetFolderPath (Environment.SpecialFolder.Personal), "Library", "Xamarin", "Provisioning Profiles.plist");
-		const int IndexVersion = 3;
+		const int IndexVersion = 4;
 
 		static PDictionary CreateIndexRecord (string fileName)
 		{
@@ -49,6 +49,7 @@ namespace Xamarin.MacDev
 			record.Add ("Name", new PString (provision.Name));
 			record.Add ("Uuid", new PString (provision.Uuid));
 			record.Add ("Distribution", new PString (provision.DistributionType.ToString ()));
+			record.Add ("CreationDate", new PDate (provision.CreationDate));
 			record.Add ("ExpirationDate", new PDate (provision.ExpirationDate));
 
 			var platforms = new PArray ();
@@ -246,10 +247,14 @@ namespace Xamarin.MacDev
 				return MobileProvision.LoadFromFile (path);
 
 			var plist = OpenIndex ();
+			var latestCreationDate = DateTime.MinValue;
+			PDate creationDate;
 			PString fileName;
 			PArray platforms;
 			PArray profiles;
 			PString value;
+
+			path = null;
 
 			if (plist.TryGetValue ("ProvisioningProfiles", out profiles)) {
 				foreach (var profile in profiles.OfType<PDictionary> ()) {
@@ -262,19 +267,26 @@ namespace Xamarin.MacDev
 					if (!profile.TryGetValue ("Uuid", out value))
 						continue;
 
-					if (name != value.Value) {
-						if (!profile.TryGetValue ("Name", out value))
-							continue;
+					if (name == value.Value)
+						return MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, fileName.Value));
 
-						if (name != value.Value)
-							continue;
+					if (!profile.TryGetValue ("Name", out value))
+						continue;
+
+					if (!profile.TryGetValue ("CreationDate", out creationDate))
+						continue;
+
+					if (creationDate.Value > latestCreationDate) {
+						path = Path.Combine (MobileProvision.ProfileDirectory, fileName.Value);
+						latestCreationDate = creationDate.Value;
 					}
-
-					return MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, fileName.Value));
 				}
 			}
 
-			return null;
+			if (path == null)
+				return null;
+
+			return MobileProvision.LoadFromFile (path);
 		}
 
 		public static IList<MobileProvision> GetMobileProvisions (MobileProvisionPlatform platform, bool includeExpired = false)
