@@ -273,6 +273,9 @@ namespace Xamarin.MacDev
 					if (!profile.TryGetValue ("Name", out value))
 						continue;
 
+					if (name != value.Value)
+						continue;
+
 					if (!profile.TryGetValue ("CreationDate", out creationDate))
 						continue;
 
