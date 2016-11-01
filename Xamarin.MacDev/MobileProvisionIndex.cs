@@ -292,9 +292,10 @@ namespace Xamarin.MacDev
 			return MobileProvision.LoadFromFile (path);
 		}
 
-		public static IList<MobileProvision> GetMobileProvisions (MobileProvisionPlatform platform, bool includeExpired = false)
+		public static IList<MobileProvision> GetMobileProvisions (MobileProvisionPlatform platform, bool includeExpired = false, bool unique = false)
 		{
 			var extension = MobileProvision.GetFileExtension (platform);
+			var dictionary = new Dictionary<string, int> ();
 			var list = new List<MobileProvision> ();
 			var plist = OpenIndex ();
 			var now = DateTime.Now;
@@ -322,16 +323,38 @@ namespace Xamarin.MacDev
 						continue;
 				}
 
-				var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, fileName.Value));
-				list.Add (provision);
+				if (unique) {
+					PDate creationDate;
+					PString name;
+					int index;
+
+					if (!profile.TryGetValue ("Name", out name))
+						continue;
+
+					if (dictionary.TryGetValue (name.Value, out index)) {
+						if (!profile.TryGetValue ("CreationDate", out creationDate))
+							continue;
+
+						if (creationDate.Value > list[index].CreationDate)
+							list[index] = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, fileName.Value));
+					} else {
+						var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, fileName.Value));
+						dictionary.Add (name.Value, list.Count);
+						list.Add (provision);
+					}
+				} else {
+					var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, fileName.Value));
+					list.Add (provision);
+				}
 			}
 
 			return list;
 		}
 
-		public static IList<MobileProvision> GetMobileProvisions (MobileProvisionPlatform platform, MobileProvisionDistributionType type, bool includeExpired = false)
+		public static IList<MobileProvision> GetMobileProvisions (MobileProvisionPlatform platform, MobileProvisionDistributionType type, bool includeExpired = false, bool unique = false)
 		{
 			var extension = MobileProvision.GetFileExtension (platform);
+			var dictionary = new Dictionary<string, int> ();
 			var list = new List<MobileProvision> ();
 			MobileProvisionDistributionType dist;
 			var plist = OpenIndex ();
@@ -370,16 +393,38 @@ namespace Xamarin.MacDev
 						continue;
 				}
 
-				var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, fileName.Value));
-				list.Add (provision);
+				if (unique) {
+					PDate creationDate;
+					PString name;
+					int index;
+
+					if (!profile.TryGetValue ("Name", out name))
+						continue;
+
+					if (dictionary.TryGetValue (name.Value, out index)) {
+						if (!profile.TryGetValue ("CreationDate", out creationDate))
+							continue;
+
+						if (creationDate.Value > list[index].CreationDate)
+							list[index] = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, fileName.Value));
+					} else {
+						var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, fileName.Value));
+						dictionary.Add (name.Value, list.Count);
+						list.Add (provision);
+					}
+				} else {
+					var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, fileName.Value));
+					list.Add (provision);
+				}
 			}
 
 			return list;
 		}
 
-		public static IList<MobileProvision> GetMobileProvisions (MobileProvisionPlatform platform, MobileProvisionDistributionType type, IList<X509Certificate2> developerCertificates, bool includeExpired = false)
+		public static IList<MobileProvision> GetMobileProvisions (MobileProvisionPlatform platform, MobileProvisionDistributionType type, IList<X509Certificate2> developerCertificates, bool includeExpired = false, bool unique = false)
 		{
 			var extension = MobileProvision.GetFileExtension (platform);
+			var dictionary = new Dictionary<string, int> ();
 			var thumbprints = new HashSet<string> ();
 			var list = new List<MobileProvision> ();
 			MobileProvisionDistributionType dist;
@@ -438,20 +483,43 @@ namespace Xamarin.MacDev
 					if (!cert.TryGetValue ("Thumbprint", out thumbprint))
 						continue;
 
-					if (thumbprints.Contains (thumbprint.Value)) {
+					if (!thumbprints.Contains (thumbprint.Value))
+						continue;
+
+					if (unique) {
+						PDate creationDate;
+						PString name;
+						int index;
+
+						if (!profile.TryGetValue ("Name", out name))
+							break;
+
+						if (dictionary.TryGetValue (name.Value, out index)) {
+							if (!profile.TryGetValue ("CreationDate", out creationDate))
+								break;
+
+							if (creationDate.Value > list[index].CreationDate)
+								list[index] = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, fileName.Value));
+						} else {
+							var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, fileName.Value));
+							dictionary.Add (name.Value, list.Count);
+							list.Add (provision);
+						}
+					} else {
 						var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, fileName.Value));
 						list.Add (provision);
-						break;
 					}
+					break;
 				}
 			}
 
 			return list;
 		}
 
-		public static IList<MobileProvision> GetMobileProvisions (MobileProvisionPlatform platform, string bundleIdentifier, MobileProvisionDistributionType type, bool includeExpired = false)
+		public static IList<MobileProvision> GetMobileProvisions (MobileProvisionPlatform platform, string bundleIdentifier, MobileProvisionDistributionType type, bool includeExpired = false, bool unique = false)
 		{
 			var extension = MobileProvision.GetFileExtension (platform);
+			var dictionary = new Dictionary<string, int> ();
 			var thumbprints = new HashSet<string> ();
 			var list = new List<MobileProvision> ();
 			MobileProvisionDistributionType dist;
@@ -519,16 +587,38 @@ namespace Xamarin.MacDev
 					continue;
 				}
 
-				var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, fileName.Value));
-				list.Add (provision);
+				if (unique) {
+					PDate creationDate;
+					PString name;
+					int index;
+
+					if (!profile.TryGetValue ("Name", out name))
+						continue;
+
+					if (dictionary.TryGetValue (name.Value, out index)) {
+						if (!profile.TryGetValue ("CreationDate", out creationDate))
+							continue;
+
+						if (creationDate.Value > list[index].CreationDate)
+							list[index] = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, fileName.Value));
+					} else {
+						var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, fileName.Value));
+						dictionary.Add (name.Value, list.Count);
+						list.Add (provision);
+					}
+				} else {
+					var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, fileName.Value));
+					list.Add (provision);
+				}
 			}
 
 			return list;
 		}
 
-		public static IList<MobileProvision> GetMobileProvisions (MobileProvisionPlatform platform, string bundleIdentifier, MobileProvisionDistributionType type, IList<X509Certificate2> developerCertificates, bool includeExpired = false)
+		public static IList<MobileProvision> GetMobileProvisions (MobileProvisionPlatform platform, string bundleIdentifier, MobileProvisionDistributionType type, IList<X509Certificate2> developerCertificates, bool includeExpired = false, bool unique = false)
 		{
 			var extension = MobileProvision.GetFileExtension (platform);
+			var dictionary = new Dictionary<string, int> ();
 			var thumbprints = new HashSet<string> ();
 			var list = new List<MobileProvision> ();
 			MobileProvisionDistributionType dist;
@@ -612,11 +702,33 @@ namespace Xamarin.MacDev
 					if (!cert.TryGetValue ("Thumbprint", out thumbprint))
 						continue;
 
-					if (thumbprints.Contains (thumbprint.Value)) {
+					if (!thumbprints.Contains (thumbprint.Value))
+						continue;
+
+					if (unique) {
+						PDate creationDate;
+						PString name;
+						int index;
+
+						if (!profile.TryGetValue ("Name", out name))
+							break;
+
+						if (dictionary.TryGetValue (name.Value, out index)) {
+							if (!profile.TryGetValue ("CreationDate", out creationDate))
+								break;
+
+							if (creationDate.Value > list[index].CreationDate)
+								list[index] = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, fileName.Value));
+						} else {
+							var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, fileName.Value));
+							dictionary.Add (name.Value, list.Count);
+							list.Add (provision);
+						}
+					} else {
 						var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, fileName.Value));
 						list.Add (provision);
-						break;
 					}
+					break;
 				}
 			}
 
