@@ -97,10 +97,10 @@ namespace Xamarin.MacDev
 
 			plist.Save (SettingsPath, true, binary);
 
-			Init ();
-			var changed = Changed;
-			if (changed != null)
-				changed ();
+			//Init ();
+			//var changed = Changed;
+			//if (changed != null)
+			//	changed ();
 		}
 		
 		public static string GetConfiguredSdkLocation ()
@@ -262,16 +262,16 @@ namespace Xamarin.MacDev
 
 		public static void CheckChanged ()
 		{
-			var plist = Path.Combine (XcodePath, "Contents", "Info.plist");
-			var mtime = DateTime.MinValue;
+			//var plist = Path.Combine (XcodePath, "Contents", "Info.plist");
+			//var mtime = DateTime.MinValue;
 
-			if (File.Exists (plist))
-				mtime = File.GetLastWriteTime (plist);
+			//if (File.Exists (plist))
+			//	mtime = File.GetLastWriteTime (plist);
 
-			if (mtime != lastWritten) {
-				Init ();
-				Changed ();
-			}
+			//if (mtime != lastWritten) {
+			//	Init ();
+			//	Changed ();
+			//}
 		}
 		
 		public static bool IsValid { get; private set; }
