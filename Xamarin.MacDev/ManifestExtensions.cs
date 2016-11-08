@@ -770,19 +770,23 @@ namespace Xamarin.MacDev
 		public const string ModularSmall = "CLKComplicationFamilyModularSmall";
 		public const string ModularLarge = "CLKComplicationFamilyModularLarge";
 		public const string UtilitarianSmall = "CLKComplicationFamilyUtilitarianSmall";
+		public const string UtilitarianSmallFlat = "CLKComplicationFamilyUtilitarianSmallFlat";
 		public const string UtilitarianLarge = "CLKComplicationFamilyUtilitarianLarge";
 		public const string CircularSmall = "CLKComplicationFamilyCircularSmall";
+		public const string ExtraLarge = "CLKComplicationFamilyExtraLarge";
 	}
 
 	[Flags]
 	public enum WatchComplicationSupportedFamilies
 	{
-		None             = 0,
-		ModularSmall     = 1 << 0, // CLKComplicationFamilyModularSmall
-		ModularLarge     = 1 << 1, // CLKComplicationFamilyModularLarge
-		UtilitarianSmall = 1 << 2, // CLKComplicationFamilyUtilitarianSmall
-		UtilitarianLarge = 1 << 3, // CLKComplicationFamilyUtilitarianLarge
-		CircularSmall    = 1 << 4, // CLKComplicationFamilyCircularSmall
+		None                 = 0,
+		ModularSmall         = 1 << 0, // CLKComplicationFamilyModularSmall
+		ModularLarge         = 1 << 1, // CLKComplicationFamilyModularLarge
+		UtilitarianSmall     = 1 << 2, // CLKComplicationFamilyUtilitarianSmall
+		UtilitarianLarge     = 1 << 3, // CLKComplicationFamilyUtilitarianLarge
+		CircularSmall        = 1 << 4, // CLKComplicationFamilyCircularSmall
+		UtilitarianSmallFlat = 1 << 5, // CLKComplicationFamilyUtilitarianSmallFlat
+		ExtraLarge           = 1 << 6, // CLKComplicationFamilyExtraLarge
 	}
 
 	public static class IPhoneOrientationStrings
