@@ -538,11 +538,17 @@ namespace Xamarin.MacDev
 				case WatchComplicationSupportedFamiliesStrings.UtilitarianSmall:
 					supportedFamilies |= WatchComplicationSupportedFamilies.UtilitarianSmall;
 					break;
+				case WatchComplicationSupportedFamiliesStrings.UtilitarianSmallFlat:
+					supportedFamilies |= WatchComplicationSupportedFamilies.UtilitarianSmallFlat;
+					break;
 				case WatchComplicationSupportedFamiliesStrings.UtilitarianLarge:
 					supportedFamilies |= WatchComplicationSupportedFamilies.UtilitarianLarge;
 					break;
 				case WatchComplicationSupportedFamiliesStrings.CircularSmall:
 					supportedFamilies |= WatchComplicationSupportedFamilies.CircularSmall;
+					break;
+				case WatchComplicationSupportedFamiliesStrings.ExtraLarge:
+					supportedFamilies |= WatchComplicationSupportedFamilies.ExtraLarge;
 					break;
 				}
 			}
