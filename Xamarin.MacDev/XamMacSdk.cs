@@ -25,7 +25,6 @@ namespace Xamarin.MacDev
 		public bool SupportsNewStyleActivation { get; private set; }
 		public bool SupportsRefCounting { get; private set; }
 		public bool SupportsModernHttpClient { get; private set; }
-		public bool SupportsTlsProvider { get; private set; }
 		public bool RefCountingDeprecated { get; private set; }
 		public bool SupportsFullProfile { get; private set; }
 		public bool SupportsMonoSymbolArchive { get; private set; }
@@ -102,7 +101,6 @@ namespace Xamarin.MacDev
 			SupportsRefCounting = Version >= new MacOSXSdkVersion (1, 11, 0);
 			RefCountingDeprecated = Version >= new MacOSXSdkVersion (2, 5, 0);
 			SupportsModernHttpClient = Version >= new MacOSXSdkVersion (2, 5, 0);
-			SupportsTlsProvider = Version >= new MacOSXSdkVersion (2, 5, 0);
 			SupportsMonoSymbolArchive = Version >= new MacOSXSdkVersion (2, 10, 0);
 
 			yield return MmpPath = Path.Combine (FrameworkDirectory, "bin", "mmp");

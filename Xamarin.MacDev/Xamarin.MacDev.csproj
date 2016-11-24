@@ -70,7 +70,6 @@
     <Compile Include="PListObject.cs" />
     <Compile Include="ProcessArgumentBuilder.cs" />
     <Compile Include="SQLite.cs" />
-    <Compile Include="TlsProvider.cs" />
     <Compile Include="XamMacSdk.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
