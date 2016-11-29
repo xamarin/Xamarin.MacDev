@@ -260,44 +260,12 @@ namespace Xamarin.MacDev
 			Init ();
 		}
 
-		public bool SupportsFastDev {
-			get { return Version >= new IPhoneSdkVersion (6, 3, 7); }
-		}
-
-		public bool ExperimentalSgen {
-			get { return Version < new IPhoneSdkVersion (7, 2, 1); }
-		}
-
-		public bool SupportsRefCountingWithBoehm {
-			get { return Version >= new IPhoneSdkVersion (7, 2, 1); }
-		}
-
 		public bool RefCountingDeprecated {
 			get { return Version >= new IPhoneSdkVersion (9, 3, 0); }
 		}
 
 		public bool SupportsGenericValueTypeSharing {
 			get { return Version < new IPhoneSdkVersion (8, 9, 0); }
-		}
-
-		public bool SupportsLicenseSync {
-			get { return Version >= new IPhoneSdkVersion (6, 4, 3); }
-		}
-
-		public bool SupportsBackgroundFetch {
-			get { return Version >= new IPhoneSdkVersion (7, 1); }
-		}
-
-		public bool SupportsXamarinIOS {
-			get { return File.Exists (Path.Combine (LibDir, "64bits", "Xamarin.iOS.dll")); }
-		}
-
-		public bool SupportsExecutableNameOverride {
-			get { return Version >= new IPhoneSdkVersion (7, 9, 1); }
-		}
-
-		public bool SupportsMSBuild {
-			get { return Version >= new IPhoneSdkVersion (7, 4, 0); }
 		}
 
 		public bool SupportsListingSimulators {
