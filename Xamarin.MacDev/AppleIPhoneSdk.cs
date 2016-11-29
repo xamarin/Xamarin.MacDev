@@ -30,24 +30,6 @@ namespace Xamarin.MacDev
 {
 	public class AppleIPhoneSdk : AppleSdk
 	{
-		List<IPhoneSdkVersion> knownOSVersions = new List<IPhoneSdkVersion> {
-			IPhoneSdkVersion.V6_0,
-			IPhoneSdkVersion.V6_1,
-			IPhoneSdkVersion.V7_0,
-			IPhoneSdkVersion.V7_1,
-			IPhoneSdkVersion.V8_0,
-			IPhoneSdkVersion.V8_1,
-			IPhoneSdkVersion.V8_2,
-			IPhoneSdkVersion.V8_3,
-			IPhoneSdkVersion.V8_4,
-			IPhoneSdkVersion.V9_0,
-			IPhoneSdkVersion.V9_1,
-			IPhoneSdkVersion.V9_2,
-			IPhoneSdkVersion.V9_3,
-			IPhoneSdkVersion.V10_0,
-			IPhoneSdkVersion.V10_1,
-		};
-
 		protected override string SimulatorPlatformName {
 			get {
 				return "iPhoneSimulator";
@@ -57,12 +39,6 @@ namespace Xamarin.MacDev
 		protected override string DevicePlatformName {
 			get {
 				return "iPhoneOS";
-			}
-		}
-
-		protected override List<IPhoneSdkVersion> InitiallyKnownOSVersions {
-			get {
-				return knownOSVersions;
 			}
 		}
 

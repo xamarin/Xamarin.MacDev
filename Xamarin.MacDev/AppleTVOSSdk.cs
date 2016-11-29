@@ -25,19 +25,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using System.Collections.Generic;
-
 namespace Xamarin.MacDev
 {
 	public class AppleTVOSSdk : AppleSdk
 	{
-		List<IPhoneSdkVersion> knownOSVersions = new List<IPhoneSdkVersion> {
-			IPhoneSdkVersion.V9_0,
-			IPhoneSdkVersion.V9_1,
-			IPhoneSdkVersion.V9_2,
-			IPhoneSdkVersion.V10_0,
-		};
-
 		protected override string SimulatorPlatformName {
 			get {
 				return "AppleTVSimulator";
@@ -47,12 +38,6 @@ namespace Xamarin.MacDev
 		protected override string DevicePlatformName {
 			get {
 				return "AppleTVOS";
-			}
-		}
-
-		protected override List<IPhoneSdkVersion> InitiallyKnownOSVersions {
-			get {
-				return knownOSVersions;
 			}
 		}
 

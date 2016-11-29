@@ -26,6 +26,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace Xamarin.MacDev
@@ -35,6 +36,7 @@ namespace Xamarin.MacDev
 		public static readonly string[] DefaultLocations;
 
 		DateTime lastMTExeWrite = DateTime.MinValue;
+		PDictionary versions;
 		bool hasUsrSubdir;
 
 		static MonoTouchSdk ()
@@ -75,6 +77,8 @@ namespace Xamarin.MacDev
 			string currentLocation = IsInstalled ? Path.Combine (BinDir, "mtouch") : null;
 
 			IsInstalled = false;
+			versions = null;
+
 			if (string.IsNullOrEmpty (SdkDir)) {
 				foreach (var loc in DefaultLocations) {
 					if (IsInstalled = ValidateSdkLocation (loc, out hasUsrSubdir)) {
@@ -92,8 +96,23 @@ namespace Xamarin.MacDev
 				lastMTExeWrite = File.GetLastWriteTime (mtouch);
 				Version = ReadVersion ();
 
-				if (Version.CompareTo (IPhoneSdkVersion.V6_2) >= 0) {
+				if (Version.CompareTo (IPhoneSdkVersion.V10_4) >= 0) {
 					LoggingService.LogInfo ("Found Xamarin.iOS, version {0}.", Version);
+
+					var path = Path.Combine (SdkDir, "Versions.plist");
+					if (File.Exists (path)) {
+						try {
+							versions = PDictionary.FromFile (path);
+						} catch {
+							LoggingService.LogInfo ("Xamarin.iOS installation is corrupt: invalid Versions.plist.");
+							Version = new IPhoneSdkVersion ();
+							IsInstalled = false;
+						}
+					} else {
+						LoggingService.LogInfo ("Xamarin.iOS installation is incomplete: missing Versions.plist.");
+						Version = new IPhoneSdkVersion ();
+						IsInstalled = false;
+					}
 				} else {
 					LoggingService.LogInfo ("Found unsupported Xamarin.iOS, version {0}.", Version);
 					Version = new IPhoneSdkVersion ();
@@ -104,6 +123,7 @@ namespace Xamarin.MacDev
 			} else {
 				lastMTExeWrite = DateTime.MinValue;
 				Version = new IPhoneSdkVersion ();
+
 				LoggingService.LogInfo ("Xamarin.iOS not installed. Can't find mtouch.");
 
 				AnalyticsService.ReportContextProperty ("XS.Core.SDK.iOS.Version", string.Empty);
@@ -163,6 +183,67 @@ namespace Xamarin.MacDev
 					extended_version = ExtendedVersion.Read (Path.Combine (SdkDir, "buildinfo"));
 				return extended_version;
 			}
+		}
+
+		static string GetPlatformKey (PlatformName platform)
+		{
+			switch (platform) {
+			case PlatformName.iOS: return "iOS";
+			case PlatformName.WatchOS: return "watchOS";
+			case PlatformName.TvOS: return "tvOS";
+			default: throw new ArgumentOutOfRangeException (nameof (platform));
+			}
+		}
+
+		public IList<IPhoneSdkVersion> GetKnownSdkVersions (PlatformName platform)
+		{
+			var list = new List<IPhoneSdkVersion> ();
+			var key = GetPlatformKey (platform);
+
+			if (versions != null) {
+				PDictionary knownVersions;
+
+				if (versions.TryGetValue ("KnownVersions", out knownVersions)) {
+					PArray array;
+
+					if (knownVersions.TryGetValue (key, out array)) {
+						foreach (var knownVersion in array.OfType<PString> ()) {
+							IPhoneSdkVersion version;
+
+							if (IPhoneSdkVersion.TryParse (knownVersion.Value, out version))
+								list.Add (version);
+						}
+					}
+				}
+			}
+
+			return list;
+		}
+
+		public IPhoneSdkVersion GetMinimumExtensionVersion (PlatformName platform, string extension)
+		{
+			var key = GetPlatformKey (platform);
+
+			if (versions != null) {
+				PDictionary minExtensionVersions;
+
+				if (versions.TryGetValue ("MinExtensionVersion", out minExtensionVersions)) {
+					PDictionary extensions;
+
+					if (minExtensionVersions.TryGetValue (key, out extensions)) {
+						PString value;
+
+						if (extensions.TryGetValue (extension, out value)) {
+							IPhoneSdkVersion version;
+
+							if (IPhoneSdkVersion.TryParse (value.Value, out version))
+								return version;
+						}
+					}
+				}
+			}
+
+			return IPhoneSdkVersion.V8_0;
 		}
 		
 		public void CheckCaches ()

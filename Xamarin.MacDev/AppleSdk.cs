@@ -32,14 +32,11 @@ namespace Xamarin.MacDev
 {
 	public abstract class AppleSdk
 	{
-		List<IPhoneSdkVersion> knownOSVersions = new List<IPhoneSdkVersion> ();
-
 		public string DeveloperRoot { get; protected set; }
 		public string VersionPlist { get; protected set; }
 
 		protected abstract string DevicePlatformName { get; }
 		protected abstract string SimulatorPlatformName { get; }
-		protected abstract List<IPhoneSdkVersion> InitiallyKnownOSVersions { get; }
 
 		public string DevicePlatform { get { return Path.Combine (DeveloperRoot, "Platforms/" + DevicePlatformName + ".platform"); } }
 		public string SimPlatform { get { return Path.Combine (DeveloperRoot, "Platforms/" + SimulatorPlatformName + ".platform"); } }
@@ -58,24 +55,15 @@ namespace Xamarin.MacDev
 		protected void Init ()
 		{
 			IsInstalled = File.Exists (Path.Combine (DevicePlatform, "Info.plist"));
-			IEnumerable<IPhoneSdkVersion> olderSdkVersions;
+
 			if (IsInstalled) {
 				File.GetLastWriteTime (VersionPlist);
 				InstalledSdkVersions = EnumerateSdks (Path.Combine (DevicePlatform, "Developer/SDKs"), DevicePlatformName);
 				InstalledSimVersions = EnumerateSdks (Path.Combine (SimPlatform, "Developer/SDKs"), SimulatorPlatformName);
-
-				// We don't show known versions (beta) higher than the installed sdk version (current Xcode).
-				olderSdkVersions = InitiallyKnownOSVersions.Where(x => x < InstalledSdkVersions[0]);
 			} else {
 				InstalledSdkVersions = new IPhoneSdkVersion[0];
 				InstalledSimVersions = new IPhoneSdkVersion[0];
-				olderSdkVersions = Enumerable.Empty<IPhoneSdkVersion> ();
 			}
-
-			knownOSVersions = olderSdkVersions
-				.Union (InstalledSdkVersions)
-				.ToList ();
-			knownOSVersions.Sort ();
 		}
 
 
@@ -187,8 +175,6 @@ namespace Xamarin.MacDev
 		{
 			return sim ? InstalledSimVersions : InstalledSdkVersions;
 		}
-
-		public IList<IPhoneSdkVersion> KnownOSVersions { get { return knownOSVersions; } }
 
 		protected static IPhoneSdkVersion[] EnumerateSdks (string sdkDir, string name)
 		{
