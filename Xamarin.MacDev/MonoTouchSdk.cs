@@ -196,7 +196,8 @@ namespace Xamarin.MacDev
 				lastMTExeWrite = File.GetLastWriteTime (mtouch);
 				Version = ReadVersion ();
 
-				if (Version.CompareTo (IPhoneSdkVersion.V10_0) >= 0) {
+				// Note: We require 10.4 for the bundled mlaunch (and Versions.plist, although we have a handy fallback if that file is missing)
+				if (Version.CompareTo (IPhoneSdkVersion.V10_4) >= 0) {
 					LoggingService.LogInfo ("Found Xamarin.iOS, version {0}.", Version);
 
 					var path = Path.Combine (SdkDir, "Versions.plist");
@@ -204,7 +205,7 @@ namespace Xamarin.MacDev
 						try {
 							versions = PDictionary.FromFile (path);
 						} catch {
-							LoggingService.LogInfo ("Xamarin.iOS installation is corrupt: invalid Versions.plist.");
+							LoggingService.LogWarning ("Xamarin.iOS installation is corrupt: invalid Versions.plist.");
 						}
 					}
 
