@@ -96,7 +96,7 @@ namespace Xamarin.MacDev
 				lastMTExeWrite = File.GetLastWriteTime (mtouch);
 				Version = ReadVersion ();
 
-				if (Version.CompareTo (IPhoneSdkVersion.V9_0) >= 0) {
+				if (Version.CompareTo (IPhoneSdkVersion.V10_4) >= 0) {
 					LoggingService.LogInfo ("Found Xamarin.iOS, version {0}.", Version);
 
 					var path = Path.Combine (SdkDir, "Versions.plist");
@@ -258,38 +258,6 @@ namespace Xamarin.MacDev
 			}
 			
 			Init ();
-		}
-
-		public bool RefCountingDeprecated {
-			get { return Version >= new IPhoneSdkVersion (9, 3, 0); }
-		}
-
-		public bool SupportsListingSimulators {
-			get { return AppleSdkSettings.XcodeVersion.Major >= 6 && Version >= new IPhoneSdkVersion (8, 0, 0); }
-		}
-
-		public bool SupportsWatchOS2 {
-			get { return Version >= new IPhoneSdkVersion (9, 0); }
-		}
-
-		public bool SupportsProvideAssets {
-			get { return Version >= new IPhoneSdkVersion (9, 3, 0, 267); }
-		}
-		
-		public bool SupportsModernHttpClient {
-			get { return Version >= new IPhoneSdkVersion (9, 5, 0); }
-		}
-
-		public bool SupportsTlsProvider {
-			get { return Version >= new IPhoneSdkVersion (9, 5, 0); }
-		}
-
-		public bool LaunchUsingAppBundle {
-			get { return Version >= new IPhoneSdkVersion (9, 5, 0); }
-		}
-
-		public bool SupportsMonoSymbolArchive {
-			get { return Version >= new IPhoneSdkVersion (9, 10, 0); }
 		}
 	}
 }
