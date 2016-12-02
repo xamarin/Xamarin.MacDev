@@ -865,6 +865,13 @@ namespace Xamarin.MacDev
 				OnChildRemoved (null, obj);
 		}
 
+		public void RemoveAt (int index)
+		{
+			var obj = list[index];
+			list.RemoveAt (index);
+			OnChildRemoved (null, obj);
+		}
+
 		public void Clear ()
 		{
 			list.Clear ();
