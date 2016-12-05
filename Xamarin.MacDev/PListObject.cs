@@ -314,6 +314,85 @@ namespace Xamarin.MacDev
 				return null;
 			return ctx.ReadObject ();
 		}
+
+		public static PObject FromFile (string fileName)
+		{
+			bool isBinary;
+			return FromFile (fileName, out isBinary);
+		}
+
+		public static Task<PObject> FromFileAsync (string fileName)
+		{
+			return Task<PObject>.Factory.StartNew (() => {
+				bool isBinary;
+				return FromFile (fileName, out isBinary);
+			});
+		}
+
+		public static PObject FromFile (string fileName, out bool isBinary)
+		{
+			using (var stream = new FileStream (fileName, FileMode.Open, FileAccess.Read)) {
+				var ctx = PropertyListFormat.Binary.StartReading (stream);
+
+				isBinary = true;
+
+				try {
+					if (ctx == null) {
+						ctx = PropertyListFormat.CreateReadContext (stream);
+						isBinary = false;
+
+						if (ctx == null)
+							throw new FormatException ("Unrecognized property list format.");
+					}
+
+					return ctx.ReadObject ();
+				} finally {
+					if (ctx != null)
+						ctx.Dispose ();
+				}
+			}
+		}
+
+		public Task SaveAsync (string filename, bool atomic = false, bool binary = false)
+		{
+			return Task.Factory.StartNew (() => Save (filename, atomic, binary));
+		}
+
+		public void Save (string filename, bool atomic = false, bool binary = false)
+		{
+			var tempFile = atomic ? GetTempFileName (filename) : filename;
+
+			try {
+				if (!Directory.Exists (Path.GetDirectoryName (tempFile)))
+					Directory.CreateDirectory (Path.GetDirectoryName (tempFile));
+
+				using (var stream = new FileStream (tempFile, FileMode.Create, FileAccess.Write)) {
+					using (var ctx = binary ? PropertyListFormat.Binary.StartWriting (stream) : PropertyListFormat.Xml.StartWriting (stream))
+						ctx.WriteObject (this);
+				}
+
+				if (atomic) {
+					if (File.Exists (filename))
+						File.Replace (tempFile, filename, null, true);
+					else
+						File.Move (tempFile, filename);
+				}
+			} finally {
+				if (atomic)
+					File.Delete (tempFile); // just in case- no exception is raised if file is not found
+			}
+		}
+
+		static string GetTempFileName (string filename)
+		{
+			var tempfile = filename + ".tmp";
+			var i = 1;
+
+			while (File.Exists (tempfile))
+				tempfile = filename + ".tmp." + (i++);
+
+			return tempfile;
+		}
 	}
 	
 #if !POBJECT_INTERNAL
@@ -336,43 +415,6 @@ namespace Xamarin.MacDev
 		}
 
 		protected abstract bool Reload (PropertyListFormat.ReadWriteContext ctx);
-		
-		public Task SaveAsync (string filename, bool atomic = false, bool binary = false)
-		{
-			return Task.Factory.StartNew (() => Save (filename, atomic, binary));
-		}
-
-		public void Save (string filename, bool atomic = false, bool binary = false)
-		{
-			var tempFile = atomic? GetTempFileName (filename) : filename;
-			try {
-				if (!Directory.Exists (Path.GetDirectoryName (tempFile)))
-					Directory.CreateDirectory (Path.GetDirectoryName (tempFile));
-
-				using (var stream = new FileStream (tempFile, FileMode.Create, FileAccess.Write)) {
-					using (var ctx = binary? PropertyListFormat.Binary.StartWriting (stream) : PropertyListFormat.Xml.StartWriting (stream))
-						ctx.WriteObject (this);
-				}
-				if (atomic) {
-					if (File.Exists (filename))
-						File.Replace (tempFile, filename, null, true);
-					else
-						File.Move (tempFile, filename);
-				}
-			} finally {
-				if (atomic)
-					File.Delete (tempFile); // just in case- no exception is raised if file is not found
-			}
-		}
-
-		static string GetTempFileName (string filename)
-		{
-			var i = 1;
-			var tempfile = filename + ".tmp";
-			while (File.Exists (tempfile))
-				tempfile = filename + ".tmp." + (i++).ToString ();
-			return tempfile;
-		}
 
 		protected void OnChildAdded (string key, PObject child)
 		{
@@ -547,10 +589,12 @@ namespace Xamarin.MacDev
 		
 		public override PObject Clone ()
 		{
-			var dict = new PDictionary ();
+			var clone = new PDictionary ();
+
 			foreach (var kv in this)
-				dict.Add (kv.Key, kv.Value.Clone ());
-			return dict;
+				clone.Add (kv.Key, kv.Value.Clone ());
+
+			return clone;
 		}
 		
 		public bool ContainsKey (string name)
@@ -689,7 +733,7 @@ namespace Xamarin.MacDev
 
 			length += EndMarkerBytes.Length;
 
-			return PDictionary.FromByteArray (array, start, length, out binary);
+			return FromByteArray (array, start, length, out binary);
 		}
 		
 		[Obsolete ("Use FromFile")]
@@ -698,14 +742,14 @@ namespace Xamarin.MacDev
 			bool isBinary;
 			return FromFile (fileName, out isBinary);
 		}
-		
-		public static PDictionary FromFile (string fileName)
+
+		public new static PDictionary FromFile (string fileName)
 		{
 			bool isBinary;
 			return FromFile (fileName, out isBinary);
 		}
-		
-		public static Task<PDictionary> FromFileAsync (string fileName)
+
+		public new static Task<PDictionary> FromFileAsync (string fileName)
 		{
 			return Task<PDictionary>.Factory.StartNew (() => {
 				bool isBinary;
@@ -713,24 +757,9 @@ namespace Xamarin.MacDev
 			});
 		}
 
-		public static PDictionary FromFile (string fileName, out bool isBinary)
+		public new static PDictionary FromFile (string fileName, out bool isBinary)
 		{
-			using (var stream = new FileStream (fileName, FileMode.Open, FileAccess.Read)) {
-				isBinary = true;
-				var ctx = PropertyListFormat.Binary.StartReading (stream);
-				try {
-					if (ctx == null) {
-						isBinary = false;
-						ctx = PropertyListFormat.CreateReadContext (stream);
-						if (ctx == null)
-							throw new FormatException ("Unrecognized property list format.");
-					}
-					return (PDictionary)ctx.ReadObject ();
-				} finally {
-					if (ctx != null)
-						ctx.Dispose ();
-				}
-			}
+			return (PDictionary) PObject.FromFile (fileName, out isBinary);
 		}
 
 		public static PDictionary FromBinaryXml (string fileName)
@@ -1136,10 +1165,10 @@ namespace Xamarin.MacDev
 #endif
 	class PString : PValueObject<string>
 	{
-		public PString (string value) : base(value)
+		public PString (string value) : base (value)
 		{
 			if (value == null)
-				throw new ArgumentNullException ("value");
+				throw new ArgumentNullException (nameof (value));
 		}
 		
 		public override PObject Clone ()
@@ -1302,7 +1331,7 @@ namespace Xamarin.MacDev
 					case PlistType.real:
 						switch (bytes.Length) {
 						case 4:
-							return (double)BitConverter.ToSingle (bytes, 0);
+							return BitConverter.ToSingle (bytes, 0);
 						case 8:
 							return BitConverter.ToDouble (bytes, 0);
 						}
@@ -1414,11 +1443,11 @@ namespace Xamarin.MacDev
 					var bytes = ReadBigEndianBytes (numBytes);
 					switch (numBytes) {
 					case 1:
-						return (long)bytes [0];
+						return bytes[0];
 					case 2:
-						return (long)BitConverter.ToInt16 (bytes, 0);
+						return BitConverter.ToInt16 (bytes, 0);
 					case 4:
-						return (long)BitConverter.ToInt32 (bytes, 0);
+						return BitConverter.ToInt32 (bytes, 0);
 					case 8:
 						return BitConverter.ToInt64 (bytes, 0);
 					}
@@ -1430,11 +1459,11 @@ namespace Xamarin.MacDev
 					var bytes = ReadBigEndianBytes (numBytes);
 					switch (numBytes) {
 					case 1:
-						return (ulong)bytes [0];
+						return bytes[0];
 					case 2:
-						return (ulong)BitConverter.ToUInt16 (bytes, 0);
+						return BitConverter.ToUInt16 (bytes, 0);
 					case 4:
-						return (ulong)BitConverter.ToUInt32 (bytes, 0);
+						return BitConverter.ToUInt32 (bytes, 0);
 					case 8:
 						return BitConverter.ToUInt64 (bytes, 0);
 					}
@@ -1631,7 +1660,7 @@ namespace Xamarin.MacDev
 						stream.Write (bytes, 0, bytes.Length);
 						break;
 					default:
-						throw new NotSupportedException (byteCount.ToString () + "-byte integer");
+						throw new NotSupportedException (byteCount + "-byte integer");
 					}
 				}
 
@@ -1721,7 +1750,7 @@ namespace Xamarin.MacDev
 
 						//LAMESPEC: seems like they always add 6 extra bytes here. not sure why
 						for (var i = 0; i < 6; i++)
-							stream.WriteByte ((byte)0);
+							stream.WriteByte (0);
 
 						trailer.Write (this);
 					}
@@ -1830,8 +1859,8 @@ namespace Xamarin.MacDev
 				try {
 					reader = XmlReader.Create (input, settings);
 					reader.ReadToDescendant ("plist");
-					while (reader.Read () && reader.NodeType != XmlNodeType.Element)
-						;
+					while (reader.Read () && reader.NodeType != XmlNodeType.Element) {
+					}
 				} catch (Exception ex) {
 					Console.WriteLine ("Exception: {0}", ex);
 				}
