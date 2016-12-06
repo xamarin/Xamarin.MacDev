@@ -353,5 +353,17 @@ namespace Xamarin.MacDev
 			
 			Init ();
 		}
+
+		public bool SupportsLaunchDeviceBundleId {
+			get { return Version >= new IPhoneSdkVersion (10, 5, 0, 156); }
+		}
+
+		public bool SupportsObserveExtension {
+			get { return Version >= new IPhoneSdkVersion (10, 5, 0, 156); }
+		}
+
+		public bool SupportsLaunchSimulator {
+			get { return Version >= new IPhoneSdkVersion (10, 5, 0, 156); }
+		}
 	}
 }
