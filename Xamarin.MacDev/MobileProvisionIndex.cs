@@ -95,16 +95,20 @@ namespace Xamarin.MacDev
 			var plist = new PDictionary ();
 			var profiles = new PArray ();
 
-			foreach (var fileName in Directory.EnumerateFiles (MobileProvision.ProfileDirectory)) {
-				if (!fileName.EndsWith (".mobileprovision", StringComparison.Ordinal) && !fileName.EndsWith (".provisionprofile", StringComparison.Ordinal))
-					continue;
+			if (Directory.Exists (MobileProvision.ProfileDirectory)) {
+				foreach (var fileName in Directory.EnumerateFiles (MobileProvision.ProfileDirectory)) {
+					if (!fileName.EndsWith (".mobileprovision", StringComparison.Ordinal) && !fileName.EndsWith (".provisionprofile", StringComparison.Ordinal))
+						continue;
 
-				try {
-					var profile = CreateIndexRecord (fileName);
-					profiles.Add (profile);
-				} catch (Exception ex) {
-					LoggingService.LogWarning ("Error reading provisioning profile '{0}': {1}", fileName, ex);
+					try {
+						var profile = CreateIndexRecord (fileName);
+						profiles.Add (profile);
+					} catch (Exception ex) {
+						LoggingService.LogWarning ("Error reading provisioning profile '{0}': {1}", fileName, ex);
+					}
 				}
+			} else {
+				Directory.CreateDirectory (MobileProvision.ProfileDirectory);
 			}
 
 			plist.Add ("Version", new PNumber (IndexVersion));
