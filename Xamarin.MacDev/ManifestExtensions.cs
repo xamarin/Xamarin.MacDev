@@ -396,6 +396,19 @@ namespace Xamarin.MacDev
 			return true;
 		}
 
+		public static string GetNSExtensionPointIdentifier (this PDictionary dict)
+		{
+			var ext = dict.Get<PDictionary> ("NSExtension");
+			if (ext == null)
+				return null;
+
+			var id = ext.Get<PString> ("NSExtensionPointIdentifier");
+			if (id == null)
+				return null;
+
+			return id.Value;
+		}
+
 		public static IOSExtensionPoint? GetAppExtensionPoint (this PDictionary dict)
 		{
 			var ext = dict.Get<PDictionary> ("NSExtension");
