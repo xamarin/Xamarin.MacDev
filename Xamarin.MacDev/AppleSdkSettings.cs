@@ -42,6 +42,8 @@ namespace Xamarin.MacDev
 		};
 		static DateTime lastWritten;
 
+		public static string SdkNotInstalledReason { get; private set; }
+
 		static void GetNewPaths (string root, out string xcode, out string vplist, out string devroot)
 		{
 			xcode = root;
@@ -195,10 +197,12 @@ namespace Xamarin.MacDev
 						break;
 					}
 
-					LoggingService.LogInfo ("A valid Xcode installation was not found at '{0}'", v);
+					SdkNotInstalledReason += string.Format ("A valid Xcode installation was not found at '{0}'\n", v);
+					LoggingService.LogInfo (SdkNotInstalledReason);
 				}
 			} else if (!ValidateSdkLocation (DeveloperRoot, out xcode, out vplist, out devroot)) {
-				LoggingService.LogError ("A valid Xcode installation was not found at the configured location: '{0}'", DeveloperRoot);
+				SdkNotInstalledReason = string.Format ("A valid Xcode installation was not found at the configured location: '{0}'", DeveloperRoot);
+				LoggingService.LogError (SdkNotInstalledReason);
 				SetInvalid ();
 				return;
 			} else {
@@ -245,7 +249,8 @@ namespace Xamarin.MacDev
 				AnalyticsService.ReportContextProperty ("XS.Core.SDK.Xcode.Version", XcodeVersion.ToString ());
 				IsValid = true;
 			} catch (Exception ex) {
-				LoggingService.LogError ("Error loading Xcode information for prefix '" + DeveloperRoot + "'", ex);
+				SdkNotInstalledReason = string.Format ("Error loading Xcode information for prefix '" + DeveloperRoot + "'");
+				LoggingService.LogError (SdkNotInstalledReason, ex);
 				SetInvalid ();
 			}
 		}

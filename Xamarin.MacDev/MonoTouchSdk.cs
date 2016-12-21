@@ -66,6 +66,10 @@ namespace Xamarin.MacDev
 
 		public static readonly string[] DefaultLocations;
 
+		// Note: We require Xamarin.iOS 10.4 because it is the first version to bundle mlaunch. Prior to that Xamarin Studio would ship it but that is no longer the case.
+		// (We also need 10.4 for the Versions.plist, although we have a handy fallback if that file is missing)
+		static IPhoneSdkVersion requiredXI = IPhoneSdkVersion.V10_4;
+
 		DateTime lastMTExeWrite = DateTime.MinValue;
 		PDictionary versions;
 		bool hasUsrSubdir;
@@ -100,6 +104,8 @@ namespace Xamarin.MacDev
 				return Path.Combine (SdkDir, hasUsrSubdir ? "usr/lib" : "lib");
 			}
 		}
+
+		public string SdkNotInstalledReason { get; private set; }
 
 		public event EventHandler Changed;
 
@@ -196,8 +202,7 @@ namespace Xamarin.MacDev
 				lastMTExeWrite = File.GetLastWriteTime (mtouch);
 				Version = ReadVersion ();
 
-				// Note: We require 10.4 for the bundled mlaunch (and Versions.plist, although we have a handy fallback if that file is missing)
-				if (Version.CompareTo (IPhoneSdkVersion.V10_4) >= 0) {
+				if (Version.CompareTo (requiredXI) >= 0) {
 					LoggingService.LogInfo ("Found Xamarin.iOS, version {0}.", Version);
 
 					var path = Path.Combine (SdkDir, "Versions.plist");
@@ -205,14 +210,15 @@ namespace Xamarin.MacDev
 						try {
 							versions = PDictionary.FromFile (path);
 						} catch {
-							LoggingService.LogWarning ("Xamarin.iOS installation is corrupt: invalid Versions.plist.");
+							LoggingService.LogWarning ("Xamarin.iOS installation is corrupt: invalid Versions.plist at {0}.", path);
 						}
 					}
 
 					if (versions == null)
 						versions = CreateDefaultVersionsPlist ();
 				} else {
-					LoggingService.LogInfo ("Found unsupported Xamarin.iOS, version {0}.", Version);
+					SdkNotInstalledReason = string.Format ("Found unsupported Xamarin.iOS, version {0}.\nYou need Xamarin.iOS {1} or above.", Version, requiredXI.ToString ());
+					LoggingService.LogWarning (SdkNotInstalledReason);
 					Version = new IPhoneSdkVersion ();
 					versions = new PDictionary ();
 					IsInstalled = false;
@@ -224,7 +230,8 @@ namespace Xamarin.MacDev
 				Version = new IPhoneSdkVersion ();
 				versions = new PDictionary ();
 
-				LoggingService.LogInfo ("Xamarin.iOS not installed. Can't find mtouch.");
+				SdkNotInstalledReason = string.Format ("Xamarin.iOS not installed.\nCan't find mtouch or the Version file at {0}.", SdkDir);
+				LoggingService.LogInfo (SdkNotInstalledReason);
 
 				AnalyticsService.ReportContextProperty ("XS.Core.SDK.iOS.Version", string.Empty);
 			}
