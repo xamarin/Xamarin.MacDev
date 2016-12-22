@@ -29,6 +29,7 @@ namespace Xamarin.MacDev
 		public bool SupportsFullProfile { get; private set; }
 		public bool SupportsMonoSymbolArchive { get; private set; }
 		public MacOSXSdkVersion Version { get; private set; }
+		public string SdkNotInstalledReason { get; private set; }
 
 		public string FrameworkDirectory { get; private set; }
 		public string MmpPath { get; private set; }
@@ -146,10 +147,12 @@ namespace Xamarin.MacDev
 			IsInstalled = false;
 			Version = new MacOSXSdkVersion ();
 
+			SdkNotInstalledReason = string.Format ("Xamarin.Mac not installed. Can't find {0}.", pathMissing);
+
 			if (error)
-				LoggingService.LogError ("Xamarin.Mac not installed. Can't find {0}.", pathMissing);
+				LoggingService.LogError (SdkNotInstalledReason);
 			else
-				LoggingService.LogInfo ("Xamarin.Mac not installed. Can't find {0}.", pathMissing);
+				LoggingService.LogInfo (SdkNotInstalledReason);
 		}
 
 		MacOSXSdkVersion ReadVersion (string versionPath)
