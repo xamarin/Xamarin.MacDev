@@ -901,6 +901,32 @@ namespace Xamarin.MacDev
 			return Tuple.Create (username, Marshal.PtrToStringAuto (passwordData, (int) passwordLength));
 		}
 
+		public unsafe Tuple<string, string> FindInternetPassword (string serverName = "", string securityDomain = "", string accountName = "", string path = "", ushort port = 0)
+		{
+			byte[] serverNameBytes = string.IsNullOrEmpty (serverName) ? null : Encoding.UTF8.GetBytes (serverName);
+			byte[] securityDomainBytes = string.IsNullOrEmpty (securityDomain) ? null : Encoding.UTF8.GetBytes (securityDomain);
+			byte[] accountNameBytes = string.IsNullOrEmpty (accountName) ? null : Encoding.UTF8.GetBytes (accountName);
+			byte[] pathBytes = string.IsNullOrEmpty (path) ? null : Encoding.UTF8.GetBytes (path);
+
+			IntPtr passwordData = IntPtr.Zero;
+			IntPtr item = IntPtr.Zero;
+			uint passwordLength = 0;
+
+			var result = SecKeychainFindInternetPassword (keychain,
+			                                              serverNameBytes == null ? 0 : (uint)serverNameBytes.Length, serverNameBytes,
+			                                              securityDomainBytes == null ? 0 : (uint)securityDomainBytes.Length, securityDomainBytes,
+			                                              accountNameBytes == null ? 0 : (uint)accountNameBytes.Length, accountNameBytes,
+			                                              pathBytes == null ? 0 : (uint)pathBytes.Length, pathBytes, port,
+			                                              SecProtocolType.Any, SecAuthenticationType.Any, out passwordLength, out passwordData, ref item);
+
+			if (result != OSStatus.Ok)
+				return null;
+
+			var username = GetUsernameFromKeychainItemRef(item);
+
+			return Tuple.Create(username, Marshal.PtrToStringAuto(passwordData, (int)passwordLength));
+		}
+
 		public string FindInternetPassword (Uri uri)
 		{
 			byte[] path = Encoding.UTF8.GetBytes (string.Join (string.Empty, uri.Segments).Substring (1)); // don't include the leading '/'
