@@ -372,5 +372,9 @@ namespace Xamarin.MacDev
 		public bool SupportsLaunchSimulator {
 			get { return Version >= new IPhoneSdkVersion (10, 5, 0, 156); }
 		}
+
+		public bool SupportsInstallProgress {
+			get { return Version >= new IPhoneSdkVersion (10, 5, 0, 323); }
+		}
 	}
 }
