@@ -323,7 +323,7 @@ namespace Xamarin.MacDev
 
 		public static Task<PObject> FromFileAsync (string fileName)
 		{
-			return Task<PObject>.Factory.StartNew (() => {
+			return Task.Run (() => {
 				bool isBinary;
 				return FromFile (fileName, out isBinary);
 			});
@@ -355,7 +355,7 @@ namespace Xamarin.MacDev
 
 		public Task SaveAsync (string filename, bool atomic = false, bool binary = false)
 		{
-			return Task.Factory.StartNew (() => Save (filename, atomic, binary));
+			return Task.Run (() => Save (filename, atomic, binary));
 		}
 
 		public void Save (string filename, bool atomic = false, bool binary = false)
@@ -751,7 +751,7 @@ namespace Xamarin.MacDev
 
 		public new static Task<PDictionary> FromFileAsync (string fileName)
 		{
-			return Task<PDictionary>.Factory.StartNew (() => {
+			return Task.Run (() => {
 				bool isBinary;
 				return FromFile (fileName, out isBinary);
 			});
