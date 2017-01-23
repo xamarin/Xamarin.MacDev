@@ -227,7 +227,7 @@ namespace Xamarin.MacDev
 					return;
 				}
 				
-				lastWritten = File.GetLastWriteTime (plist);
+				lastWritten = File.GetLastWriteTimeUtc (plist);
 				
 				XcodeVersion = new Version (3, 2, 6);
 				XcodeRevision = "0";
@@ -271,7 +271,7 @@ namespace Xamarin.MacDev
 			//var mtime = DateTime.MinValue;
 
 			//if (File.Exists (plist))
-			//	mtime = File.GetLastWriteTime (plist);
+			//	mtime = File.GetLastWriteTimeUtc (plist);
 
 			//if (mtime != lastWritten) {
 			//	Init ();

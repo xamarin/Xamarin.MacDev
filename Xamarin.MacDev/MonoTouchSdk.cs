@@ -199,7 +199,7 @@ namespace Xamarin.MacDev
 			string mtouch = null;
 			if (IsInstalled) {
 				mtouch = Path.Combine (BinDir, "mtouch");
-				lastMTExeWrite = File.GetLastWriteTime (mtouch);
+				lastMTExeWrite = File.GetLastWriteTimeUtc (mtouch);
 				Version = ReadVersion ();
 
 				if (Version.CompareTo (requiredXI) >= 0) {
@@ -351,7 +351,7 @@ namespace Xamarin.MacDev
 		{
 			if (IsInstalled) {
 				try {
-					var lastWrite = File.GetLastWriteTime (Path.Combine (BinDir, "mtouch"));
+					var lastWrite = File.GetLastWriteTimeUtc (Path.Combine (BinDir, "mtouch"));
 					if (lastWrite == lastMTExeWrite)
 						return;
 				} catch (IOException) {

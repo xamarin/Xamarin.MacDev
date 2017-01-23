@@ -55,7 +55,7 @@ namespace Xamarin.MacDev
 			IsInstalled = File.Exists (LegacyFrameworkAssembly);
 			
 			if (IsInstalled) {
-				lastExeWrite = File.GetLastWriteTime (LegacyFrameworkAssembly);
+				lastExeWrite = File.GetLastWriteTimeUtc (LegacyFrameworkAssembly);
 				Version = ReadVersion ();
 				if (Version.IsUseDefault)
 					LoggingService.LogInfo ("Found MonoMac.");
@@ -89,7 +89,7 @@ namespace Xamarin.MacDev
 		{
 			DateTime lastWrite = DateTime.MinValue;
 			try {
-				lastWrite = File.GetLastWriteTime (LegacyFrameworkAssembly);
+				lastWrite = File.GetLastWriteTimeUtc (LegacyFrameworkAssembly);
 				if (lastWrite == lastExeWrite)
 					return;
 			} catch (IOException) {
