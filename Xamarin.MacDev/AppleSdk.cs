@@ -57,7 +57,7 @@ namespace Xamarin.MacDev
 			IsInstalled = File.Exists (Path.Combine (DevicePlatform, "Info.plist"));
 
 			if (IsInstalled) {
-				File.GetLastWriteTime (VersionPlist);
+				File.GetLastWriteTimeUtc (VersionPlist);
 				InstalledSdkVersions = EnumerateSdks (Path.Combine (DevicePlatform, "Developer/SDKs"), DevicePlatformName);
 				InstalledSimVersions = EnumerateSdks (Path.Combine (SimPlatform, "Developer/SDKs"), SimulatorPlatformName);
 			} else {
