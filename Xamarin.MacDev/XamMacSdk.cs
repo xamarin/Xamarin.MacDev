@@ -68,7 +68,7 @@ namespace Xamarin.MacDev
 				lastWriteTimes [versionPath] = File.GetLastWriteTimeUtc (versionPath);
 			} else {
 				NotInstalled (versionPath, error: false);
-				AnalyticsService.ReportContextProperty ("XS.Core.SDK.Mac.Version", string.Empty);
+				AnalyticsService.ReportSdkVersion ("XS.Core.SDK.Mac.Version", string.Empty);
 				return;
 			}
 
@@ -87,7 +87,7 @@ namespace Xamarin.MacDev
 
 			IsInstalled = true;
 			LoggingService.LogInfo ("Found Xamarin.Mac, version {0}.", Version);
-			AnalyticsService.ReportContextProperty ("XS.Core.SDK.Mac.Version", Version.ToString ());
+			AnalyticsService.ReportSdkVersion ("XS.Core.SDK.Mac.Version", Version.ToString ());
 
 			if (Changed != null && currentLocation != MmpPath)
 				Changed (this, EventArgs.Empty);

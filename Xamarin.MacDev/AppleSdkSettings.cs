@@ -246,7 +246,7 @@ namespace Xamarin.MacDev
 					XcodeRevision = value.Value;
 
 				LoggingService.LogInfo ("Found Xcode, version {0} ({1}).", XcodeVersion, XcodeRevision);
-				AnalyticsService.ReportContextProperty ("XS.Core.SDK.Xcode.Version", XcodeVersion.ToString ());
+				AnalyticsService.ReportSdkVersion ("XS.Core.SDK.Xcode.Version", XcodeVersion.ToString ());
 				IsValid = true;
 			} catch (Exception ex) {
 				SdkNotInstalledReason = string.Format ("Error loading Xcode information for prefix '" + DeveloperRoot + "'");

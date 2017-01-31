@@ -15,14 +15,9 @@ namespace Xamarin.MacDev
 	public interface ICustomAnalytics
 	{
 		/// <summary>
-		/// Sends an event that contains the given trait and value
+		/// Reports the sdk versions to analytics. These are sent as a single event with properties derived from `values`
 		/// </summary>
-		void ReportContextProperty(string trait, string value);
-
-		/// <summary>
-		/// Sends a single event that contains the given traits and values. The number of traits must match the number of values
-		/// </summary>
-		void ReportContextProperty(string[] traits, string[] values);
+		void ReportSdkVersions(Dictionary<string, string> values);
 	}
 
 	/// <summary>
@@ -38,24 +33,22 @@ namespace Xamarin.MacDev
 		}
 
 		/// <summary>
-		/// Sends an event that contains the given trait and value
+		/// Reports the sdk versions to analytics. These are sent as a single event with properties derived from `values`
 		/// </summary>
-		public static void ReportContextProperty(string trait, string value)
+		public static void ReportSdkVersions(Dictionary<string, string> values)
 		{
-			if (Analytics != null)
-			{
-				Analytics.ReportContextProperty(trait, value);
+			if (Analytics != null) {
+				Analytics.ReportSdkVersions(values);
 			}
 		}
 
 		/// <summary>
-		/// Sends a single event that contains the given traits and values. The number of traits must match the number of values
+		/// Reports the sdk versions to analytics. These are sent as a single event with properties derived from `sdkProperty` and `sdkValue`
 		/// </summary>
-		public static void ReportContextProperty(string[] traits, string[] values)
+		public static void ReportSdkVersion(string sdkProperty, string sdkValue)
 		{
-			if (Analytics != null)
-			{
-				Analytics.ReportContextProperty(traits, values);
+			if (Analytics != null) {
+				Analytics.ReportSdkVersions(new Dictionary<string, string> { { sdkProperty, sdkValue } });
 			}
 		}
 

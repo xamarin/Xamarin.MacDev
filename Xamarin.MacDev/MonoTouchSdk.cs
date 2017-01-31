@@ -224,7 +224,7 @@ namespace Xamarin.MacDev
 					IsInstalled = false;
 				}
 
-				AnalyticsService.ReportContextProperty ("XS.Core.SDK.iOS.Version", Version.ToString ());
+				AnalyticsService.ReportSdkVersion ("XS.Core.SDK.iOS.Version", Version.ToString ());
 			} else {
 				lastMTExeWrite = DateTime.MinValue;
 				Version = new IPhoneSdkVersion ();
@@ -233,7 +233,7 @@ namespace Xamarin.MacDev
 				SdkNotInstalledReason = string.Format ("Xamarin.iOS not installed.\nCan't find mtouch or the Version file at {0}.", SdkDir);
 				LoggingService.LogInfo (SdkNotInstalledReason);
 
-				AnalyticsService.ReportContextProperty ("XS.Core.SDK.iOS.Version", string.Empty);
+				AnalyticsService.ReportSdkVersion ("XS.Core.SDK.iOS.Version", string.Empty);
 			}
 
 			if (Changed != null && currentLocation != mtouch)
