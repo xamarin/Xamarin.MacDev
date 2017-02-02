@@ -17,7 +17,7 @@ namespace Xamarin.MacDev
 		/// <summary>
 		/// Reports the sdk versions to analytics. These are sent as a single event with properties derived from `values`
 		/// </summary>
-		void ReportSdkVersions(Dictionary<string, string> values);
+		void ReportSdkVersions(Dictionary<string, object> values);
 	}
 
 	/// <summary>
@@ -35,7 +35,7 @@ namespace Xamarin.MacDev
 		/// <summary>
 		/// Reports the sdk versions to analytics. These are sent as a single event with properties derived from `values`
 		/// </summary>
-		public static void ReportSdkVersions(Dictionary<string, string> values)
+		public static void ReportSdkVersions(Dictionary<string, object> values)
 		{
 			if (Analytics != null) {
 				Analytics.ReportSdkVersions(values);
@@ -48,7 +48,7 @@ namespace Xamarin.MacDev
 		public static void ReportSdkVersion(string sdkProperty, string sdkValue)
 		{
 			if (Analytics != null) {
-				Analytics.ReportSdkVersions(new Dictionary<string, string> { { sdkProperty, sdkValue } });
+				Analytics.ReportSdkVersions(new Dictionary<string, object> { { sdkProperty, sdkValue } });
 			}
 		}
 
