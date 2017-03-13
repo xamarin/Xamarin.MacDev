@@ -361,20 +361,35 @@ namespace Xamarin.MacDev
 			Init ();
 		}
 
+		bool CheckSupportsFeature (string feature)
+		{
+			PArray features;
+
+			if (!versions.TryGetValue ("Features", out features))
+				return false;
+
+			foreach (var item in features.OfType<PString> ().Select (x => x.Value)) {
+				if (feature == item)
+					return true;
+			}
+
+			return false;
+		}
+
 		public bool SupportsLaunchDeviceBundleId {
-			get { return Version >= new IPhoneSdkVersion (10, 5, 0, 156); }
+			get { return CheckSupportsFeature ("mlaunch-launchdevbundleid"); }
 		}
 
 		public bool SupportsObserveExtension {
-			get { return Version >= new IPhoneSdkVersion (10, 5, 0, 156); }
+			get { return CheckSupportsFeature ("mlaunch-observe-extension"); }
 		}
 
 		public bool SupportsLaunchSimulator {
-			get { return Version >= new IPhoneSdkVersion (10, 5, 0, 156); }
+			get { return CheckSupportsFeature ("mlaunch-launch-simulator"); }
 		}
 
 		public bool SupportsInstallProgress {
-			get { return Version >= new IPhoneSdkVersion (10, 5, 0, 323); }
+			get { return CheckSupportsFeature ("mlaunch-install-progress"); }
 		}
 	}
 }
