@@ -376,6 +376,10 @@ namespace Xamarin.MacDev
 			return false;
 		}
 
+		public bool SupportsSGenConcurrentGC {
+			get { return CheckSupportsFeature ("sgen-concurrent-gc"); }
+		}
+
 		public bool SupportsLaunchDeviceBundleId {
 			get { return CheckSupportsFeature ("mlaunch-launchdevbundleid"); }
 		}
