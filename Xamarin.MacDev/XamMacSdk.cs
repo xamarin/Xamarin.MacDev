@@ -9,25 +9,29 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace Xamarin.MacDev
 {
 	public sealed class XamMacSdk : IMonoMacSdk
 	{
+		static readonly MacOSXSdkVersion[] MacOSXSdkVersions = {
+			MacOSXSdkVersion.V10_7,
+			MacOSXSdkVersion.V10_8,
+			MacOSXSdkVersion.V10_9,
+			MacOSXSdkVersion.V10_10,
+			MacOSXSdkVersion.V10_11,
+			MacOSXSdkVersion.V10_12
+		};
+
 		readonly Dictionary<string, DateTime> lastWriteTimes = new Dictionary<string, DateTime> ();
 
 		string monoMacAppLauncherPath;
+		PDictionary versions;
 
 		public bool IsInstalled { get; private set; }
-		public bool SupportsMSBuild { get; private set; }
-		public bool SupportsV2Features { get; private set; }
-		public bool SupportsNewStyleActivation { get; private set; }
-		public bool SupportsRefCounting { get; private set; }
-		public bool SupportsModernHttpClient { get; private set; }
-		public bool RefCountingDeprecated { get; private set; }
-		public bool SupportsFullProfile { get; private set; }
-		public bool SupportsMonoSymbolArchive { get; private set; }
+
 		public MacOSXSdkVersion Version { get; private set; }
 		public string SdkNotInstalledReason { get; private set; }
 
@@ -51,11 +55,74 @@ namespace Xamarin.MacDev
 
 		public event EventHandler Changed;
 
+		static PArray CreateKnownSdkVersionsArray (IList<MacOSXSdkVersion> versions)
+		{
+			var array = new PArray ();
+
+			for (int i = 0; i < versions.Count; i++)
+				array.Add (new PString (versions[i].ToString ()));
+
+			return array;
+		}
+
+		static PDictionary CreateKnownVersions ()
+		{
+			var knownVersions = new PDictionary ();
+
+			knownVersions.Add ("macOS", CreateKnownSdkVersionsArray (MacOSXSdkVersions));
+
+			return knownVersions;
+		}
+
+		static PDictionary CreateMinExtensionVersions ()
+		{
+			var minExtensionVersions = new PDictionary ();
+			var mac = new PDictionary ();
+
+			mac.Add ("com.apple.FinderSync", new PString ("10.10"));
+			mac.Add ("com.apple.share-services", new PString ("10.10"));
+			mac.Add ("com.apple.widget-extension", new PString ("10.10"));
+			mac.Add ("com.apple.networkextension.packet-tunnel", new PString ("10.11"));
+
+			minExtensionVersions.Add ("macOS", mac);
+
+			return minExtensionVersions;
+		}
+
+		static PArray CreateDefaultFeatures (MacOSXSdkVersion version)
+		{
+			var features = new PArray ();
+
+			if (version >= new MacOSXSdkVersion (1, 9, 0))
+				features.Add (new PString ("activation"));
+			if (version >= new MacOSXSdkVersion (1, 11, 0) && version < new MacOSXSdkVersion (2, 5, 0))
+				features.Add (new PString ("ref-counting"));
+			if (version >= new MacOSXSdkVersion (2, 5, 0))
+				features.Add (new PString ("modern-http-client"));
+			if (version >= new MacOSXSdkVersion (2, 10, 0))
+				features.Add (new PString ("mono-symbol-archive"));
+
+			return features;
+		}
+
+		static PDictionary CreateDefaultVersionsPlist (MacOSXSdkVersion version)
+		{
+			var versions = new PDictionary ();
+
+			versions.Add ("KnownVersions", CreateKnownVersions ());
+			versions.Add ("RecommendedXcodeVersion", new PString ("8.0"));
+			versions.Add ("MinExtensionVersion", CreateMinExtensionVersions ());
+			versions.Add ("Features", CreateDefaultFeatures (version));
+
+			return versions;
+		}
+
 		void Init ()
 		{
 			string currentLocation = IsInstalled ? MmpPath : null;
 
 			IsInstalled = false;
+			versions = null;
 
 			FrameworkDirectory = "/Library/Frameworks/Xamarin.Mac.framework/Versions/Current";
 			var envFrameworkDir = Environment.GetEnvironmentVariable ("XAMMAC_FRAMEWORK_PATH");
@@ -66,6 +133,18 @@ namespace Xamarin.MacDev
 			if (File.Exists (versionPath)) {
 				Version = ReadVersion (versionPath);
 				lastWriteTimes [versionPath] = File.GetLastWriteTimeUtc (versionPath);
+
+				var path = Path.Combine (FrameworkDirectory, "Versions.plist");
+				if (File.Exists (path)) {
+					try {
+						versions = PDictionary.FromFile (path);
+					} catch {
+						LoggingService.LogWarning ("Xamarin.Mac installation is corrupt: invalid Versions.plist at {0}.", path);
+					}
+				}
+
+				if (versions == null)
+					versions = CreateDefaultVersionsPlist (Version);
 			} else {
 				NotInstalled (versionPath, error: false);
 				AnalyticsService.ReportContextProperty ("XS.Core.SDK.Mac.Version", string.Empty);
@@ -95,15 +174,6 @@ namespace Xamarin.MacDev
 
 		IEnumerable<string> Detect2x ()
 		{
-			SupportsMSBuild = true;
-			SupportsV2Features = true;
-
-			SupportsNewStyleActivation = Version >= new MacOSXSdkVersion (1, 9, 0);
-			SupportsRefCounting = Version >= new MacOSXSdkVersion (1, 11, 0);
-			RefCountingDeprecated = Version >= new MacOSXSdkVersion (2, 5, 0);
-			SupportsModernHttpClient = Version >= new MacOSXSdkVersion (2, 5, 0);
-			SupportsMonoSymbolArchive = Version >= new MacOSXSdkVersion (2, 10, 0);
-
 			yield return MmpPath = Path.Combine (FrameworkDirectory, "bin", "mmp");
 			yield return BmacPath = Path.Combine (FrameworkDirectory, "bin", "bmac");
 			yield return LegacyFrameworkAssembly = Path.Combine (FrameworkDirectory, "lib", "mono", "XamMac.dll");
@@ -117,9 +187,6 @@ namespace Xamarin.MacDev
 
 		IEnumerable<string> Detect1x ()
 		{
-			SupportsMSBuild = false;
-			SupportsV2Features = false;
-
 			var usrPrefix = string.Empty;
 			var appDriverPath = monoMacAppLauncherPath;
 
@@ -143,6 +210,7 @@ namespace Xamarin.MacDev
 
 		void NotInstalled (string pathMissing, bool error = true)
 		{
+			versions = new PDictionary ();
 			lastWriteTimes.Clear ();
 			IsInstalled = false;
 			Version = new MacOSXSdkVersion ();
@@ -177,6 +245,53 @@ namespace Xamarin.MacDev
 			} catch (IOException) {
 				Init ();
 			}
+		}
+
+		bool CheckSupportsFeature (string feature)
+		{
+			PArray features;
+
+			if (!versions.TryGetValue ("Features", out features)) {
+				features = CreateDefaultFeatures (Version);
+				versions.Add ("Features", features);
+			}
+
+			foreach (var item in features.OfType<PString> ().Select (x => x.Value)) {
+				if (feature == item)
+					return true;
+			}
+
+			return false;
+		}
+
+		public bool SupportsMSBuild {
+			get { return Version >= new MacOSXSdkVersion (1, 9, 0); }
+		}
+
+		public bool SupportsV2Features {
+			get { return Version >= new MacOSXSdkVersion (1, 9, 0); }
+		}
+
+		public bool SupportsFullProfile { get; private set; }
+
+		public bool SupportsSGenConcurrentGC {
+			get { return CheckSupportsFeature ("sgen-concurrent-gc"); }
+		}
+
+		public bool SupportsNewStyleActivation {
+			get { return CheckSupportsFeature ("activation"); }
+		}
+
+		public bool SupportsRefCounting {
+			get { return CheckSupportsFeature ("ref-counting"); }
+		}
+
+		public bool SupportsModernHttpClient {
+			get { return CheckSupportsFeature ("modern-http-client"); }
+		}
+
+		public bool SupportsMonoSymbolArchive {
+			get { return CheckSupportsFeature ("mono-symbol-archive"); }
 		}
 	}
 }
