@@ -272,14 +272,14 @@ namespace Xamarin.MacDev
 			get { return Version >= new MacOSXSdkVersion (1, 9, 0); }
 		}
 
+		public bool SupportsNewStyleActivation {
+			get { return Version >= new MacOSXSdkVersion (1, 9, 0); }
+		}
+
 		public bool SupportsFullProfile { get; private set; }
 
 		public bool SupportsSGenConcurrentGC {
 			get { return CheckSupportsFeature ("sgen-concurrent-gc"); }
-		}
-
-		public bool SupportsNewStyleActivation {
-			get { return CheckSupportsFeature ("activation"); }
 		}
 
 		public bool SupportsRefCounting {
