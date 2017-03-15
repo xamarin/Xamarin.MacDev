@@ -286,8 +286,8 @@ namespace Xamarin.MacDev
 			get { return CheckSupportsFeature ("ref-counting"); }
 		}
 
-		public bool SupportsModernHttpClient {
-			get { return CheckSupportsFeature ("modern-http-client"); }
+		public bool SupportsHttpClientHandlers {
+			get { return CheckSupportsFeature ("http-client-handlers"); }
 		}
 
 		public bool SupportsMonoSymbolArchive {
