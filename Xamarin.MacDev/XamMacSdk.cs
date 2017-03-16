@@ -278,6 +278,10 @@ namespace Xamarin.MacDev
 
 		public bool SupportsFullProfile { get; private set; }
 
+		public bool SupportsSGenConcurrentGCExperimental {
+			get { return CheckSupportsFeature ("sgen-concurrent-gc-experimental"); }
+		}
+
 		public bool SupportsSGenConcurrentGC {
 			get { return CheckSupportsFeature ("sgen-concurrent-gc"); }
 		}

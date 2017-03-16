@@ -376,6 +376,10 @@ namespace Xamarin.MacDev
 			return false;
 		}
 
+		public bool SupportsSGenConcurrentGCExperimental {
+			get { return CheckSupportsFeature ("sgen-concurrent-gc-experimental"); }
+		}
+
 		public bool SupportsSGenConcurrentGC {
 			get { return CheckSupportsFeature ("sgen-concurrent-gc"); }
 		}
