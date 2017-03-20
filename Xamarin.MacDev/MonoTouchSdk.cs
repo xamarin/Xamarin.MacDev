@@ -199,7 +199,7 @@ namespace Xamarin.MacDev
 			string mtouch = null;
 			if (IsInstalled) {
 				mtouch = Path.Combine (BinDir, "mtouch");
-				lastMTExeWrite = File.GetLastWriteTime (mtouch);
+				lastMTExeWrite = File.GetLastWriteTimeUtc (mtouch);
 				Version = ReadVersion ();
 
 				if (Version.CompareTo (requiredXI) >= 0) {
@@ -351,7 +351,7 @@ namespace Xamarin.MacDev
 		{
 			if (IsInstalled) {
 				try {
-					var lastWrite = File.GetLastWriteTime (Path.Combine (BinDir, "mtouch"));
+					var lastWrite = File.GetLastWriteTimeUtc (Path.Combine (BinDir, "mtouch"));
 					if (lastWrite == lastMTExeWrite)
 						return;
 				} catch (IOException) {
@@ -361,20 +361,43 @@ namespace Xamarin.MacDev
 			Init ();
 		}
 
+		bool CheckSupportsFeature (string feature)
+		{
+			PArray features;
+
+			if (!versions.TryGetValue ("Features", out features))
+				return false;
+
+			foreach (var item in features.OfType<PString> ().Select (x => x.Value)) {
+				if (feature == item)
+					return true;
+			}
+
+			return false;
+		}
+
+		public bool SupportsSGenConcurrentGCExperimental {
+			get { return CheckSupportsFeature ("sgen-concurrent-gc-experimental"); }
+		}
+
+		public bool SupportsSGenConcurrentGC {
+			get { return CheckSupportsFeature ("sgen-concurrent-gc"); }
+		}
+
 		public bool SupportsLaunchDeviceBundleId {
-			get { return Version >= new IPhoneSdkVersion (10, 5, 0, 156); }
+			get { return CheckSupportsFeature ("mlaunch-launchdevbundleid"); }
 		}
 
 		public bool SupportsObserveExtension {
-			get { return Version >= new IPhoneSdkVersion (10, 5, 0, 156); }
+			get { return CheckSupportsFeature ("mlaunch-observe-extension"); }
 		}
 
 		public bool SupportsLaunchSimulator {
-			get { return Version >= new IPhoneSdkVersion (10, 5, 0, 156); }
+			get { return CheckSupportsFeature ("mlaunch-launch-simulator"); }
 		}
 
 		public bool SupportsInstallProgress {
-			get { return Version >= new IPhoneSdkVersion (10, 5, 0, 323); }
+			get { return CheckSupportsFeature ("mlaunch-install-progress"); }
 		}
 	}
 }

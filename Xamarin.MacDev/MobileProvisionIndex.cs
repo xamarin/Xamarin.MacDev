@@ -49,8 +49,8 @@ namespace Xamarin.MacDev
 			record.Add ("Name", new PString (provision.Name));
 			record.Add ("Uuid", new PString (provision.Uuid));
 			record.Add ("Distribution", new PString (provision.DistributionType.ToString ()));
-			record.Add ("CreationDate", new PDate (provision.CreationDate));
-			record.Add ("ExpirationDate", new PDate (provision.ExpirationDate));
+			record.Add ("CreationDate", new PDate (provision.CreationDate.ToUniversalTime ()));
+			record.Add ("ExpirationDate", new PDate (provision.ExpirationDate.ToUniversalTime ()));
 
 			var platforms = new PArray ();
 			if (provision.Platforms != null) {
@@ -302,7 +302,7 @@ namespace Xamarin.MacDev
 			var dictionary = new Dictionary<string, int> ();
 			var list = new List<MobileProvision> ();
 			var plist = OpenIndex ();
-			var now = DateTime.Now;
+			var now = DateTime.UtcNow;
 			PString fileName;
 			PArray platforms;
 			PArray profiles;
@@ -362,7 +362,7 @@ namespace Xamarin.MacDev
 			var list = new List<MobileProvision> ();
 			MobileProvisionDistributionType dist;
 			var plist = OpenIndex ();
-			var now = DateTime.Now;
+			var now = DateTime.UtcNow;
 			PString fileName;
 			PArray platforms;
 			PArray profiles;
@@ -433,7 +433,7 @@ namespace Xamarin.MacDev
 			var list = new List<MobileProvision> ();
 			MobileProvisionDistributionType dist;
 			var plist = OpenIndex ();
-			var now = DateTime.Now;
+			var now = DateTime.UtcNow;
 			PString fileName;
 			PArray platforms;
 			PArray profiles;
@@ -528,7 +528,7 @@ namespace Xamarin.MacDev
 			var list = new List<MobileProvision> ();
 			MobileProvisionDistributionType dist;
 			var plist = OpenIndex ();
-			var now = DateTime.Now;
+			var now = DateTime.UtcNow;
 			PString identifier;
 			PString fileName;
 			PArray platforms;
@@ -627,7 +627,7 @@ namespace Xamarin.MacDev
 			var list = new List<MobileProvision> ();
 			MobileProvisionDistributionType dist;
 			var plist = OpenIndex ();
-			var now = DateTime.Now;
+			var now = DateTime.UtcNow;
 			PString identifier;
 			PString fileName;
 			PArray platforms;
