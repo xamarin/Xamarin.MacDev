@@ -901,6 +901,11 @@ namespace Xamarin.MacDev
 			OnChildRemoved (null, obj);
 		}
 
+		public void Sort (IComparer<PObject> comparer)
+		{
+			list.Sort (comparer);
+		}
+
 		public void Clear ()
 		{
 			list.Clear ();
