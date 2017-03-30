@@ -34,7 +34,26 @@ namespace Xamarin.MacDev
 	public static class MobileProvisionIndex
 	{
 		static readonly string IndexFileName = Path.Combine (Environment.GetFolderPath (Environment.SpecialFolder.Personal), "Library", "Xamarin", "Provisioning Profiles.plist");
+		static readonly MobileProvisionRecordCreationDateComparer CreationDateComparer = new MobileProvisionRecordCreationDateComparer ();
 		const int IndexVersion = 4;
+
+		class MobileProvisionRecordCreationDateComparer : IComparer<PObject>
+		{
+			public int Compare (PObject x, PObject y)
+			{
+				var profileX = (PDictionary) x;
+				var profileY = (PDictionary) y;
+				PDate ctimeX, ctimeY;
+
+				if (!profileX.TryGetValue ("CreationDate", out ctimeX))
+					ctimeX = new PDate (DateTime.UtcNow);
+
+				if (!profileY.TryGetValue ("CreationDate", out ctimeY))
+					ctimeX = new PDate (DateTime.UtcNow);
+
+				return ctimeX.Value.CompareTo (ctimeY.Value);
+			}
+		}
 
 		static PDictionary CreateIndexRecord (string fileName)
 		{
@@ -107,6 +126,8 @@ namespace Xamarin.MacDev
 						LoggingService.LogWarning ("Error reading provisioning profile '{0}': {1}", fileName, ex);
 					}
 				}
+
+				profiles.Sort (CreationDateComparer);
 			} else {
 				Directory.CreateDirectory (MobileProvision.ProfileDirectory);
 			}
@@ -212,6 +233,8 @@ namespace Xamarin.MacDev
 						plist["LastModified"] = new PDate (Directory.GetLastWriteTimeUtc (MobileProvision.ProfileDirectory));
 						plist["Version"] = new PNumber (IndexVersion);
 
+						profiles.Sort (CreationDateComparer);
+
 						Save (plist);
 					}
 				} else {
@@ -310,8 +333,11 @@ namespace Xamarin.MacDev
 			if (!plist.TryGetValue ("ProvisioningProfiles", out profiles))
 				return list;
 
-			foreach (var profile in profiles.OfType<PDictionary> ()) {
-				if (!profile.TryGetValue ("FileName", out fileName) || !fileName.Value.EndsWith (extension, StringComparison.Ordinal))
+			// iterate over the profiles in reverse order so that we load newer profiles first (optimization for the 'unique' case)
+			for (int i = profiles.Count - 1; i >= 0; i--) {
+				var profile = profiles[i] as PDictionary;
+
+				if (profile == null || !profile.TryGetValue ("FileName", out fileName) || !fileName.Value.EndsWith (extension, StringComparison.Ordinal))
 					continue;
 
 				if (!profile.TryGetValue ("Platforms", out platforms) || !Contains (platforms, platform))
@@ -370,8 +396,11 @@ namespace Xamarin.MacDev
 			if (!plist.TryGetValue ("ProvisioningProfiles", out profiles))
 				return list;
 
-			foreach (var profile in profiles.OfType<PDictionary> ()) {
-				if (!profile.TryGetValue ("FileName", out fileName) || !fileName.Value.EndsWith (extension, StringComparison.Ordinal))
+			// iterate over the profiles in reverse order so that we load newer profiles first (optimization for the 'unique' case)
+			for (int i = profiles.Count - 1; i >= 0; i--) {
+				var profile = profiles[i] as PDictionary;
+
+				if (profile == null || !profile.TryGetValue ("FileName", out fileName) || !fileName.Value.EndsWith (extension, StringComparison.Ordinal))
 					continue;
 
 				if (!profile.TryGetValue ("Platforms", out platforms) || !Contains (platforms, platform))
@@ -451,8 +480,11 @@ namespace Xamarin.MacDev
 			if (!plist.TryGetValue ("ProvisioningProfiles", out profiles))
 				return list;
 
-			foreach (var profile in profiles.OfType<PDictionary> ()) {
-				if (!profile.TryGetValue ("FileName", out fileName) || !fileName.Value.EndsWith (extension, StringComparison.Ordinal))
+			// iterate over the profiles in reverse order so that we load newer profiles first (optimization for the 'unique' case)
+			for (int i = profiles.Count - 1; i >= 0; i--) {
+				var profile = profiles[i] as PDictionary;
+
+				if (profile == null || !profile.TryGetValue ("FileName", out fileName) || !fileName.Value.EndsWith (extension, StringComparison.Ordinal))
 					continue;
 
 				if (!profile.TryGetValue ("Platforms", out platforms) || !Contains (platforms, platform))
@@ -543,8 +575,11 @@ namespace Xamarin.MacDev
 			if (!plist.TryGetValue ("ProvisioningProfiles", out profiles))
 				return list;
 
-			foreach (var profile in profiles.OfType<PDictionary> ()) {
-				if (!profile.TryGetValue ("FileName", out fileName) || !fileName.Value.EndsWith (extension, StringComparison.Ordinal))
+			// iterate over the profiles in reverse order so that we load newer profiles first (optimization for the 'unique' case)
+			for (int i = profiles.Count - 1; i >= 0; i--) {
+				var profile = profiles[i] as PDictionary;
+
+				if (profile == null || !profile.TryGetValue ("FileName", out fileName) || !fileName.Value.EndsWith (extension, StringComparison.Ordinal))
 					continue;
 
 				if (!profile.TryGetValue ("Platforms", out platforms) || !Contains (platforms, platform))
@@ -649,8 +684,11 @@ namespace Xamarin.MacDev
 			if (!plist.TryGetValue ("ProvisioningProfiles", out profiles))
 				return list;
 
-			foreach (var profile in profiles.OfType<PDictionary> ()) {
-				if (!profile.TryGetValue ("FileName", out fileName) || !fileName.Value.EndsWith (extension, StringComparison.Ordinal))
+			// iterate over the profiles in reverse order so that we load newer profiles first (optimization for the 'unique' case)
+			for (int i = profiles.Count - 1; i >= 0; i--) {
+				var profile = profiles[i] as PDictionary;
+
+				if (profile == null || !profile.TryGetValue ("FileName", out fileName) || !fileName.Value.EndsWith (extension, StringComparison.Ordinal))
 					continue;
 
 				if (!profile.TryGetValue ("Platforms", out platforms) || !Contains (platforms, platform))
