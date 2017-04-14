@@ -297,5 +297,9 @@ namespace Xamarin.MacDev
 		public bool SupportsMonoSymbolArchive {
 			get { return CheckSupportsFeature ("mono-symbol-archive"); }
 		}
+
+		public bool SupportsLinkPlatform {
+			get { return CheckSupportsFeature ("link-platform"); }
+		}
 	}
 }
