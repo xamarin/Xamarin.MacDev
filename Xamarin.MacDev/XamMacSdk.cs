@@ -301,5 +301,9 @@ namespace Xamarin.MacDev
 		public bool SupportsLinkPlatform {
 			get { return CheckSupportsFeature ("link-platform"); }
 		}
+
+		public bool SupportsHybridAOT {
+			get { return Version >= new MacOSXSdkVersion (3, 2, 0); }
+		}
 	}
 }
