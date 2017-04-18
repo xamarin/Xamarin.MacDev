@@ -129,6 +129,7 @@ namespace Xamarin.MacDev
 		static void SetInvalid ()
 		{
 			XcodePath = string.Empty;
+			InvalidDeveloperRoot = DeveloperRoot;
 			DeveloperRoot = string.Empty;
 			DeveloperRootVersionPlist = string.Empty;
 			IsValid = false;
@@ -256,6 +257,8 @@ namespace Xamarin.MacDev
 		}
 
 		public static string DeveloperRoot { get; private set; }
+
+		public static string InvalidDeveloperRoot { get; private set; }
 
 		public static string DeveloperRootVersionPlist {
 			get; private set;
