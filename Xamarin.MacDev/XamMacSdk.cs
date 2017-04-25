@@ -303,7 +303,7 @@ namespace Xamarin.MacDev
 		}
 
 		public bool SupportsHybridAOT {
-			get { return Version >= new MacOSXSdkVersion (3, 2, 0); }
+			get { return CheckSupportsFeature ("hybrid-aot"); }
 		}
 	}
 }
