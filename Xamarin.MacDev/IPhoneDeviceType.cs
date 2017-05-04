@@ -46,6 +46,7 @@ namespace Xamarin.MacDev
 		IPad   = 2,
 		TV     = 3,
 		Watch  = 4,
+		IPod   = 5,
 	}
 
 	public static class AppleDeviceFamilyExtensions
