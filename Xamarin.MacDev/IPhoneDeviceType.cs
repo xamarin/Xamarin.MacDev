@@ -46,6 +46,22 @@ namespace Xamarin.MacDev
 		IPad   = 2,
 		TV     = 3,
 		Watch  = 4,
+		IPod   = 5,
+	}
+
+	public static class AppleDeviceFamilyExtensions
+	{
+		public static string GetDeviceClass (this AppleDeviceFamily family)
+		{
+			switch (family) {
+				case AppleDeviceFamily.TV: return "tvOS";
+				case AppleDeviceFamily.Watch: return "watch";
+				case AppleDeviceFamily.IPhone: return "iphone";
+				case AppleDeviceFamily.IPad: return "ipad";
+				case AppleDeviceFamily.IPod: return "ipod";
+				default: return string.Empty;
+			}
+		}
 	}
 
 	public static class IPhoneDeviceTypeExtensions
