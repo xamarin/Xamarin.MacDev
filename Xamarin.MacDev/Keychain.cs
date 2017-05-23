@@ -26,6 +26,7 @@
 // THE SOFTWARE.
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Collections.Generic;
@@ -94,6 +95,12 @@ namespace Xamarin.MacDev
 			if (cfRef != IntPtr.Zero)
 				CFReleaseInternal (cfRef);
 		}
+
+		[DllImport (SecurityLib)]
+		static extern OSStatus SecKeychainCopyDefault (ref IntPtr keychain);
+
+		[DllImport (SecurityLib)]
+		static extern OSStatus SecKeychainGetPath (IntPtr keychain, out uint ioPathLength, IntPtr pathName);
 
 		#region Managing Certificates
 
@@ -410,7 +417,32 @@ namespace Xamarin.MacDev
 					CFRelease (str);
 			}
 		}
-		
+
+		public string GetKeychainPath ()
+		{
+			var keychainPtr = IntPtr.Zero;
+
+			if (keychain == IntPtr.Zero) {
+				var resultCode = SecKeychainCopyDefault (ref keychainPtr);
+				if (resultCode != OSStatus.Ok)
+					throw new Exception ($"Could not get default keychain's pointer {GetError (resultCode)}");
+			} else {
+				keychainPtr = keychain;
+			}
+
+			uint bufferLength = 1024;
+			var pathBuffer = Marshal.AllocHGlobal ((int)bufferLength);
+			var status = SecKeychainGetPath (keychainPtr, out bufferLength, pathBuffer);
+
+			if (status != OSStatus.Ok)
+				throw new Exception ($"Could not get keychain's path {GetError (status)}");
+
+			var path = Marshal.PtrToStringAuto (pathBuffer);
+			Marshal.FreeHGlobal (pathBuffer);
+
+			return path;
+		}
+
 		public IList<AppleCodeSigningIdentity> GetAllSigningIdentities ()
 		{
 			IntPtr searchRef, itemRef, certRef, keyRef;
