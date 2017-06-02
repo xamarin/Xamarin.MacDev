@@ -399,5 +399,9 @@ namespace Xamarin.MacDev
 		public bool SupportsInstallProgress {
 			get { return CheckSupportsFeature ("mlaunch-install-progress"); }
 		}
+
+		public bool SupportsLaunchWatchOSComplications {
+			get { return CheckSupportsFeature ("mlaunch-watchos-complications"); }
+		}
 	}
 }
