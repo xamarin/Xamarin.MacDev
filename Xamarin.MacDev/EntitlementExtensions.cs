@@ -19,6 +19,9 @@ namespace Xamarin.MacDev
 		public const string AssociatedDomains = "com.apple.developer.associated-domains";
 		public const string ApplicationGroups = "com.apple.security.application-groups";
 		public const string NetworkingVpnApi = "com.apple.developer.networking.vpn.api";
+		public const string NetworkExtensions = "com.apple.developer.networking.networkextension";
+		public const string HotspotConfiguration = "com.apple.developer.networking.HotspotConfiguration";
+		public const string Multipath = "com.apple.developer.networking.multipath";
 		public const string InAppPayments = "com.apple.developer.in-app-payments";
 		public const string KeychainAccessGroups = "keychain-access-groups";
 		public const string HealthKit = "com.apple.developer.healthkit";
