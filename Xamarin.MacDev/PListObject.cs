@@ -197,10 +197,8 @@ namespace Xamarin.MacDev
 		
 		public event EventHandler Changed;
 
-		public byte[] ToByteArray (bool binary)
+		public byte[] ToByteArray (PropertyListFormat format)
 		{
-			var format = binary? PropertyListFormat.Binary : PropertyListFormat.Xml;
-
 			using (var stream = new MemoryStream ()) {
 				using (var context = format.StartWriting (stream))
 					context.WriteObject (this);
@@ -208,9 +206,21 @@ namespace Xamarin.MacDev
 			}
 		}
 
+		public byte[] ToByteArray (bool binary)
+		{
+			var format = binary ? PropertyListFormat.Binary : PropertyListFormat.Xml;
+
+			return ToByteArray (format);
+		}
+
+		public string ToJson ()
+		{
+			return Encoding.UTF8.GetString (ToByteArray (PropertyListFormat.Json));
+		}
+
 		public string ToXml ()
 		{
-			return Encoding.UTF8.GetString (ToByteArray (false));
+			return Encoding.UTF8.GetString (ToByteArray (PropertyListFormat.Xml));
 		}
 
 		#if POBJECT_MONOMAC
@@ -1206,6 +1216,7 @@ namespace Xamarin.MacDev
 	{
 		public static readonly PropertyListFormat Xml = new XmlFormat ();
 		public static readonly PropertyListFormat Binary = new BinaryFormat ();
+		public static readonly PropertyListFormat Json = new JsonFormat ();
 
 		// Stream must be seekable
 		public static ReadWriteContext CreateReadContext (Stream input)
@@ -2124,6 +2135,202 @@ namespace Xamarin.MacDev
 				{
 					if (writer != null) {
 						writer.Write ("</plist>\n");
+						writer.Flush ();
+						writer.Dispose ();
+					}
+				}
+			}
+		}
+
+		class JsonFormat : PropertyListFormat
+		{
+			static readonly Encoding outputEncoding = new UTF8Encoding (false, false);
+
+			public override ReadWriteContext StartReading (Stream input)
+			{
+				throw new NotImplementedException ();
+			}
+
+			public override ReadWriteContext StartWriting (Stream output)
+			{
+				var writer = new StreamWriter (output, outputEncoding);
+
+				return new Context (writer);
+			}
+
+			class Context : ReadWriteContext
+			{
+				const string DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssK";
+
+				readonly TextWriter writer;
+
+				string indentString;
+				int indentLevel;
+
+				public Context (TextWriter writer)
+				{
+					this.writer = writer;
+					indentString = "";
+				}
+
+				#region XML reading members
+				protected override void ReadObjectHead ()
+				{
+					throw new NotImplementedException ();
+				}
+
+				protected override bool ReadBool ()
+				{
+					throw new NotImplementedException ();
+				}
+
+				protected override long ReadInteger ()
+				{
+					throw new NotImplementedException ();
+				}
+
+				protected override double ReadReal ()
+				{
+					throw new NotImplementedException ();
+				}
+
+				protected override DateTime ReadDate ()
+				{
+					throw new NotImplementedException ();
+				}
+
+				protected override byte [] ReadData ()
+				{
+					throw new NotImplementedException ();
+				}
+
+				protected override string ReadString ()
+				{
+					throw new NotImplementedException ();
+				}
+
+				public override bool ReadArray (PArray array)
+				{
+					throw new NotImplementedException ();
+				}
+
+				public override bool ReadDict (PDictionary dict)
+				{
+					throw new NotImplementedException ();
+				}
+				#endregion
+
+				#region XML writing members
+				void Quote (string text)
+				{
+					var quoted = new StringBuilder (text.Length + 2, (text.Length * 2) + 2);
+
+					quoted.Append ("\"");
+					for (int i = 0; i < text.Length; i++) {
+						if (text [i] == '\\' || text [i] == '"')
+							quoted.Append ('\\');
+						quoted.Append (text [i]);
+					}
+					quoted.Append ("\"");
+
+					writer.Write (quoted);
+				}
+
+				protected override void Write (PBoolean boolean)
+				{
+					writer.Write (boolean.Value ? "true" : "false");
+				}
+
+				protected override void Write (PNumber number)
+				{
+					writer.Write (number.Value.ToString (CultureInfo.InvariantCulture));
+				}
+
+				protected override void Write (PReal real)
+				{
+					writer.Write (real.Value.ToString (CultureInfo.InvariantCulture));
+				}
+
+				protected override void Write (PDate date)
+				{
+					writer.Write ("\"" + date.Value.ToString (DATETIME_FORMAT, CultureInfo.InvariantCulture) + "\"");
+				}
+
+				protected override void Write (PData data)
+				{
+					writer.Write (Convert.ToBase64String (data.Value));
+				}
+
+				protected override void Write (PString str)
+				{
+					Quote (str.Value);
+				}
+
+				protected override void Write (PArray array)
+				{
+					if (array.Count == 0) {
+						writer.Write ("[]");
+						return;
+					}
+
+					writer.WriteLine ("[");
+					IncreaseIndent ();
+
+					int i = 0;
+					foreach (var item in array) {
+						writer.Write (indentString);
+						WriteObject (item);
+						if (++i < array.Count)
+							writer.Write (',');
+						writer.WriteLine ();
+					}
+
+					DecreaseIndent ();
+					writer.Write (indentString);
+					writer.Write ("]");
+				}
+
+				protected override void Write (PDictionary dict)
+				{
+					if (dict.Count == 0) {
+						writer.Write ("{}");
+						return;
+					}
+
+					writer.WriteLine ("{");
+					IncreaseIndent ();
+
+					int i = 0;
+					foreach (var kv in dict) {
+						writer.Write (indentString);
+						Quote (kv.Key);
+						writer.Write (": ");
+						WriteObject (kv.Value);
+						if (++i < dict.Count)
+							writer.Write (',');
+						writer.WriteLine ();
+					}
+
+					DecreaseIndent ();
+					writer.Write (indentString);
+					writer.Write ("}");
+				}
+
+				void IncreaseIndent ()
+				{
+					indentString = new string (' ', (++indentLevel) * 2);
+				}
+
+				void DecreaseIndent ()
+				{
+					indentString = new string (' ', (--indentLevel) * 2);
+				}
+				#endregion
+
+				public override void Dispose ()
+				{
+					if (writer != null) {
+						writer.WriteLine ();
 						writer.Flush ();
 						writer.Dispose ();
 					}
