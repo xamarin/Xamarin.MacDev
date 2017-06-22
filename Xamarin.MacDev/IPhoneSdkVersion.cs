@@ -225,5 +225,6 @@ namespace Xamarin.MacDev
 		public static readonly IPhoneSdkVersion V10_2 = new IPhoneSdkVersion (10, 2);
 		public static readonly IPhoneSdkVersion V10_3 = new IPhoneSdkVersion (10, 3);
 		public static readonly IPhoneSdkVersion V10_4 = new IPhoneSdkVersion (10, 4);
+		public static readonly IPhoneSdkVersion V11_0 = new IPhoneSdkVersion (11, 0);
 	}
 }
