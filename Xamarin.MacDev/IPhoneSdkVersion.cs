@@ -32,6 +32,18 @@ namespace Xamarin.MacDev
 	public struct IPhoneSdkVersion : IComparable<IPhoneSdkVersion>, IEquatable<IPhoneSdkVersion>
 	{
 		int[] version;
+
+		public IPhoneSdkVersion (Version version)
+		{
+			if (version == null)
+				throw new ArgumentNullException ();
+
+			this.version = new int[3];
+			this.version[0] = version.Major;
+			this.version[1] = version.Minor;
+			this.version[2] = version.Build;
+			//this.version[3] = version.Revision;
+		}
 		
 		public IPhoneSdkVersion (params int[] version)
 		{
