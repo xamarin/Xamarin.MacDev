@@ -38,11 +38,15 @@ namespace Xamarin.MacDev
 			if (version == null)
 				throw new ArgumentNullException ();
 
-			this.version = new int[3];
+			if (version.Build != -1) {
+				this.version = new int[3];
+				this.version[2] = version.Build;
+			} else {
+				this.version = new int[2];
+			}
+
 			this.version[0] = version.Major;
 			this.version[1] = version.Minor;
-			this.version[2] = version.Build;
-			//this.version[3] = version.Revision;
 		}
 		
 		public IPhoneSdkVersion (params int[] version)
