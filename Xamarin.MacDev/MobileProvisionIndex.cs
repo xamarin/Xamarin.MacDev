@@ -33,86 +33,219 @@ namespace Xamarin.MacDev
 {
 	public static class MobileProvisionIndex
 	{
-		static readonly string IndexFileName = Path.Combine (Environment.GetFolderPath (Environment.SpecialFolder.Personal), "Library", "Xamarin", "Provisioning Profiles.plist");
-		static readonly MobileProvisionRecordCreationDateComparer CreationDateComparer = new MobileProvisionRecordCreationDateComparer ();
+		static readonly string IndexFileName = Path.Combine (Environment.GetFolderPath (Environment.SpecialFolder.Personal), "Library", "Xamarin", "Provisioning Profiles.index");
+		static readonly string TempIndexFileName = Path.Combine (Environment.GetFolderPath (Environment.SpecialFolder.Personal), "Library", "Xamarin", "Provisioning Profiles.tmp");
+		static readonly MobileProvisionCreationDateComparer CreationDateComparer = new MobileProvisionCreationDateComparer ();
 		const int IndexVersion = 4;
 
-		class MobileProvisionRecordCreationDateComparer : IComparer<PObject>
+		class DeveloperCertificate
 		{
-			public int Compare (PObject x, PObject y)
+			public string Name;
+			public string Thumbprint;
+
+			DeveloperCertificate ()
 			{
-				var profileX = (PDictionary) x;
-				var profileY = (PDictionary) y;
-				PDate ctimeX, ctimeY;
+			}
 
-				if (!profileX.TryGetValue ("CreationDate", out ctimeX))
-					ctimeX = new PDate (DateTime.UtcNow);
+			public DeveloperCertificate (X509Certificate2 certificate)
+			{
+				Name = Keychain.GetCertificateCommonName (certificate);
+				Thumbprint = certificate.Thumbprint;
+			}
 
-				if (!profileY.TryGetValue ("CreationDate", out ctimeY))
-					ctimeX = new PDate (DateTime.UtcNow);
+			public static DeveloperCertificate Load (BinaryReader reader)
+			{
+				var certificate = new DeveloperCertificate ();
+				certificate.Name = reader.ReadString ();
+				certificate.Thumbprint = reader.ReadString ();
+				return certificate;
+			}
 
-				return ctimeX.Value.CompareTo (ctimeY.Value);
+			public void Write (BinaryWriter writer)
+			{
+				writer.Write (Name);
+				writer.Write (Thumbprint);
 			}
 		}
 
-		static PDictionary CreateIndexRecord (string fileName)
+		class ProvisioningProfile
+		{
+			public string FileName;
+			public DateTime LastModified;
+
+			public string Name;
+			public string Uuid;
+			public MobileProvisionDistributionType Distribution;
+			public DateTime CreationDate;
+			public DateTime ExpirationDate;
+
+			public List<MobileProvisionPlatform> Platforms;
+			public string ApplicationIdentifier;
+			public List<DeveloperCertificate> DeveloperCertificates;
+
+			public ProvisioningProfile ()
+			{
+				Platforms = new List<MobileProvisionPlatform> ();
+				DeveloperCertificates = new List<DeveloperCertificate> ();
+			}
+
+			public ProvisioningProfile (string fileName, MobileProvision provision) : this ()
+			{
+				FileName = fileName;
+				LastModified = File.GetLastWriteTimeUtc (fileName);
+
+				Name = provision.Name;
+				Uuid = provision.Uuid;
+				Distribution = provision.DistributionType;
+				CreationDate = provision.CreationDate;
+				ExpirationDate = provision.ExpirationDate;
+
+				if (provision.Platforms != null) {
+					for (int i = 0; i < provision.Platforms.Length; i++)
+						Platforms.Add (provision.Platforms[i]);
+				}
+
+				PString identifier;
+				if (provision.Entitlements.TryGetValue ("com.apple.application-identifier", out identifier))
+					ApplicationIdentifier = identifier.Value;
+				else if (provision.Entitlements.TryGetValue ("application-identifier", out identifier))
+					ApplicationIdentifier = identifier.Value;
+				else
+					ApplicationIdentifier = string.Empty;
+
+				for (int i = 0; i < provision.DeveloperCertificates.Count; i++)
+					DeveloperCertificates.Add (new DeveloperCertificate (provision.DeveloperCertificates [i]));
+			}
+
+			public static ProvisioningProfile Load (BinaryReader reader)
+			{
+				var profile = new ProvisioningProfile ();
+				int count;
+
+				profile.FileName = reader.ReadString ();
+				profile.LastModified = new DateTime (reader.ReadInt64 (), DateTimeKind.Utc);
+
+				profile.Name = reader.ReadString ();
+				profile.Uuid = reader.ReadString ();
+				Enum.TryParse (reader.ReadString (), out profile.Distribution);
+				profile.CreationDate = new DateTime (reader.ReadInt64 (), DateTimeKind.Utc);
+				profile.ExpirationDate = new DateTime (reader.ReadInt64 (), DateTimeKind.Utc);
+
+				count = reader.ReadInt32 ();
+				for (int i = 0; i < count; i++) {
+					MobileProvisionPlatform platform;
+
+					Enum.TryParse (reader.ReadString (), out platform);
+					profile.Platforms.Add (platform);
+				}
+
+				profile.ApplicationIdentifier = reader.ReadString ();
+
+				count = reader.ReadInt32 ();
+				for (int i = 0; i < count; i++)
+					profile.DeveloperCertificates.Add (DeveloperCertificate.Load (reader));
+
+				return profile;
+			}
+
+			public void Write (BinaryWriter writer)
+			{
+				writer.Write (FileName);
+				writer.Write (LastModified.Ticks);
+
+				writer.Write (Name);
+				writer.Write (Uuid);
+				writer.Write (Distribution.ToString ());
+				writer.Write (CreationDate.Ticks);
+				writer.Write (ExpirationDate.Ticks);
+
+				writer.Write (Platforms.Count);
+				for (int i = 0; i < Platforms.Count; i++)
+					writer.Write (Platforms[i].ToString ());
+
+				writer.Write (ApplicationIdentifier);
+
+				writer.Write (DeveloperCertificates.Count);
+				for (int i = 0; i < DeveloperCertificates.Count; i++)
+					DeveloperCertificates[i].Write (writer);
+			}
+		}
+
+		class MobileIndex
+		{
+			public int Version;
+			public DateTime LastModified;
+			public List<ProvisioningProfile> ProvisioningProfiles;
+
+			public MobileIndex ()
+			{
+				ProvisioningProfiles = new List<ProvisioningProfile> ();
+			}
+
+			public static MobileIndex Load (string fileName)
+			{
+				var index = new MobileIndex ();
+
+				using (var stream = File.OpenRead (fileName)) {
+					using (var reader = new BinaryReader (stream)) {
+						index.Version = reader.ReadInt32 ();
+						index.LastModified = new DateTime (reader.ReadInt64 (), DateTimeKind.Utc);
+
+						int count = reader.ReadInt32 ();
+						for (int i = 0; i < count; i++) {
+							var profile = ProvisioningProfile.Load (reader);
+							index.ProvisioningProfiles.Add (profile);
+						}
+
+						return index;
+					}
+				}
+			}
+
+			public void Save (string fileName, string tempFileName)
+			{
+				try {
+					Directory.CreateDirectory (Path.GetDirectoryName (fileName));
+
+					using (var stream = File.Create (tempFileName, 4096)) {
+						using (var writer = new BinaryWriter (stream)) {
+							writer.Write (Version);
+							writer.Write (LastModified.Ticks);
+
+							writer.Write (ProvisioningProfiles.Count);
+							for (int i = 0; i < ProvisioningProfiles.Count; i++)
+								ProvisioningProfiles[i].Write (writer);
+						}
+					}
+
+					if (File.Exists (fileName))
+						File.Replace (tempFileName, fileName, null, true);
+					else
+						File.Move (tempFileName, fileName);
+				} catch (Exception ex) {
+					LoggingService.LogWarning ("Failed to save '{0}': {1}", fileName, ex);
+				}
+			}
+		}
+
+		class MobileProvisionCreationDateComparer : IComparer<ProvisioningProfile>
+		{
+			public int Compare (ProvisioningProfile x, ProvisioningProfile y)
+			{
+				return x.CreationDate.CompareTo (y.CreationDate);
+			}
+		}
+
+		static ProvisioningProfile LoadMobileProfile (string fileName)
 		{
 			var provision = MobileProvision.LoadFromFile (fileName);
-			var certificates = new PArray ();
-			var record = new PDictionary ();
-			PString identifier;
 
-			record.Add ("FileName", new PString (Path.GetFileName (fileName)));
-			record.Add ("LastModified", new PDate (File.GetLastWriteTimeUtc (fileName)));
-
-			record.Add ("Name", new PString (provision.Name));
-			record.Add ("Uuid", new PString (provision.Uuid));
-			record.Add ("Distribution", new PString (provision.DistributionType.ToString ()));
-			record.Add ("CreationDate", new PDate (provision.CreationDate.ToUniversalTime ()));
-			record.Add ("ExpirationDate", new PDate (provision.ExpirationDate.ToUniversalTime ()));
-
-			var platforms = new PArray ();
-			if (provision.Platforms != null) {
-				for (int i = 0; i < provision.Platforms.Length; i++)
-					platforms.Add (new PString (provision.Platforms[i].ToString ()));
-			}
-			record.Add ("Platforms", platforms);
-
-			if (provision.Entitlements.TryGetValue ("com.apple.application-identifier", out identifier))
-				record.Add ("ApplicationIdentifier", new PString (identifier.Value));
-			else if (provision.Entitlements.TryGetValue ("application-identifier", out identifier))
-				record.Add ("ApplicationIdentifier", new PString (identifier.Value));
-			else
-				record.Add ("ApplicationIdentifier", new PString (string.Empty));
-
-			foreach (var certificate in provision.DeveloperCertificates) {
-				var info = new PDictionary ();
-
-				info.Add ("Name", new PString (Keychain.GetCertificateCommonName (certificate)));
-				info.Add ("Thumbprint", new PString (certificate.Thumbprint));
-
-				certificates.Add (info);
-			}
-
-			record.Add ("DeveloperCertificates", certificates);
-
-			return record;
+			return new ProvisioningProfile (fileName, provision);
 		}
 
-		static void Save (PDictionary plist)
+		static MobileIndex CreateIndex ()
 		{
-			try {
-				Directory.CreateDirectory (Path.GetDirectoryName (IndexFileName));
-				plist.Save (IndexFileName, true, true);
-			} catch (Exception ex) {
-				LoggingService.LogWarning ("Failed to save '{0}': {1}", IndexFileName, ex);
-			}
-		}
-
-		static PDictionary CreateIndex ()
-		{
-			var plist = new PDictionary ();
-			var profiles = new PArray ();
+			var index = new MobileIndex ();
 
 			if (Directory.Exists (MobileProvision.ProfileDirectory)) {
 				foreach (var fileName in Directory.EnumerateFiles (MobileProvision.ProfileDirectory)) {
@@ -120,82 +253,50 @@ namespace Xamarin.MacDev
 						continue;
 
 					try {
-						var profile = CreateIndexRecord (fileName);
-						profiles.Add (profile);
+						var profile = LoadMobileProfile (fileName);
+						index.ProvisioningProfiles.Add (profile);
 					} catch (Exception ex) {
 						LoggingService.LogWarning ("Error reading provisioning profile '{0}': {1}", fileName, ex);
 					}
 				}
 
-				profiles.Sort (CreationDateComparer);
+				index.ProvisioningProfiles.Sort (CreationDateComparer);
 			} else {
 				Directory.CreateDirectory (MobileProvision.ProfileDirectory);
 			}
 
-			plist.Add ("Version", new PNumber (IndexVersion));
-			plist.Add ("LastModified", new PDate (Directory.GetLastWriteTimeUtc (MobileProvision.ProfileDirectory)));
-			plist.Add ("ProvisioningProfiles", profiles);
+			index.Version = IndexVersion;
+			index.LastModified = Directory.GetLastWriteTimeUtc (MobileProvision.ProfileDirectory);
 
-			Save (plist);
+			index.Save (IndexFileName, TempIndexFileName);
 
-			return plist;
+			return index;
 		}
 
-		static bool LastModifiedChanged (PDictionary plist, DateTime mtime)
+		static MobileIndex OpenIndex ()
 		{
-			PDate lastModified;
-
-			if (!plist.TryGetValue ("LastModified", out lastModified))
-				return true;
-
-			return lastModified.Value < mtime;
-		}
-
-		static bool VersionChanged (PDictionary plist, int version)
-		{
-			PNumber value;
-
-			if (!plist.TryGetValue ("Version", out value))
-				return true;
-
-			return value.Value != version;
-		}
-
-		static PDictionary OpenIndex ()
-		{
-			PDictionary plist;
+			MobileIndex index;
 
 			try {
-				plist = PDictionary.FromFile (IndexFileName);
+				index = MobileIndex.Load (IndexFileName);
 
 				if (Directory.Exists (MobileProvision.ProfileDirectory)) {
 					var mtime = Directory.GetLastWriteTimeUtc (MobileProvision.ProfileDirectory);
 
-					if (VersionChanged (plist, IndexVersion)) {
-						plist = CreateIndex ();
-					} else if (LastModifiedChanged (plist, mtime)) {
-						var table = new Dictionary<string, PDictionary> ();
-						PArray profiles;
+					if (index.Version != IndexVersion) {
+						index = CreateIndex ();
+					} else if (index.LastModified < mtime) {
+						var table = new Dictionary<string, ProvisioningProfile> ();
 
-						if (plist.TryGetValue ("ProvisioningProfiles", out profiles)) {
-							foreach (var profile in profiles.OfType<PDictionary> ()) {
-								PString fileName;
-
-								if (!profile.TryGetValue ("FileName", out fileName))
-									continue;
-
-								table[fileName.Value] = profile;
-							}
-						} else {
-							plist.Add ("ProvisioningProfiles", profiles = new PArray ());
-						}
+						foreach (var profile in index.ProvisioningProfiles)
+							table[profile.FileName] = profile;
 
 						foreach (var fileName in Directory.EnumerateFiles (MobileProvision.ProfileDirectory)) {
 							if (!fileName.EndsWith (".mobileprovision", StringComparison.Ordinal) && !fileName.EndsWith (".provisionprofile", StringComparison.Ordinal))
 								continue;
 
+							ProvisioningProfile profile;
 							bool unknown = false;
-							PDictionary profile;
 
 							if (table.TryGetValue (Path.GetFileName (fileName), out profile)) {
 								// remove from our lookup table (any leftover key/valie pairs will be used to determine deleted files)
@@ -204,9 +305,9 @@ namespace Xamarin.MacDev
 								// check if the file has changed since our last resync
 								mtime = File.GetLastWriteTimeUtc (fileName);
 
-								if (LastModifiedChanged (profile, mtime)) {
+								if (profile.LastModified < mtime) {
 									// remove the old record
-									profile.Remove ();
+									index.ProvisioningProfiles.Remove (profile);
 
 									// treat this provisioning profile as if it is unknown
 									unknown = true;
@@ -218,8 +319,8 @@ namespace Xamarin.MacDev
 							if (unknown) {
 								// unknown provisioning profile; add it to our ProvisioningProfiles array
 								try {
-									profile = CreateIndexRecord (fileName);
-									profiles.Add (profile);
+									profile = LoadMobileProfile (fileName);
+									index.ProvisioningProfiles.Add (profile);
 								} catch (Exception ex) {
 									LoggingService.LogWarning ("Error reading provisioning profile '{0}': {1}", fileName, ex);
 								}
@@ -227,15 +328,15 @@ namespace Xamarin.MacDev
 						}
 
 						// remove provisioning profiles which have been deleted from the file system
-						foreach (var record in table)
-							record.Value.Remove ();
+						foreach (var item in table)
+							index.ProvisioningProfiles.Remove (item.Value);
 
-						plist["LastModified"] = new PDate (Directory.GetLastWriteTimeUtc (MobileProvision.ProfileDirectory));
-						plist["Version"] = new PNumber (IndexVersion);
+						index.LastModified = Directory.GetLastWriteTimeUtc (MobileProvision.ProfileDirectory);
+						index.Version = IndexVersion;
 
-						profiles.Sort (CreationDateComparer);
+						index.ProvisioningProfiles.Sort (CreationDateComparer);
 
-						Save (plist);
+						index.Save (IndexFileName, TempIndexFileName);
 					}
 				} else {
 					try {
@@ -244,13 +345,13 @@ namespace Xamarin.MacDev
 						LoggingService.LogWarning ("Failed to delete stale index '{0}': {1}", IndexFileName, ex);
 					}
 
-					plist.Clear ();
+					index.ProvisioningProfiles.Clear ();
 				}
 			} catch {
-				plist = CreateIndex ();
+				index = CreateIndex ();
 			}
 
-			return plist;
+			return index;
 		}
 
 		static bool Contains (PArray platforms, MobileProvisionPlatform platform)
@@ -273,43 +374,24 @@ namespace Xamarin.MacDev
 			if (File.Exists (path))
 				return MobileProvision.LoadFromFile (path);
 
-			var plist = OpenIndex ();
 			var latestCreationDate = DateTime.MinValue;
-			PDate creationDate;
-			PString fileName;
-			PArray platforms;
-			PArray profiles;
-			PString value;
+			var index = OpenIndex ();
 
 			path = null;
 
-			if (plist.TryGetValue ("ProvisioningProfiles", out profiles)) {
-				foreach (var profile in profiles.OfType<PDictionary> ()) {
-					if (!profile.TryGetValue ("FileName", out fileName) || !fileName.Value.EndsWith (extension, StringComparison.Ordinal))
-						continue;
+			foreach (var profile in index.ProvisioningProfiles) {
+				if (!profile.FileName.EndsWith (extension, StringComparison.Ordinal))
+					continue;
 
-					if (!profile.TryGetValue ("Platforms", out platforms) || !Contains (platforms, platform))
-						continue;
+				if (!profile.Platforms.Contains (platform))
+					continue;
 
-					if (!profile.TryGetValue ("Uuid", out value))
-						continue;
+				if (name == profile.Name || name == profile.Uuid)
+					return MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
 
-					if (name == value.Value)
-						return MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, fileName.Value));
-
-					if (!profile.TryGetValue ("Name", out value))
-						continue;
-
-					if (name != value.Value)
-						continue;
-
-					if (!profile.TryGetValue ("CreationDate", out creationDate))
-						continue;
-
-					if (creationDate.Value > latestCreationDate) {
-						path = Path.Combine (MobileProvision.ProfileDirectory, fileName.Value);
-						latestCreationDate = creationDate.Value;
-					}
+				if (profile.CreationDate > latestCreationDate) {
+					path = Path.Combine (MobileProvision.ProfileDirectory, profile.FileName);
+					latestCreationDate = profile.CreationDate;
 				}
 			}
 
@@ -324,56 +406,35 @@ namespace Xamarin.MacDev
 			var extension = MobileProvision.GetFileExtension (platform);
 			var dictionary = new Dictionary<string, int> ();
 			var list = new List<MobileProvision> ();
-			var plist = OpenIndex ();
 			var now = DateTime.UtcNow;
-			PString fileName;
-			PArray platforms;
-			PArray profiles;
-
-			if (!plist.TryGetValue ("ProvisioningProfiles", out profiles))
-				return list;
+			var index = OpenIndex ();
 
 			// iterate over the profiles in reverse order so that we load newer profiles first (optimization for the 'unique' case)
-			for (int i = profiles.Count - 1; i >= 0; i--) {
-				var profile = profiles[i] as PDictionary;
+			for (int i = index.ProvisioningProfiles.Count - 1; i >= 0; i--) {
+				var profile = index.ProvisioningProfiles[i];
 
-				if (profile == null || !profile.TryGetValue ("FileName", out fileName) || !fileName.Value.EndsWith (extension, StringComparison.Ordinal))
+				if (!profile.FileName.EndsWith (extension, StringComparison.Ordinal))
 					continue;
 
-				if (!profile.TryGetValue ("Platforms", out platforms) || !Contains (platforms, platform))
+				if (!profile.Platforms.Contains (platform))
 					continue;
 
-				if (!includeExpired) {
-					PDate expirationDate;
-
-					if (!profile.TryGetValue ("ExpirationDate", out expirationDate))
-						continue;
-
-					if (expirationDate.Value < now)
-						continue;
-				}
+				if (!includeExpired && profile.ExpirationDate < now)
+					continue;
 
 				if (unique) {
-					PDate creationDate;
-					PString name;
-					int index;
+					int idx;
 
-					if (!profile.TryGetValue ("Name", out name))
-						continue;
-
-					if (dictionary.TryGetValue (name.Value, out index)) {
-						if (!profile.TryGetValue ("CreationDate", out creationDate))
-							continue;
-
-						if (creationDate.Value > list[index].CreationDate)
-							list[index] = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, fileName.Value));
+					if (dictionary.TryGetValue (profile.Name, out idx)) {
+						if (profile.CreationDate > list[idx].CreationDate)
+							list[idx] = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
 					} else {
-						var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, fileName.Value));
-						dictionary.Add (name.Value, list.Count);
+						var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
+						dictionary.Add (profile.Name, list.Count);
 						list.Add (provision);
 					}
 				} else {
-					var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, fileName.Value));
+					var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
 					list.Add (provision);
 				}
 			}
@@ -386,67 +447,38 @@ namespace Xamarin.MacDev
 			var extension = MobileProvision.GetFileExtension (platform);
 			var dictionary = new Dictionary<string, int> ();
 			var list = new List<MobileProvision> ();
-			MobileProvisionDistributionType dist;
-			var plist = OpenIndex ();
 			var now = DateTime.UtcNow;
-			PString fileName;
-			PArray platforms;
-			PArray profiles;
-
-			if (!plist.TryGetValue ("ProvisioningProfiles", out profiles))
-				return list;
+			var index = OpenIndex ();
 
 			// iterate over the profiles in reverse order so that we load newer profiles first (optimization for the 'unique' case)
-			for (int i = profiles.Count - 1; i >= 0; i--) {
-				var profile = profiles[i] as PDictionary;
+			for (int i = index.ProvisioningProfiles.Count - 1; i >= 0; i--) {
+				var profile = index.ProvisioningProfiles[i];
 
-				if (profile == null || !profile.TryGetValue ("FileName", out fileName) || !fileName.Value.EndsWith (extension, StringComparison.Ordinal))
+				if (!profile.FileName.EndsWith (extension, StringComparison.Ordinal))
 					continue;
 
-				if (!profile.TryGetValue ("Platforms", out platforms) || !Contains (platforms, platform))
+				if (!profile.Platforms.Contains (platform))
 					continue;
 
-				if (!includeExpired) {
-					PDate expirationDate;
+				if (!includeExpired && profile.ExpirationDate < now)
+					continue;
 
-					if (!profile.TryGetValue ("ExpirationDate", out expirationDate))
-						continue;
-
-					if (expirationDate.Value < now)
-						continue;
-				}
-
-				if (type != MobileProvisionDistributionType.Any) {
-					PString value;
-
-					if (!profile.TryGetValue ("Distribution", out value) || !Enum.TryParse (value.Value, out dist))
-						continue;
-
-					if ((type & dist) == 0)
-						continue;
-				}
+				if (type != MobileProvisionDistributionType.Any && (profile.Distribution & type) == 0)
+					continue;
 
 				if (unique) {
-					PDate creationDate;
-					PString name;
-					int index;
+					int idx;
 
-					if (!profile.TryGetValue ("Name", out name))
-						continue;
-
-					if (dictionary.TryGetValue (name.Value, out index)) {
-						if (!profile.TryGetValue ("CreationDate", out creationDate))
-							continue;
-
-						if (creationDate.Value > list[index].CreationDate)
-							list[index] = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, fileName.Value));
+					if (dictionary.TryGetValue (profile.Name, out idx)) {
+						if (profile.CreationDate > list [idx].CreationDate)
+							list [idx] = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
 					} else {
-						var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, fileName.Value));
-						dictionary.Add (name.Value, list.Count);
+						var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
+						dictionary.Add (profile.Name, list.Count);
 						list.Add (provision);
 					}
 				} else {
-					var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, fileName.Value));
+					var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
 					list.Add (provision);
 				}
 			}
@@ -460,13 +492,8 @@ namespace Xamarin.MacDev
 			var dictionary = new Dictionary<string, int> ();
 			var thumbprints = new HashSet<string> ();
 			var list = new List<MobileProvision> ();
-			MobileProvisionDistributionType dist;
-			var plist = OpenIndex ();
 			var now = DateTime.UtcNow;
-			PString fileName;
-			PArray platforms;
-			PArray profiles;
-			PArray array;
+			var index = OpenIndex ();
 
 			if (developerCertificates == null)
 				throw new ArgumentNullException (nameof (developerCertificates));
@@ -477,72 +504,39 @@ namespace Xamarin.MacDev
 			if (thumbprints.Count == 0)
 				return list;
 
-			if (!plist.TryGetValue ("ProvisioningProfiles", out profiles))
-				return list;
-
 			// iterate over the profiles in reverse order so that we load newer profiles first (optimization for the 'unique' case)
-			for (int i = profiles.Count - 1; i >= 0; i--) {
-				var profile = profiles[i] as PDictionary;
+			for (int i = index.ProvisioningProfiles.Count - 1; i >= 0; i--) {
+				var profile = index.ProvisioningProfiles[i];
 
-				if (profile == null || !profile.TryGetValue ("FileName", out fileName) || !fileName.Value.EndsWith (extension, StringComparison.Ordinal))
+				if (!profile.FileName.EndsWith (extension, StringComparison.Ordinal))
 					continue;
 
-				if (!profile.TryGetValue ("Platforms", out platforms) || !Contains (platforms, platform))
+				if (!profile.Platforms.Contains (platform))
 					continue;
 
-				if (!includeExpired) {
-					PDate expirationDate;
-
-					if (!profile.TryGetValue ("ExpirationDate", out expirationDate))
-						continue;
-
-					if (expirationDate.Value < now)
-						continue;
-				}
-
-				if (type != MobileProvisionDistributionType.Any) {
-					PString value;
-
-					if (!profile.TryGetValue ("Distribution", out value) || !Enum.TryParse (value.Value, out dist))
-						continue;
-
-					if ((type & dist) == 0)
-						continue;
-				}
-
-				if (!profile.TryGetValue ("DeveloperCertificates", out array))
+				if (!includeExpired && profile.ExpirationDate < now)
 					continue;
 
-				foreach (var cert in array.OfType<PDictionary> ()) {
-					PString thumbprint;
+				if (type != MobileProvisionDistributionType.Any && (profile.Distribution & type) == 0)
+					continue;
 
-					if (!cert.TryGetValue ("Thumbprint", out thumbprint))
-						continue;
-
-					if (!thumbprints.Contains (thumbprint.Value))
+				foreach (var cert in profile.DeveloperCertificates) {
+					if (!thumbprints.Contains (cert.Thumbprint))
 						continue;
 
 					if (unique) {
-						PDate creationDate;
-						PString name;
-						int index;
+						int idx;
 
-						if (!profile.TryGetValue ("Name", out name))
-							break;
-
-						if (dictionary.TryGetValue (name.Value, out index)) {
-							if (!profile.TryGetValue ("CreationDate", out creationDate))
-								break;
-
-							if (creationDate.Value > list[index].CreationDate)
-								list[index] = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, fileName.Value));
+						if (dictionary.TryGetValue (profile.Name, out idx)) {
+							if (profile.CreationDate > list [idx].CreationDate)
+								list [idx] = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
 						} else {
-							var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, fileName.Value));
-							dictionary.Add (name.Value, list.Count);
+							var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
+							dictionary.Add (profile.Name, list.Count);
 							list.Add (provision);
 						}
 					} else {
-						var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, fileName.Value));
+						var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
 						list.Add (provision);
 					}
 					break;
@@ -556,59 +550,30 @@ namespace Xamarin.MacDev
 		{
 			var extension = MobileProvision.GetFileExtension (platform);
 			var dictionary = new Dictionary<string, int> ();
-			var thumbprints = new HashSet<string> ();
 			var list = new List<MobileProvision> ();
-			MobileProvisionDistributionType dist;
-			var plist = OpenIndex ();
 			var now = DateTime.UtcNow;
-			PString identifier;
-			PString fileName;
-			PArray platforms;
-			PArray profiles;
+			var plist = OpenIndex ();
 
 			if (bundleIdentifier == null)
 				throw new ArgumentNullException (nameof (bundleIdentifier));
 
-			if (thumbprints.Count == 0)
-				return list;
-
-			if (!plist.TryGetValue ("ProvisioningProfiles", out profiles))
-				return list;
-
 			// iterate over the profiles in reverse order so that we load newer profiles first (optimization for the 'unique' case)
-			for (int i = profiles.Count - 1; i >= 0; i--) {
-				var profile = profiles[i] as PDictionary;
+			for (int i = plist.ProvisioningProfiles.Count - 1; i >= 0; i--) {
+				var profile = plist.ProvisioningProfiles[i];
 
-				if (profile == null || !profile.TryGetValue ("FileName", out fileName) || !fileName.Value.EndsWith (extension, StringComparison.Ordinal))
+				if (!profile.FileName.EndsWith (extension, StringComparison.Ordinal))
 					continue;
 
-				if (!profile.TryGetValue ("Platforms", out platforms) || !Contains (platforms, platform))
+				if (!profile.Platforms.Contains (platform))
 					continue;
 
-				if (!includeExpired) {
-					PDate expirationDate;
-
-					if (!profile.TryGetValue ("ExpirationDate", out expirationDate))
-						continue;
-
-					if (expirationDate.Value < now)
-						continue;
-				}
-
-				if (type != MobileProvisionDistributionType.Any) {
-					PString value;
-
-					if (!profile.TryGetValue ("Distribution", out value) || !Enum.TryParse (value.Value, out dist))
-						continue;
-
-					if ((type & dist) == 0)
-						continue;
-				}
-
-				if (!profile.TryGetValue ("ApplicationIdentifier", out identifier))
+				if (!includeExpired && profile.ExpirationDate < now)
 					continue;
 
-				string id = identifier.Value;
+				if (type != MobileProvisionDistributionType.Any && (profile.Distribution & type) == 0)
+					continue;
+
+				var id = profile.ApplicationIdentifier;
 				int dot;
 
 				// Note: the ApplicationIdentifier will be in the form "7V723M9SQ5.com.xamarin.app-name", so we'll need to trim the leading TeamIdentifierPrefix
@@ -627,26 +592,18 @@ namespace Xamarin.MacDev
 				}
 
 				if (unique) {
-					PDate creationDate;
-					PString name;
-					int index;
+					int idx;
 
-					if (!profile.TryGetValue ("Name", out name))
-						continue;
-
-					if (dictionary.TryGetValue (name.Value, out index)) {
-						if (!profile.TryGetValue ("CreationDate", out creationDate))
-							continue;
-
-						if (creationDate.Value > list[index].CreationDate)
-							list[index] = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, fileName.Value));
+					if (dictionary.TryGetValue (profile.Name, out idx)) {
+						if (profile.CreationDate > list [idx].CreationDate)
+							list [idx] = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
 					} else {
-						var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, fileName.Value));
-						dictionary.Add (name.Value, list.Count);
+						var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
+						dictionary.Add (profile.Name, list.Count);
 						list.Add (provision);
 					}
 				} else {
-					var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, fileName.Value));
+					var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
 					list.Add (provision);
 				}
 			}
@@ -660,14 +617,8 @@ namespace Xamarin.MacDev
 			var dictionary = new Dictionary<string, int> ();
 			var thumbprints = new HashSet<string> ();
 			var list = new List<MobileProvision> ();
-			MobileProvisionDistributionType dist;
-			var plist = OpenIndex ();
 			var now = DateTime.UtcNow;
-			PString identifier;
-			PString fileName;
-			PArray platforms;
-			PArray profiles;
-			PArray array;
+			var plist = OpenIndex ();
 
 			if (bundleIdentifier == null)
 				throw new ArgumentNullException (nameof (bundleIdentifier));
@@ -681,43 +632,23 @@ namespace Xamarin.MacDev
 			if (thumbprints.Count == 0)
 				return list;
 
-			if (!plist.TryGetValue ("ProvisioningProfiles", out profiles))
-				return list;
-
 			// iterate over the profiles in reverse order so that we load newer profiles first (optimization for the 'unique' case)
-			for (int i = profiles.Count - 1; i >= 0; i--) {
-				var profile = profiles[i] as PDictionary;
+			for (int i = plist.ProvisioningProfiles.Count - 1; i >= 0; i--) {
+				var profile = plist.ProvisioningProfiles[i];
 
-				if (profile == null || !profile.TryGetValue ("FileName", out fileName) || !fileName.Value.EndsWith (extension, StringComparison.Ordinal))
+				if (!profile.FileName.EndsWith (extension, StringComparison.Ordinal))
 					continue;
 
-				if (!profile.TryGetValue ("Platforms", out platforms) || !Contains (platforms, platform))
+				if (!profile.Platforms.Contains (platform))
 					continue;
 
-				if (!includeExpired) {
-					PDate expirationDate;
-
-					if (!profile.TryGetValue ("ExpirationDate", out expirationDate))
-						continue;
-
-					if (expirationDate.Value < now)
-						continue;
-				}
-
-				if (type != MobileProvisionDistributionType.Any) {
-					PString value;
-
-					if (!profile.TryGetValue ("Distribution", out value) || !Enum.TryParse (value.Value, out dist))
-						continue;
-
-					if ((type & dist) == 0)
-						continue;
-				}
-
-				if (!profile.TryGetValue ("ApplicationIdentifier", out identifier))
+				if (!includeExpired && profile.ExpirationDate < now)
 					continue;
 
-				string id = identifier.Value;
+				if (type != MobileProvisionDistributionType.Any && (profile.Distribution & type) == 0)
+					continue;
+
+				var id = profile.ApplicationIdentifier;
 				int dot;
 
 				// Note: the ApplicationIdentifier will be in the form "7V723M9SQ5.com.xamarin.app-name", so we'll need to trim the leading TeamIdentifierPrefix
@@ -735,39 +666,23 @@ namespace Xamarin.MacDev
 					continue;
 				}
 
-				if (!profile.TryGetValue ("DeveloperCertificates", out array))
-					continue;
-
-				foreach (var cert in array.OfType<PDictionary> ()) {
-					PString thumbprint;
-
-					if (!cert.TryGetValue ("Thumbprint", out thumbprint))
-						continue;
-
-					if (!thumbprints.Contains (thumbprint.Value))
+				foreach (var cert in profile.DeveloperCertificates) {
+					if (!thumbprints.Contains (cert.Thumbprint))
 						continue;
 
 					if (unique) {
-						PDate creationDate;
-						PString name;
-						int index;
+						int idx;
 
-						if (!profile.TryGetValue ("Name", out name))
-							break;
-
-						if (dictionary.TryGetValue (name.Value, out index)) {
-							if (!profile.TryGetValue ("CreationDate", out creationDate))
-								break;
-
-							if (creationDate.Value > list[index].CreationDate)
-								list[index] = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, fileName.Value));
+						if (dictionary.TryGetValue (profile.Name, out idx)) {
+							if (profile.CreationDate > list [idx].CreationDate)
+								list [idx] = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
 						} else {
-							var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, fileName.Value));
-							dictionary.Add (name.Value, list.Count);
+							var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
+							dictionary.Add (profile.Name, list.Count);
 							list.Add (provision);
 						}
 					} else {
-						var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, fileName.Value));
+						var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
 						list.Add (provision);
 					}
 					break;
