@@ -2258,7 +2258,7 @@ namespace Xamarin.MacDev
 
 				protected override void Write (PData data)
 				{
-					writer.Write (Convert.ToBase64String (data.Value));
+					Quote (Convert.ToBase64String (data.Value));
 				}
 
 				protected override void Write (PString str)
