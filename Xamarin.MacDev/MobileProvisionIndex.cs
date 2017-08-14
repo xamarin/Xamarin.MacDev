@@ -25,34 +25,33 @@
 
 using System;
 using System.IO;
-using System.Linq;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 
 namespace Xamarin.MacDev
 {
-	public static class MobileProvisionIndex
+	public class MobileProvisionIndex
 	{
 		static readonly string IndexFileName = Path.Combine (Environment.GetFolderPath (Environment.SpecialFolder.Personal), "Library", "Xamarin", "Provisioning Profiles.index");
 		static readonly MobileProvisionCreationDateComparer CreationDateComparer = new MobileProvisionCreationDateComparer ();
 		const int IndexVersion = 1;
 
-		class DeveloperCertificate
+		public class DeveloperCertificate
 		{
-			public string Name;
-			public string Thumbprint;
+			public string Name { get; private set; }
+			public string Thumbprint { get; private set; }
 
 			DeveloperCertificate ()
 			{
 			}
 
-			public DeveloperCertificate (X509Certificate2 certificate)
+			internal DeveloperCertificate (X509Certificate2 certificate)
 			{
 				Name = Keychain.GetCertificateCommonName (certificate);
 				Thumbprint = certificate.Thumbprint;
 			}
 
-			public static DeveloperCertificate Load (BinaryReader reader)
+			internal static DeveloperCertificate Load (BinaryReader reader)
 			{
 				var certificate = new DeveloperCertificate ();
 				certificate.Name = reader.ReadString ();
@@ -60,35 +59,35 @@ namespace Xamarin.MacDev
 				return certificate;
 			}
 
-			public void Write (BinaryWriter writer)
+			internal void Write (BinaryWriter writer)
 			{
 				writer.Write (Name);
 				writer.Write (Thumbprint);
 			}
 		}
 
-		class ProvisioningProfile
+		public class ProvisioningProfile
 		{
-			public string FileName;
-			public DateTime LastModified;
+			public string FileName { get; private set; }
+			public DateTime LastModified { get; private set; }
 
-			public string Name;
-			public string Uuid;
-			public MobileProvisionDistributionType Distribution;
-			public DateTime CreationDate;
-			public DateTime ExpirationDate;
+			public string Name { get; private set; }
+			public string Uuid { get; private set; }
+			public MobileProvisionDistributionType Distribution { get; private set; }
+			public DateTime CreationDate { get; private set; }
+			public DateTime ExpirationDate { get; private set; }
 
-			public List<MobileProvisionPlatform> Platforms;
-			public string ApplicationIdentifier;
-			public List<DeveloperCertificate> DeveloperCertificates;
+			public List<MobileProvisionPlatform> Platforms { get; private set; }
+			public string ApplicationIdentifier { get; private set; }
+			public List<DeveloperCertificate> DeveloperCertificates { get; private set; }
 
-			public ProvisioningProfile ()
+			ProvisioningProfile ()
 			{
 				Platforms = new List<MobileProvisionPlatform> ();
 				DeveloperCertificates = new List<DeveloperCertificate> ();
 			}
 
-			public ProvisioningProfile (string fileName, MobileProvision provision) : this ()
+			ProvisioningProfile (string fileName, MobileProvision provision) : this ()
 			{
 				FileName = fileName;
 				LastModified = File.GetLastWriteTimeUtc (fileName);
@@ -113,12 +112,20 @@ namespace Xamarin.MacDev
 					ApplicationIdentifier = string.Empty;
 
 				for (int i = 0; i < provision.DeveloperCertificates.Count; i++)
-					DeveloperCertificates.Add (new DeveloperCertificate (provision.DeveloperCertificates [i]));
+					DeveloperCertificates.Add (new DeveloperCertificate (provision.DeveloperCertificates[i]));
 			}
 
-			public static ProvisioningProfile Load (BinaryReader reader)
+			internal static ProvisioningProfile Load (string fileName)
+			{
+				var provision = MobileProvision.LoadFromFile (fileName);
+
+				return new ProvisioningProfile (fileName, provision);
+			}
+
+			internal static ProvisioningProfile Load (BinaryReader reader)
 			{
 				var profile = new ProvisioningProfile ();
+				MobileProvisionDistributionType type;
 				int count;
 
 				profile.FileName = reader.ReadString ();
@@ -126,7 +133,8 @@ namespace Xamarin.MacDev
 
 				profile.Name = reader.ReadString ();
 				profile.Uuid = reader.ReadString ();
-				Enum.TryParse (reader.ReadString (), out profile.Distribution);
+				Enum.TryParse (reader.ReadString (), out type);
+				profile.Distribution = type;
 				profile.CreationDate = new DateTime (reader.ReadInt64 (), DateTimeKind.Utc);
 				profile.ExpirationDate = new DateTime (reader.ReadInt64 (), DateTimeKind.Utc);
 
@@ -147,7 +155,7 @@ namespace Xamarin.MacDev
 				return profile;
 			}
 
-			public void Write (BinaryWriter writer)
+			internal void Write (BinaryWriter writer)
 			{
 				writer.Write (FileName);
 				writer.Write (LastModified.Ticks);
@@ -170,65 +178,6 @@ namespace Xamarin.MacDev
 			}
 		}
 
-		class MobileIndex
-		{
-			public int Version;
-			public DateTime LastModified;
-			public List<ProvisioningProfile> ProvisioningProfiles;
-
-			public MobileIndex ()
-			{
-				ProvisioningProfiles = new List<ProvisioningProfile> ();
-			}
-
-			public static MobileIndex Load (string fileName)
-			{
-				var index = new MobileIndex ();
-
-				using (var stream = File.OpenRead (fileName)) {
-					using (var reader = new BinaryReader (stream)) {
-						index.Version = reader.ReadInt32 ();
-						index.LastModified = new DateTime (reader.ReadInt64 (), DateTimeKind.Utc);
-
-						int count = reader.ReadInt32 ();
-						for (int i = 0; i < count; i++) {
-							var profile = ProvisioningProfile.Load (reader);
-							index.ProvisioningProfiles.Add (profile);
-						}
-
-						return index;
-					}
-				}
-			}
-
-			public void Save (string fileName)
-			{
-				var tempFileName = Path.Combine (Path.GetDirectoryName (fileName), ".#" + Path.GetFileNameWithoutExtension (fileName) + ".tmp");
-
-				try {
-					Directory.CreateDirectory (Path.GetDirectoryName (fileName));
-
-					using (var stream = File.Create (tempFileName, 4096)) {
-						using (var writer = new BinaryWriter (stream)) {
-							writer.Write (Version);
-							writer.Write (LastModified.Ticks);
-
-							writer.Write (ProvisioningProfiles.Count);
-							for (int i = 0; i < ProvisioningProfiles.Count; i++)
-								ProvisioningProfiles[i].Write (writer);
-						}
-					}
-
-					if (File.Exists (fileName))
-						File.Replace (tempFileName, fileName, null, true);
-					else
-						File.Move (tempFileName, fileName);
-				} catch (Exception ex) {
-					LoggingService.LogWarning ("Failed to save '{0}': {1}", fileName, ex);
-				}
-			}
-		}
-
 		class MobileProvisionCreationDateComparer : IComparer<ProvisioningProfile>
 		{
 			public int Compare (ProvisioningProfile x, ProvisioningProfile y)
@@ -237,16 +186,67 @@ namespace Xamarin.MacDev
 			}
 		}
 
-		static ProvisioningProfile LoadMobileProfile (string fileName)
-		{
-			var provision = MobileProvision.LoadFromFile (fileName);
+		#region MobileProvisionIndex
 
-			return new ProvisioningProfile (fileName, provision);
+		public List<ProvisioningProfile> ProvisioningProfiles { get; private set; }
+		public DateTime LastModified { get; private set; }
+		public int Version { get; private set; }
+
+		MobileProvisionIndex ()
+		{
+			ProvisioningProfiles = new List<ProvisioningProfile> ();
 		}
 
-		static MobileIndex CreateIndex (string profilesDir, string indexName)
+		public static MobileProvisionIndex Load (string fileName)
 		{
-			var index = new MobileIndex ();
+			var index = new MobileProvisionIndex ();
+
+			using (var stream = File.OpenRead (fileName)) {
+				using (var reader = new BinaryReader (stream)) {
+					index.Version = reader.ReadInt32 ();
+					index.LastModified = new DateTime (reader.ReadInt64 (), DateTimeKind.Utc);
+
+					int count = reader.ReadInt32 ();
+					for (int i = 0; i < count; i++) {
+						var profile = ProvisioningProfile.Load (reader);
+						index.ProvisioningProfiles.Add (profile);
+					}
+
+					return index;
+				}
+			}
+		}
+
+		public void Save (string fileName)
+		{
+			var tempFileName = Path.Combine (Path.GetDirectoryName (fileName), ".#" + Path.GetFileNameWithoutExtension (fileName) + ".tmp");
+
+			try {
+				Directory.CreateDirectory (Path.GetDirectoryName (fileName));
+
+				using (var stream = File.Create (tempFileName, 4096)) {
+					using (var writer = new BinaryWriter (stream)) {
+						writer.Write (Version);
+						writer.Write (LastModified.Ticks);
+
+						writer.Write (ProvisioningProfiles.Count);
+						for (int i = 0; i < ProvisioningProfiles.Count; i++)
+							ProvisioningProfiles[i].Write (writer);
+					}
+				}
+
+				if (File.Exists (fileName))
+					File.Replace (tempFileName, fileName, null, true);
+				else
+					File.Move (tempFileName, fileName);
+			} catch (Exception ex) {
+				LoggingService.LogWarning ("Failed to save '{0}': {1}", fileName, ex);
+			}
+		}
+
+		public static MobileProvisionIndex CreateIndex (string profilesDir, string indexName)
+		{
+			var index = new MobileProvisionIndex ();
 
 			if (Directory.Exists (profilesDir)) {
 				foreach (var fileName in Directory.EnumerateFiles (profilesDir)) {
@@ -254,7 +254,7 @@ namespace Xamarin.MacDev
 						continue;
 
 					try {
-						var profile = LoadMobileProfile (fileName);
+						var profile = ProvisioningProfile.Load (fileName);
 						index.ProvisioningProfiles.Add (profile);
 					} catch (Exception ex) {
 						LoggingService.LogWarning ("Error reading provisioning profile '{0}': {1}", fileName, ex);
@@ -274,12 +274,12 @@ namespace Xamarin.MacDev
 			return index;
 		}
 
-		static MobileIndex OpenIndex (string profilesDir, string indexName)
+		public static MobileProvisionIndex OpenIndex (string profilesDir, string indexName)
 		{
-			MobileIndex index;
+			MobileProvisionIndex index;
 
 			try {
-				index = MobileIndex.Load (indexName);
+				index = Load (indexName);
 
 				if (Directory.Exists (profilesDir)) {
 					var mtime = Directory.GetLastWriteTimeUtc (profilesDir);
@@ -320,7 +320,7 @@ namespace Xamarin.MacDev
 							if (unknown) {
 								// unknown provisioning profile; add it to our ProvisioningProfiles array
 								try {
-									profile = LoadMobileProfile (fileName);
+									profile = ProvisioningProfile.Load (fileName);
 									index.ProvisioningProfiles.Add (profile);
 								} catch (Exception ex) {
 									LoggingService.LogWarning ("Error reading provisioning profile '{0}': {1}", fileName, ex);
@@ -355,18 +355,6 @@ namespace Xamarin.MacDev
 			return index;
 		}
 
-		static bool Contains (PArray platforms, MobileProvisionPlatform platform)
-		{
-			var value = platform.ToString ();
-
-			foreach (var item in platforms.OfType<PString> ()) {
-				if (item.Value == value)
-					return true;
-			}
-
-			return false;
-		}
-
 		public static MobileProvision GetMobileProvision (MobileProvisionPlatform platform, string name)
 		{
 			var extension = MobileProvision.GetFileExtension (platform);
@@ -375,8 +363,8 @@ namespace Xamarin.MacDev
 			if (File.Exists (path))
 				return MobileProvision.LoadFromFile (path);
 
-			var latestCreationDate = DateTime.MinValue;
 			var index = OpenIndex (MobileProvision.ProfileDirectory, IndexFileName);
+			var latestCreationDate = DateTime.MinValue;
 
 			path = null;
 
@@ -693,4 +681,6 @@ namespace Xamarin.MacDev
 			return list;
 		}
 	}
+
+	#endregion MobileProvisionIndex
 }
