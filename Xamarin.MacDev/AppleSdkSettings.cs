@@ -151,8 +151,8 @@ namespace Xamarin.MacDev
 
 			Init ();
 		}
-		
-		static void Init ()
+
+		public static void Init ()
 		{
 			string devroot = null, vplist = null, xcode = null;
 			bool foundSdk = false;
