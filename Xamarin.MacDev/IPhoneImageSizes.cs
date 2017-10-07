@@ -89,6 +89,9 @@ namespace Xamarin.MacDev
 		public static readonly ImageSize LaunchRetinaHD47 = new ImageSize (750, 1334);
 		public static readonly ImageSize LaunchRetinaHD55 = new ImageSize (1242, 2208);
 		public static readonly ImageSize LaunchRetinaHD55Landscape = new ImageSize (2208, 1242);
+
+		public static readonly ImageSize LaunchRetinaX = new ImageSize (1125, 2436);
+		public static readonly ImageSize LaunchRetinaXLandscape = new ImageSize (2436, 1125);
 	}
 	
 	public static class IPadImageSizes
