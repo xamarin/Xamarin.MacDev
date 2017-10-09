@@ -25,6 +25,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 
@@ -355,7 +356,7 @@ namespace Xamarin.MacDev
 			return index;
 		}
 
-		public static MobileProvision GetMobileProvision (MobileProvisionPlatform platform, string name)
+		public static MobileProvision GetMobileProvision (MobileProvisionPlatform platform, string name, List<string> failures = null)
 		{
 			var extension = MobileProvision.GetFileExtension (platform);
 			var path = Path.Combine (MobileProvision.ProfileDirectory, name + extension);
@@ -369,11 +370,15 @@ namespace Xamarin.MacDev
 			path = null;
 
 			foreach (var profile in index.ProvisioningProfiles) {
-				if (!profile.FileName.EndsWith (extension, StringComparison.Ordinal))
+				if (!profile.FileName.EndsWith (extension, StringComparison.Ordinal)) {
+					failures?.Add ($"The profile '{profile.Name}' is not applicable because its FileName ({profile.FileName}) does not end with '{extension}'.");
 					continue;
+				}
 
-				if (!profile.Platforms.Contains (platform))
+				if (!profile.Platforms.Contains (platform)) {
+					failures?.Add ($"The profile '{profile.Name}' is not applicable because its platforms ({string.Join (", ", profile.Platforms.Select ((v) => v.ToString ()))}) do not match the requested platform ({platform}).");
 					continue;
+				}
 
 				if (name == profile.Name || name == profile.Uuid)
 					return MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
@@ -390,7 +395,7 @@ namespace Xamarin.MacDev
 			return MobileProvision.LoadFromFile (path);
 		}
 
-		public static IList<MobileProvision> GetMobileProvisions (MobileProvisionPlatform platform, bool includeExpired = false, bool unique = false)
+		public static IList<MobileProvision> GetMobileProvisions (MobileProvisionPlatform platform, bool includeExpired = false, bool unique = false, List<string> failures = null)
 		{
 			var index = OpenIndex (MobileProvision.ProfileDirectory, IndexFileName);
 			var extension = MobileProvision.GetFileExtension (platform);
@@ -402,14 +407,20 @@ namespace Xamarin.MacDev
 			for (int i = index.ProvisioningProfiles.Count - 1; i >= 0; i--) {
 				var profile = index.ProvisioningProfiles[i];
 
-				if (!profile.FileName.EndsWith (extension, StringComparison.Ordinal))
+				if (!profile.FileName.EndsWith (extension, StringComparison.Ordinal)) {
+					failures?.Add ($"The profile '{profile.Name}' is not applicable because its FileName ({profile.FileName}) does not end with '{extension}'.");
 					continue;
+				}
 
-				if (!profile.Platforms.Contains (platform))
+				if (!profile.Platforms.Contains (platform)) {
+					failures?.Add ($"The profile '{profile.Name}' is not applicable because its platforms ({string.Join (", ", profile.Platforms.Select ((v) => v.ToString ()))}) do not match the requested platform ({platform}).");
 					continue;
+				}
 
-				if (!includeExpired && profile.ExpirationDate < now)
+				if (!includeExpired && profile.ExpirationDate < now) {
+					failures?.Add ($"The profile '{profile.Name}' is not applicable because it has expired ({profile.ExpirationDate}).");
 					continue;
+				}
 
 				if (unique) {
 					int idx;
@@ -431,7 +442,7 @@ namespace Xamarin.MacDev
 			return list;
 		}
 
-		public static IList<MobileProvision> GetMobileProvisions (MobileProvisionPlatform platform, MobileProvisionDistributionType type, bool includeExpired = false, bool unique = false)
+		public static IList<MobileProvision> GetMobileProvisions (MobileProvisionPlatform platform, MobileProvisionDistributionType type, bool includeExpired = false, bool unique = false, List<string> failures = null)
 		{
 			var index = OpenIndex (MobileProvision.ProfileDirectory, IndexFileName);
 			var extension = MobileProvision.GetFileExtension (platform);
@@ -443,17 +454,25 @@ namespace Xamarin.MacDev
 			for (int i = index.ProvisioningProfiles.Count - 1; i >= 0; i--) {
 				var profile = index.ProvisioningProfiles[i];
 
-				if (!profile.FileName.EndsWith (extension, StringComparison.Ordinal))
+				if (!profile.FileName.EndsWith (extension, StringComparison.Ordinal)) {
+					failures?.Add ($"The profile '{profile.Name}' is not applicable because its FileName ({profile.FileName}) does not end with '{extension}'.");
 					continue;
+				}
 
-				if (!profile.Platforms.Contains (platform))
+				if (!profile.Platforms.Contains (platform)) {
+					failures?.Add ($"The profile '{profile.Name}' is not applicable because its platforms ({string.Join (", ", profile.Platforms.Select ((v) => v.ToString ()))}) do not match the requested platform ({platform}).");
 					continue;
+				}
 
-				if (!includeExpired && profile.ExpirationDate < now)
+				if (!includeExpired && profile.ExpirationDate < now) {
+					failures?.Add ($"The profile '{profile.Name}' is not applicable because it has expired ({profile.ExpirationDate}).");
 					continue;
+				}
 
-				if (type != MobileProvisionDistributionType.Any && (profile.Distribution & type) == 0)
+				if (type != MobileProvisionDistributionType.Any && (profile.Distribution & type) == 0) {
+					failures?.Add ($"The profile '{profile.Name}' is not applicable because its ({profile.Distribution}) does not match the expected type ({type}).");
 					continue;
+				}
 
 				if (unique) {
 					int idx;
@@ -475,7 +494,7 @@ namespace Xamarin.MacDev
 			return list;
 		}
 
-		public static IList<MobileProvision> GetMobileProvisions (MobileProvisionPlatform platform, MobileProvisionDistributionType type, IList<X509Certificate2> developerCertificates, bool includeExpired = false, bool unique = false)
+		public static IList<MobileProvision> GetMobileProvisions (MobileProvisionPlatform platform, MobileProvisionDistributionType type, IList<X509Certificate2> developerCertificates, bool includeExpired = false, bool unique = false, List<string> failures = null)
 		{
 			var index = OpenIndex (MobileProvision.ProfileDirectory, IndexFileName);
 			var extension = MobileProvision.GetFileExtension (platform);
@@ -497,21 +516,31 @@ namespace Xamarin.MacDev
 			for (int i = index.ProvisioningProfiles.Count - 1; i >= 0; i--) {
 				var profile = index.ProvisioningProfiles[i];
 
-				if (!profile.FileName.EndsWith (extension, StringComparison.Ordinal))
+				if (!profile.FileName.EndsWith (extension, StringComparison.Ordinal)) {
+					failures?.Add ($"The profile '{profile.Name}' is not applicable because its FileName ({profile.FileName}) does not end with '{extension}'.");
 					continue;
+				}
 
-				if (!profile.Platforms.Contains (platform))
+				if (!profile.Platforms.Contains (platform)) {
+					failures?.Add ($"The profile '{profile.Name}' is not applicable because its platforms ({string.Join (", ", profile.Platforms.Select ((v) => v.ToString ()))}) do not match the requested platform ({platform}).");
 					continue;
+				}
 
-				if (!includeExpired && profile.ExpirationDate < now)
+				if (!includeExpired && profile.ExpirationDate < now) {
+					failures?.Add ($"The profile '{profile.Name}' is not applicable because it has expired ({profile.ExpirationDate}).");
 					continue;
+				}
 
-				if (type != MobileProvisionDistributionType.Any && (profile.Distribution & type) == 0)
+				if (type != MobileProvisionDistributionType.Any && (profile.Distribution & type) == 0) {
+					failures?.Add ($"The profile '{profile.Name}' is not applicable because its ({profile.Distribution}) does not match the expected type ({type}).");
 					continue;
+				}
 
 				foreach (var cert in profile.DeveloperCertificates) {
-					if (!thumbprints.Contains (cert.Thumbprint))
+					if (!thumbprints.Contains (cert.Thumbprint)) {
+						failures?.Add ($"The profile '{profile.Name}' might not be applicable because its developer certificate (of {profile.DeveloperCertificates.Count} certificates) {cert.Name}'s thumbprint ({cert.Thumbprint}) is not in the list of accepted thumbprints ({string.Join (", ", thumbprints)}).");
 						continue;
+					}
 
 					if (unique) {
 						int idx;
@@ -535,7 +564,7 @@ namespace Xamarin.MacDev
 			return list;
 		}
 
-		public static IList<MobileProvision> GetMobileProvisions (MobileProvisionPlatform platform, string bundleIdentifier, MobileProvisionDistributionType type, bool includeExpired = false, bool unique = false)
+		public static IList<MobileProvision> GetMobileProvisions (MobileProvisionPlatform platform, string bundleIdentifier, MobileProvisionDistributionType type, bool includeExpired = false, bool unique = false, List<string> failures = null)
 		{
 			var index = OpenIndex (MobileProvision.ProfileDirectory, IndexFileName);
 			var extension = MobileProvision.GetFileExtension (platform);
@@ -550,17 +579,25 @@ namespace Xamarin.MacDev
 			for (int i = index.ProvisioningProfiles.Count - 1; i >= 0; i--) {
 				var profile = index.ProvisioningProfiles[i];
 
-				if (!profile.FileName.EndsWith (extension, StringComparison.Ordinal))
+				if (!profile.FileName.EndsWith (extension, StringComparison.Ordinal)) {
+					failures?.Add ($"The profile '{profile.Name}' is not applicable because its FileName ({profile.FileName}) does not end with '{extension}'.");
 					continue;
+				}
 
-				if (!profile.Platforms.Contains (platform))
+				if (!profile.Platforms.Contains (platform)) {
+					failures?.Add ($"The profile '{profile.Name}' is not applicable because its platforms ({string.Join (", ", profile.Platforms.Select ((v) => v.ToString ()))}) do not match the requested platform ({platform}).");
 					continue;
+				}
 
-				if (!includeExpired && profile.ExpirationDate < now)
+				if (!includeExpired && profile.ExpirationDate < now) {
+					failures?.Add ($"The profile '{profile.Name}' is not applicable because it has expired ({profile.ExpirationDate}).");
 					continue;
+				}
 
-				if (type != MobileProvisionDistributionType.Any && (profile.Distribution & type) == 0)
+				if (type != MobileProvisionDistributionType.Any && (profile.Distribution & type) == 0) {
+					failures?.Add ($"The profile '{profile.Name}' is not applicable because its ({profile.Distribution}) does not match the expected type ({type}).");
 					continue;
+				}
 
 				var id = profile.ApplicationIdentifier;
 				int dot;
@@ -573,10 +610,13 @@ namespace Xamarin.MacDev
 					// Note: this is a wildcard provisioning profile, which means we need to use a substring match
 					id = id.TrimEnd ('*');
 
-					if (!bundleIdentifier.StartsWith (id, StringComparison.Ordinal))
+					if (!bundleIdentifier.StartsWith (id, StringComparison.Ordinal)) {
+						failures?.Add ($"The profile '{profile.Name}' is not applicable because its id ({profile.ApplicationIdentifier}) does not match the bundle identifer {bundleIdentifier}.");
 						continue;
+					}
 				} else if (id != bundleIdentifier) {
 					// the CFBundleIdentifier provided by our caller does not match this provisioning profile
+					failures?.Add ($"The profile '{profile.Name}' is not applicable because its id ({profile.ApplicationIdentifier}) does not match the bundle identifer {bundleIdentifier}.");
 					continue;
 				}
 
@@ -600,7 +640,7 @@ namespace Xamarin.MacDev
 			return list;
 		}
 
-		public static IList<MobileProvision> GetMobileProvisions (MobileProvisionPlatform platform, string bundleIdentifier, MobileProvisionDistributionType type, IList<X509Certificate2> developerCertificates, bool includeExpired = false, bool unique = false)
+		public static IList<MobileProvision> GetMobileProvisions (MobileProvisionPlatform platform, string bundleIdentifier, MobileProvisionDistributionType type, IList<X509Certificate2> developerCertificates, bool includeExpired = false, bool unique = false, List<string> failures = null)
 		{
 			var index = OpenIndex (MobileProvision.ProfileDirectory, IndexFileName);
 			var extension = MobileProvision.GetFileExtension (platform);
@@ -625,17 +665,25 @@ namespace Xamarin.MacDev
 			for (int i = index.ProvisioningProfiles.Count - 1; i >= 0; i--) {
 				var profile = index.ProvisioningProfiles[i];
 
-				if (!profile.FileName.EndsWith (extension, StringComparison.Ordinal))
+				if (!profile.FileName.EndsWith (extension, StringComparison.Ordinal)) {
+					failures?.Add ($"The profile '{profile.Name}' is not applicable because its FileName ({profile.FileName}) does not end with '{extension}'.");
 					continue;
+				}
 
-				if (!profile.Platforms.Contains (platform))
+				if (!profile.Platforms.Contains (platform)) {
+					failures?.Add ($"The profile '{profile.Name}' is not applicable because its platforms ({string.Join (", ", profile.Platforms.Select ((v) => v.ToString ()))}) do not match the requested platform ({platform}).");
 					continue;
+				}
 
-				if (!includeExpired && profile.ExpirationDate < now)
+				if (!includeExpired && profile.ExpirationDate < now) {
+					failures?.Add ($"The profile '{profile.Name}' is not applicable because it has expired ({profile.ExpirationDate}).");
 					continue;
+				}
 
-				if (type != MobileProvisionDistributionType.Any && (profile.Distribution & type) == 0)
+				if (type != MobileProvisionDistributionType.Any && (profile.Distribution & type) == 0) {
+					failures?.Add ($"The profile '{profile.Name}' is not applicable because its ({profile.Distribution}) does not match the expected type ({type}).");
 					continue;
+				}
 
 				var id = profile.ApplicationIdentifier;
 				int dot;
@@ -648,16 +696,21 @@ namespace Xamarin.MacDev
 					// Note: this is a wildcard provisioning profile, which means we need to use a substring match
 					id = id.TrimEnd ('*');
 
-					if (!bundleIdentifier.StartsWith (id, StringComparison.Ordinal))
+					if (!bundleIdentifier.StartsWith (id, StringComparison.Ordinal)) {
+						failures?.Add ($"The profile '{profile.Name}' is not applicable because its id ({profile.ApplicationIdentifier}) does not match the bundle identifer {bundleIdentifier}.");
 						continue;
+					}
 				} else if (id != bundleIdentifier) {
 					// the CFBundleIdentifier provided by our caller does not match this provisioning profile
+					failures?.Add ($"The profile '{profile.Name}' is not applicable because its id ({profile.ApplicationIdentifier}) does not match the bundle identifer {bundleIdentifier}.");
 					continue;
 				}
 
 				foreach (var cert in profile.DeveloperCertificates) {
-					if (!thumbprints.Contains (cert.Thumbprint))
+					if (!thumbprints.Contains (cert.Thumbprint)) {
+						failures?.Add ($"The profile '{profile.Name}' might not be applicable because its developer certificate (of {profile.DeveloperCertificates.Count} certificates) {cert.Name}'s thumbprint ({cert.Thumbprint}) is not in the list of accepted thumbprints ({string.Join (", ", thumbprints)}).");
 						continue;
+					}
 
 					if (unique) {
 						int idx;
