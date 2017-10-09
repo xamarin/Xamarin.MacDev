@@ -167,6 +167,7 @@ namespace Xamarin.MacDev
 	public static class AppleTVSizes
 	{
 		public static readonly ImageSize FullScreenHD = new ImageSize (1920, 1080);
+		public static readonly ImageSize FullScreen4K = new ImageSize (3840, 2160);
 	}
 
 	public static class ITunesArtworkSizes
