@@ -403,5 +403,9 @@ namespace Xamarin.MacDev
 		public bool SupportsLaunchWatchOSComplications {
 			get { return CheckSupportsFeature ("mlaunch-watchos-complications"); }
 		}
+
+		public bool SupportsWirelessDevices {
+			get { return CheckSupportsFeature ("mlaunch-wireless-devices"); }
+		}
 	}
 }
