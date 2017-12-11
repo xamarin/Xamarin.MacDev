@@ -183,7 +183,7 @@ namespace Xamarin.MacDev
 		{
 			public int Compare (ProvisioningProfile x, ProvisioningProfile y)
 			{
-				return x.CreationDate.CompareTo (y.CreationDate);
+				return y.CreationDate.CompareTo (x.CreationDate);
 			}
 		}
 
@@ -200,7 +200,9 @@ namespace Xamarin.MacDev
 
 		public static MobileProvisionIndex Load (string fileName)
 		{
+			var previousCreationDate = DateTime.MaxValue;
 			var index = new MobileProvisionIndex ();
+			var sorted = true;
 
 			using (var stream = File.OpenRead (fileName)) {
 				using (var reader = new BinaryReader (stream)) {
@@ -211,7 +213,15 @@ namespace Xamarin.MacDev
 					for (int i = 0; i < count; i++) {
 						var profile = ProvisioningProfile.Load (reader);
 						index.ProvisioningProfiles.Add (profile);
+
+						if (profile.CreationDate > previousCreationDate)
+							sorted = false;
+
+						previousCreationDate = profile.CreationDate;
 					}
+
+					if (!sorted)
+						index.ProvisioningProfiles.Sort (CreationDateComparer);
 
 					return index;
 				}
@@ -367,8 +377,6 @@ namespace Xamarin.MacDev
 			var index = OpenIndex (MobileProvision.ProfileDirectory, IndexFileName);
 			var latestCreationDate = DateTime.MinValue;
 
-			path = null;
-
 			foreach (var profile in index.ProvisioningProfiles) {
 				if (!profile.FileName.EndsWith (extension, StringComparison.Ordinal)) {
 					failures?.Add ($"The profile '{profile.Name}' is not applicable because its FileName ({profile.FileName}) does not end with '{extension}'.");
@@ -383,16 +391,10 @@ namespace Xamarin.MacDev
 				if (name == profile.Name || name == profile.Uuid)
 					return MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
 
-				if (profile.CreationDate > latestCreationDate) {
-					path = Path.Combine (MobileProvision.ProfileDirectory, profile.FileName);
-					latestCreationDate = profile.CreationDate;
-				}
+				failures?.Add ($"The profile '{profile.Name}' is not applicable because its Name and Uuid ({profile.Uuid}) do not match '{name}'.");
 			}
 
-			if (path == null)
-				return null;
-
-			return MobileProvision.LoadFromFile (path);
+			return null;
 		}
 
 		public static IList<MobileProvision> GetMobileProvisions (MobileProvisionPlatform platform, bool includeExpired = false, bool unique = false, List<string> failures = null)
