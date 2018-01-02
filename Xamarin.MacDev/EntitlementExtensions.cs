@@ -14,6 +14,7 @@ namespace Xamarin.MacDev
 {
 	public static class EntitlementKeys
 	{
+		public const string DataProtection = "com.apple.developer.default-data-protection";
 		public const string WirelessAccessoryConfiguration = "com.apple.external-accessory.wireless-configuration";
 		public const string UbiquityKeyValueStore = "com.apple.developer.ubiquity-kvstore-identifier";
 		public const string UbiquityContainers = "com.apple.developer.ubiquity-container-identifiers";
