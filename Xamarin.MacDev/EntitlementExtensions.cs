@@ -6,6 +6,10 @@
 // Copyright (c) 2016 Xamarin Inc. (www.xamarin.com)
 //
 
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+
 namespace Xamarin.MacDev
 {
 	public static class EntitlementKeys
@@ -31,6 +35,17 @@ namespace Xamarin.MacDev
 		public const string GetTaskAllow = "get-task-allow";
 		public const string Siri = "com.apple.developer.siri";
 		public const string APS = "aps-environment";
+
+		public static IEnumerable<string> AllKeys {
+			get {
+				var entitlementKeys = typeof (EntitlementKeys).GetFields (BindingFlags.Public | BindingFlags.Static).
+					Where (f => f.FieldType == typeof (string)).
+					Select (field => (string) field.GetValue (null)).
+					ToList ();
+
+				return entitlementKeys;
+			}
+		}
 	}
 
 	public static class EntitlementExtensions
@@ -138,6 +153,18 @@ namespace Xamarin.MacDev
 				dict.Remove (EntitlementKeys.PassBookIdentifiers);
 			else
 				dict[EntitlementKeys.PassBookIdentifiers] = value;
+		}
+
+		public static IEnumerable<string> GetEntitlementsKeys (this PDictionary dict)
+		{
+			var enabledEntitlements = new List<string> ();
+
+			foreach (var key in EntitlementKeys.AllKeys) {
+				if (dict.ContainsKey (key))
+					enabledEntitlements.Add (key);
+			}
+
+			return enabledEntitlements;
 		}
 	}
 }
