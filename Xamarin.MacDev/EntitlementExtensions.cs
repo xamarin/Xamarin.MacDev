@@ -155,7 +155,7 @@ namespace Xamarin.MacDev
 				dict[EntitlementKeys.PassBookIdentifiers] = value;
 		}
 
-		public static IEnumerable<string> GetEntitlementsKeys (this PDictionary dict)
+		public static IEnumerable<string> GetEntitlementKeys (this PDictionary dict)
 		{
 			var enabledEntitlements = new List<string> ();
 
