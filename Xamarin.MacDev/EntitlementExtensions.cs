@@ -25,6 +25,7 @@ namespace Xamarin.MacDev
 		public const string ApplicationGroups = "com.apple.security.application-groups";
 		public const string NetworkingVpnApi = "com.apple.developer.networking.vpn.api";
 		public const string NetworkExtensions = "com.apple.developer.networking.networkextension";
+		public const string NFC = "com.apple.developer.nfc.readersession.formats";
 		public const string HotspotConfiguration = "com.apple.developer.networking.HotspotConfiguration";
 		public const string Multipath = "com.apple.developer.networking.multipath";
 		public const string InAppPayments = "com.apple.developer.in-app-payments";
