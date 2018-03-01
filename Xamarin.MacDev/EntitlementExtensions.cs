@@ -6,10 +6,15 @@
 // Copyright (c) 2016 Xamarin Inc. (www.xamarin.com)
 //
 
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+
 namespace Xamarin.MacDev
 {
 	public static class EntitlementKeys
 	{
+		public const string DataProtection = "com.apple.developer.default-data-protection";
 		public const string WirelessAccessoryConfiguration = "com.apple.external-accessory.wireless-configuration";
 		public const string UbiquityKeyValueStore = "com.apple.developer.ubiquity-kvstore-identifier";
 		public const string UbiquityContainers = "com.apple.developer.ubiquity-container-identifiers";
@@ -20,6 +25,7 @@ namespace Xamarin.MacDev
 		public const string ApplicationGroups = "com.apple.security.application-groups";
 		public const string NetworkingVpnApi = "com.apple.developer.networking.vpn.api";
 		public const string NetworkExtensions = "com.apple.developer.networking.networkextension";
+		public const string NFC = "com.apple.developer.nfc.readersession.formats";
 		public const string HotspotConfiguration = "com.apple.developer.networking.HotspotConfiguration";
 		public const string Multipath = "com.apple.developer.networking.multipath";
 		public const string InAppPayments = "com.apple.developer.in-app-payments";
@@ -30,6 +36,17 @@ namespace Xamarin.MacDev
 		public const string GetTaskAllow = "get-task-allow";
 		public const string Siri = "com.apple.developer.siri";
 		public const string APS = "aps-environment";
+
+		public static IEnumerable<string> AllKeys {
+			get {
+				var entitlementKeys = typeof (EntitlementKeys).GetFields (BindingFlags.Public | BindingFlags.Static).
+					Where (f => f.FieldType == typeof (string)).
+					Select (field => (string) field.GetValue (null)).
+					ToList ();
+
+				return entitlementKeys;
+			}
+		}
 	}
 
 	public static class EntitlementExtensions
@@ -137,6 +154,18 @@ namespace Xamarin.MacDev
 				dict.Remove (EntitlementKeys.PassBookIdentifiers);
 			else
 				dict[EntitlementKeys.PassBookIdentifiers] = value;
+		}
+
+		public static IEnumerable<string> GetEntitlementKeys (this PDictionary dict)
+		{
+			var enabledEntitlements = new List<string> ();
+
+			foreach (var key in EntitlementKeys.AllKeys) {
+				if (dict.ContainsKey (key))
+					enabledEntitlements.Add (key);
+			}
+
+			return enabledEntitlements;
 		}
 	}
 }
