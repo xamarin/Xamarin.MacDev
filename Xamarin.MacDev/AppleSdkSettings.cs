@@ -107,23 +107,19 @@ namespace Xamarin.MacDev
 		
 		public static string GetConfiguredSdkLocation ()
 		{
-			PDictionary plist;
-			PString value;
-			bool binary;
-
-			try {
-				if (File.Exists (SettingsPath))
-					plist = PDictionary.FromFile (SettingsPath, out binary);
-				else
-					plist = new PDictionary ();
-			} catch (FileNotFoundException) {
-				plist = new PDictionary ();
+			string sdkLocation = null;
+			if (File.Exists (SettingsPath)) {
+				try {
+					bool binary;
+					PDictionary plist = PDictionary.FromFile (SettingsPath, out binary);
+			        	PString value;
+			        	if (plist.TryGetValue ("AppleSdkRoot", out value)) {
+						sdkLocation = value.Value;
+					}
+				} catch (Exception ex) {
+				}
 			}
-
-			if (!plist.TryGetValue ("AppleSdkRoot", out value))
-				return DefaultRoots[0];
-
-			return value.Value;
+			return sdkLocation;
 		}
 		
 		static void SetInvalid ()
