@@ -2026,7 +2026,11 @@ namespace Xamarin.MacDev
 						ReadObjectHead ();
 						var result = ReadObject ();
 						if (result != null)
-							dict.Add (key, result);
+						{
+							if(dict.ContainsKey(key))
+								throw new FormatException (string.Format ("Key {0} already exists", key)); 
+							dict.Add(key, result);
+						}
 
 						do {
 							if (reader.NodeType == XmlNodeType.Element && reader.Name == "key")
