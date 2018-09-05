@@ -32,7 +32,9 @@ namespace Xamarin.MacDev
 	{
 		static DateTime lastExeWrite = DateTime.MinValue;
 
-		string sdkDir;
+		public string SdkDir {
+			get; private set;
+		}
 
 		public string LegacyFrameworkAssembly {
 			get; private set;
@@ -46,7 +48,7 @@ namespace Xamarin.MacDev
 		{
 			LegacyFrameworkAssembly = legacyFrameworkAssembly;
 			LegacyAppLauncherPath = legacyAppLauncherPath;
-			sdkDir = defaultLocation;
+			SdkDir = defaultLocation;
 			Init ();
 		}
 
@@ -70,7 +72,7 @@ namespace Xamarin.MacDev
 		
 		MacOSXSdkVersion ReadVersion ()
 		{
-			var versionFile = Path.Combine (sdkDir, "Version");
+			var versionFile = Path.Combine (SdkDir, "Version");
 			if (File.Exists (versionFile)) {
 				try {
 					return MacOSXSdkVersion.Parse (File.ReadAllText (versionFile).Trim ());
