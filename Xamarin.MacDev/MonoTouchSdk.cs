@@ -302,6 +302,17 @@ namespace Xamarin.MacDev
 			}
 		}
 
+		public Version RecommendedXcodeVersion {
+			get {
+				PString version;
+
+				if (!versions.TryGetValue ("RecommendedXcodeVersion", out version))
+					return new Version (8, 0);
+
+				return System.Version.Parse (version.Value);
+			}
+		}
+
 		public IList<IPhoneSdkVersion> GetKnownSdkVersions (PlatformName platform)
 		{
 			var list = new List<IPhoneSdkVersion> ();
