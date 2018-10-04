@@ -34,6 +34,7 @@ namespace Xamarin.MacDev
 		public const string HealthKit = "com.apple.developer.healthkit";
 		public const string HomeKit = "com.apple.developer.homekit";
 		public const string InterAppAudio = "inter-app-audio";
+		public const string AutoFillCredentialProvider = "com.apple.developer.authentication-services.autofill-credential-provider";
 		public const string GetTaskAllow = "get-task-allow";
 		public const string Siri = "com.apple.developer.siri";
 		public const string APS = "aps-environment";
