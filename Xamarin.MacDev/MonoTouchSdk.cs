@@ -304,12 +304,13 @@ namespace Xamarin.MacDev
 
 		public Version RecommendedXcodeVersion {
 			get {
-				PString version;
+				Version version;
+				PString value;
 
-				if (!versions.TryGetValue ("RecommendedXcodeVersion", out version))
+				if (!versions.TryGetValue ("RecommendedXcodeVersion", out value) || !System.Version.TryParse (value.Value, out version))
 					return new Version (8, 0);
 
-				return System.Version.Parse (version.Value);
+				return version;
 			}
 		}
 
