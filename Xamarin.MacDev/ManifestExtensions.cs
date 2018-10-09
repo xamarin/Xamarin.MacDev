@@ -563,6 +563,18 @@ namespace Xamarin.MacDev
 				case WatchComplicationSupportedFamiliesStrings.ExtraLarge:
 					supportedFamilies |= WatchComplicationSupportedFamilies.ExtraLarge;
 					break;
+				case WatchComplicationSupportedFamiliesStrings.GraphicCorner:
+					supportedFamilies |= WatchComplicationSupportedFamilies.GraphicCorner;
+					break;
+				case WatchComplicationSupportedFamiliesStrings.GraphicBezel:
+					supportedFamilies |= WatchComplicationSupportedFamilies.GraphicBezel;
+					break;
+				case WatchComplicationSupportedFamiliesStrings.GraphicCircular:
+					supportedFamilies |= WatchComplicationSupportedFamilies.GraphicCircular;
+					break;
+				case WatchComplicationSupportedFamiliesStrings.GraphicRectangular:
+					supportedFamilies |= WatchComplicationSupportedFamilies.GraphicRectangular;
+					break;
 				}
 			}
 
@@ -793,19 +805,27 @@ namespace Xamarin.MacDev
 		public const string UtilitarianLarge = "CLKComplicationFamilyUtilitarianLarge";
 		public const string CircularSmall = "CLKComplicationFamilyCircularSmall";
 		public const string ExtraLarge = "CLKComplicationFamilyExtraLarge";
+		public const string GraphicCorner = "CLKComplicationFamilyGraphicCorner";
+		public const string GraphicBezel = "CLKComplicationFamilyGraphicBezel";
+		public const string GraphicCircular = "CLKComplicationFamilyGraphicCircular";
+		public const string GraphicRectangular = "CLKComplicationFamilyGraphicRectangular";
 	}
 
 	[Flags]
 	public enum WatchComplicationSupportedFamilies
 	{
 		None                 = 0,
-		ModularSmall         = 1 << 0, // CLKComplicationFamilyModularSmall
-		ModularLarge         = 1 << 1, // CLKComplicationFamilyModularLarge
-		UtilitarianSmall     = 1 << 2, // CLKComplicationFamilyUtilitarianSmall
-		UtilitarianLarge     = 1 << 3, // CLKComplicationFamilyUtilitarianLarge
-		CircularSmall        = 1 << 4, // CLKComplicationFamilyCircularSmall
-		UtilitarianSmallFlat = 1 << 5, // CLKComplicationFamilyUtilitarianSmallFlat
-		ExtraLarge           = 1 << 6, // CLKComplicationFamilyExtraLarge
+		ModularSmall         = 1 << 0,  // CLKComplicationFamilyModularSmall
+		ModularLarge         = 1 << 1,  // CLKComplicationFamilyModularLarge
+		UtilitarianSmall     = 1 << 2,  // CLKComplicationFamilyUtilitarianSmall
+		UtilitarianLarge     = 1 << 3,  // CLKComplicationFamilyUtilitarianLarge
+		CircularSmall        = 1 << 4,  // CLKComplicationFamilyCircularSmall
+		UtilitarianSmallFlat = 1 << 5,  // CLKComplicationFamilyUtilitarianSmallFlat
+		ExtraLarge           = 1 << 6,  // CLKComplicationFamilyExtraLarge
+		GraphicCorner        = 1 << 7,  // CLKComplicationFamilyGraphicCorner
+		GraphicBezel         = 1 << 8,  // CLKComplicationFamilyGraphicBezel
+		GraphicCircular      = 1 << 9,  // CLKComplicationFamilyGraphicCircular
+		GraphicRectangular   = 1 << 10, // CLKComplicationFamilyGraphicRectangular
 	}
 
 	public static class IPhoneOrientationStrings
