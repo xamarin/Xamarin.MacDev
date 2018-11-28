@@ -39,14 +39,18 @@ namespace Xamarin.MacDev
 		public const string Siri = "com.apple.developer.siri";
 		public const string APS = "aps-environment";
 
-		public static IEnumerable<string> AllKeys {
-			get {
-				var entitlementKeys = typeof (EntitlementKeys).GetFields (BindingFlags.Public | BindingFlags.Static).
-					Where (f => f.FieldType == typeof (string)).
-					Select (field => (string) field.GetValue (null)).
-					ToList ();
+		static string[] allKeys;
 
-				return entitlementKeys;
+		public static string[] AllKeys {
+			get {
+				if (allKeys == null) {
+					allKeys = typeof (EntitlementKeys).GetFields (BindingFlags.Public | BindingFlags.Static).
+						Where (f => f.FieldType == typeof (string)).
+						Select (field => (string) field.GetValue (null)).
+						ToArray ();
+				}
+
+				return allKeys;
 			}
 		}
 	}
@@ -158,13 +162,14 @@ namespace Xamarin.MacDev
 				dict[EntitlementKeys.PassBookIdentifiers] = value;
 		}
 
-		public static IEnumerable<string> GetEntitlementKeys (this PDictionary dict)
+		public static List<string> GetEntitlementKeys (this PDictionary dict)
 		{
 			var enabledEntitlements = new List<string> ();
+			var keys = EntitlementKeys.AllKeys;
 
-			foreach (var key in EntitlementKeys.AllKeys) {
-				if (dict.ContainsKey (key))
-					enabledEntitlements.Add (key);
+			for (int i = 0; i < keys.Length; i++) {
+				if (dict.ContainsKey (keys[i]))
+					enabledEntitlements.Add (keys[i]);
 			}
 
 			return enabledEntitlements;
