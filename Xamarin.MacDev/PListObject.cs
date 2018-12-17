@@ -2025,8 +2025,10 @@ namespace Xamarin.MacDev
 
 						ReadObjectHead ();
 						var result = ReadObject ();
-						if (result != null)
-							dict.Add (key, result);
+						if (result != null) {
+							// Keys are not required to be unique. The last entry wins.
+							dict [key] = result;
+						}
 
 						do {
 							if (reader.NodeType == XmlNodeType.Element && reader.Name == "key")
