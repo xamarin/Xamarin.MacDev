@@ -419,5 +419,9 @@ namespace Xamarin.MacDev
 		public bool SupportsWirelessDevices {
 			get { return CheckSupportsFeature ("mlaunch-wireless-devices"); }
 		}
+
+		public bool SupportsSiriIntents {
+			get { return CheckSupportsFeature ("siri-intents"); }
+		}
 	}
 }
