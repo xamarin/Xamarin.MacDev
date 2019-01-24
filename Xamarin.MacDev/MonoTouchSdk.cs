@@ -373,7 +373,7 @@ namespace Xamarin.MacDev
 			Init ();
 		}
 
-		bool CheckSupportsFeature (string feature)
+		public bool SupportsFeature (string feature)
 		{
 			PArray features;
 
@@ -389,39 +389,39 @@ namespace Xamarin.MacDev
 		}
 
 		public bool SupportsSGenConcurrentGCExperimental {
-			get { return CheckSupportsFeature ("sgen-concurrent-gc-experimental"); }
+			get { return SupportsFeature ("sgen-concurrent-gc-experimental"); }
 		}
 
 		public bool SupportsSGenConcurrentGC {
-			get { return CheckSupportsFeature ("sgen-concurrent-gc"); }
+			get { return SupportsFeature ("sgen-concurrent-gc"); }
 		}
 
 		public bool SupportsLaunchDeviceBundleId {
-			get { return CheckSupportsFeature ("mlaunch-launchdevbundleid"); }
+			get { return SupportsFeature ("mlaunch-launchdevbundleid"); }
 		}
 
 		public bool SupportsObserveExtension {
-			get { return CheckSupportsFeature ("mlaunch-observe-extension"); }
+			get { return SupportsFeature ("mlaunch-observe-extension"); }
 		}
 
 		public bool SupportsLaunchSimulator {
-			get { return CheckSupportsFeature ("mlaunch-launch-simulator"); }
+			get { return SupportsFeature ("mlaunch-launch-simulator"); }
 		}
 
 		public bool SupportsInstallProgress {
-			get { return CheckSupportsFeature ("mlaunch-install-progress"); }
+			get { return SupportsFeature ("mlaunch-install-progress"); }
 		}
 
 		public bool SupportsLaunchWatchOSComplications {
-			get { return CheckSupportsFeature ("mlaunch-watchos-complications"); }
+			get { return SupportsFeature ("mlaunch-watchos-complications"); }
 		}
 
 		public bool SupportsWirelessDevices {
-			get { return CheckSupportsFeature ("mlaunch-wireless-devices"); }
+			get { return SupportsFeature ("mlaunch-wireless-devices"); }
 		}
 
 		public bool SupportsSiriIntents {
-			get { return CheckSupportsFeature ("siri-intents"); }
+			get { return SupportsFeature ("siri-intents"); }
 		}
 	}
 }
