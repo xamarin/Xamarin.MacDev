@@ -305,5 +305,9 @@ namespace Xamarin.MacDev
 		public bool SupportsHybridAOT {
 			get { return CheckSupportsFeature ("hybrid-aot"); }
 		}
+
+		public bool SupportsSiriIntents {
+			get { return CheckSupportsFeature ("siri-intents"); }
+		}
 	}
 }

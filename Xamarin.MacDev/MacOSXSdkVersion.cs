@@ -197,7 +197,7 @@ namespace Xamarin.MacDev
 		public static readonly MacOSXSdkVersion V10_10 = new MacOSXSdkVersion (10, 10);
 		public static readonly MacOSXSdkVersion V10_11 = new MacOSXSdkVersion (10, 11);
 		public static readonly MacOSXSdkVersion V10_12 = new MacOSXSdkVersion (10, 12);
-		public static readonly MacOSXSdkVersion V10_13 = new MacOSXSdkVersion(10, 13);
+		public static readonly MacOSXSdkVersion V10_13 = new MacOSXSdkVersion (10, 13);
 		
 		public static readonly MacOSXSdkVersion Cheetah = V10_0;
 		public static readonly MacOSXSdkVersion Puma = V10_1;

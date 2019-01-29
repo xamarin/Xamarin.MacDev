@@ -33,12 +33,13 @@ namespace Xamarin.MacDev
 	public class MacOSXSdk
 	{
 		List<MacOSXSdkVersion> knownOSVersions = new List<MacOSXSdkVersion> {
-			new MacOSXSdkVersion (new [] { 10, 7 }),
-			new MacOSXSdkVersion (new [] { 10, 8 }),
-			new MacOSXSdkVersion (new [] { 10, 9 }),
-			new MacOSXSdkVersion (new [] { 10, 10 }),
-			new MacOSXSdkVersion (new [] { 10, 11 }),
-			new MacOSXSdkVersion (new [] { 10, 12 }),
+			MacOSXSdkVersion.V10_7,
+			MacOSXSdkVersion.V10_8,
+			MacOSXSdkVersion.V10_9,
+			MacOSXSdkVersion.V10_10,
+			MacOSXSdkVersion.V10_11,
+			MacOSXSdkVersion.V10_12,
+			MacOSXSdkVersion.V10_13
 		};
 
 		static readonly Dictionary<string, DTSdkSettings> sdkSettingsCache = new Dictionary<string, DTSdkSettings> ();
