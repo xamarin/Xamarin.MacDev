@@ -22,5 +22,6 @@ namespace Xamarin.MacDev
 		ARMv7s       = 16,
 		ARMv7k       = 32,
 		ARM64        = 64,
+		ARM64_32     = 128,
 	}
 }
