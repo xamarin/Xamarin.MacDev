@@ -373,8 +373,10 @@ namespace Xamarin.MacDev
 			var tempFile = atomic ? GetTempFileName (filename) : filename;
 
 			try {
-				if (!Directory.Exists (Path.GetDirectoryName (tempFile)))
-					Directory.CreateDirectory (Path.GetDirectoryName (tempFile));
+				var dir = Path.GetDirectoryName (tempFile);
+
+				if (!string.IsNullOrEmpty (dir) && !Directory.Exists (dir))
+					Directory.CreateDirectory (dir);
 
 				using (var stream = new FileStream (tempFile, FileMode.Create, FileAccess.Write)) {
 					using (var ctx = binary ? PropertyListFormat.Binary.StartWriting (stream) : PropertyListFormat.Xml.StartWriting (stream))
