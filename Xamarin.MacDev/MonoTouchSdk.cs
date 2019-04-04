@@ -423,5 +423,9 @@ namespace Xamarin.MacDev
 		public bool SupportsSiriIntents {
 			get { return SupportsFeature ("siri-intents"); }
 		}
+
+		public bool SupportsArm64_32 {
+			get { return SupportsFeature ("arm64_32"); }
+		}
 	}
 }
