@@ -56,8 +56,21 @@ namespace Xamarin.MacDev
 
 		static MobileProvision ()
 		{
-			string personal = Environment.GetFolderPath (Environment.SpecialFolder.Personal);
-			ProfileDirectory = Path.Combine (personal, "Library", "MobileDevice", "Provisioning Profiles");
+			if (Environment.OSVersion.Platform == PlatformID.MacOSX
+				|| Environment.OSVersion.Platform == PlatformID.Unix)
+			{
+				string personal = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+				ProfileDirectory = Path.Combine(personal, "Library", "MobileDevice", "Provisioning Profiles");
+			}
+			else
+			{
+				ProfileDirectory = Path.Combine(
+					Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+					"Xamarin",
+					"iOS",
+					"Provisioning",
+					"Profiles");
+			}
 		}
 
 		public MobileProvisionDistributionType DistributionType {
