@@ -39,6 +39,21 @@ namespace Xamarin.MacDev
 		public const string Siri = "com.apple.developer.siri";
 		public const string APS = "aps-environment";
 
+		public const string AllowExecutionOfJitCode = "com.apple.security.cs.allow-jit";
+		public const string AllowUnsignedExecutableMemory = "com.apple.security.cs.allow-unsigned-executable-memory";
+		public const string AllowDYLDEnvironmentVariable = "com.apple.security.cs.allow-dyld-environment-variables";
+		public const string DisableLibraryValidation = "com.apple.security.cs.disable-library-validation";
+		public const string DisableExecutableMemoryProtection = "com.apple.security.cs.disable-executable-page-protection";
+		public const string DebuggingTool = "com.apple.security.cs.debugger";
+
+		public const string AudioInput = "com.apple.security.device.audio-input";
+		public const string Camera = "com.apple.security.device.camera";
+		public const string Location = "com.apple.security.personal-information.location";
+		public const string AddressBook = "com.apple.security.personal-information.addressbook";
+		public const string Calendar = "com.apple.security.personal-information.calendars";
+		public const string PhotosLibrary = "com.apple.security.personal-information.photos-library";
+		public const string AppleEvents = "com.apple.security.automation.apple-events";
+
 		static string[] allKeys;
 
 		public static string[] AllKeys {
