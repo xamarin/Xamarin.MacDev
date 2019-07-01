@@ -14,6 +14,7 @@ namespace Xamarin.MacDev
 {
 	public static class EntitlementKeys
 	{
+		public const string UserManagement = "com.apple.developer.user-management";
 		public const string Fonts = "com.apple.developer.user-fonts";
 		public const string AccessWiFiInfo =  "com.apple.developer.networking.wifi-info";
 		public const string SignInWithApple = "com.apple.developer.applesignin";
