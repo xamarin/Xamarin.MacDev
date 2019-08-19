@@ -427,5 +427,9 @@ namespace Xamarin.MacDev
 		public bool SupportsArm64_32 {
 			get { return SupportsFeature ("arm64_32"); }
 		}
+
+		public bool SupportsAltool {
+			get { return SupportsFeature ("altool"); }
+		}
 	}
 }
