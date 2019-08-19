@@ -765,6 +765,7 @@ namespace Xamarin.MacDev
 		public const string UIStatusBarHidden = "UIStatusBarHidden";
 		public const string UIStatusBarHiddenIPad = "UIStatusBarHidden~ipad";
 		public const string UIStatusBarStyle = "UIStatusBarStyle";
+		public const string UIApplicationSceneManifest = "UIApplicationSceneManifest";
 		public const string UIStatusBarTintParameters = "UIStatusBarTintParameters";
 		public const string UISupportedInterfaceOrientations = "UISupportedInterfaceOrientations";
 		public const string UISupportedInterfaceOrientationsIPad = "UISupportedInterfaceOrientations~ipad";
