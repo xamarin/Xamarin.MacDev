@@ -13,8 +13,8 @@ namespace Xamarin.MacDev
 {
 	public static class IPhoneCertificate
 	{
-		public static readonly string[] DevelopmentPrefixes = { "iPhone Developer", "iOS Development" };
-		public static readonly string[] DistributionPrefixes = { "iPhone Distribution", "iOS Distribution" };
+		public static readonly string[] DevelopmentPrefixes = { "iPhone Developer", "iOS Development", "Apple Development" };
+		public static readonly string[] DistributionPrefixes = { "iPhone Distribution", "iOS Distribution", "Apple Distribution" };
 
 		public static bool IsDevelopment (string name)
 		{
