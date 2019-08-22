@@ -34,7 +34,7 @@
   </PropertyGroup>
   <ItemGroup>
     <FilesToSign Include="$(OutDir)\$(AssemblyName).dll">
-      <Authenticode>Microsoft</Authenticode>
+      <Authenticode>Microsoft400</Authenticode>
     </FilesToSign>
   </ItemGroup>
   <ItemGroup>
