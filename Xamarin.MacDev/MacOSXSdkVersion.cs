@@ -260,6 +260,12 @@ namespace Xamarin.MacDev
 			case "10.13":
 				versionName = "High Sierra";
 				break;
+			case "10.14":
+				versionName = "Mojave";
+				break;
+			case "10.15":
+				versionName = "Catalina";
+				break;
 			default:
 				versionName = string.Empty;
 				break;
