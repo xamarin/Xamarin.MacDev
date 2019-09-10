@@ -119,7 +119,7 @@ namespace Xamarin.MacDev
 			}
 		}
 
-
+		public bool HasValue { get; set; }
 
 		public bool IsSpecified {
 			get { return value != 0; }
