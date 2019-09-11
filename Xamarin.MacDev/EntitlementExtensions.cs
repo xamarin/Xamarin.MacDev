@@ -14,6 +14,11 @@ namespace Xamarin.MacDev
 {
 	public static class EntitlementKeys
 	{
+		public const string SystemExtension = "com.apple.developer.system-extension.install";
+		public const string UserManagement = "com.apple.developer.user-management";
+		public const string Fonts = "com.apple.developer.user-fonts";
+		public const string AccessWiFiInfo =  "com.apple.developer.networking.wifi-info";
+		public const string SignInWithApple = "com.apple.developer.applesignin";
 		public const string ClassKit = "com.apple.developer.ClassKit-environment";
 		public const string DataProtection = "com.apple.developer.default-data-protection";
 		public const string WirelessAccessoryConfiguration = "com.apple.external-accessory.wireless-configuration";
