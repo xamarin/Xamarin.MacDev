@@ -214,9 +214,8 @@ namespace Xamarin.MacDev
 		public static readonly MacOSXSdkVersion ElCapitan = V10_11;
 		public static readonly MacOSXSdkVersion Sierra = V10_12;
 		public static readonly MacOSXSdkVersion HighSierra = V10_13;
-        public static readonly MacOSXSdkVersion Mojave = V10_14;
-        public static readonly MacOSXSdkVersion Catalina = V10_15;
-
+        	public static readonly MacOSXSdkVersion Mojave = V10_14;
+		
         public static string VersionName (MacOSXSdkVersion version)
 		{
 			string versionName;
