@@ -41,7 +41,7 @@ namespace Xamarin.MacDev
 			MacOSXSdkVersion.V10_12,
 			MacOSXSdkVersion.V10_13,
             		MacOSXSdkVersion.V10_14
-        };
+        	};
 
 		static readonly Dictionary<string, DTSdkSettings> sdkSettingsCache = new Dictionary<string, DTSdkSettings> ();
 		static DTSettings dtSettings;
