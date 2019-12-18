@@ -268,6 +268,7 @@ namespace Xamarin.MacDev
 			get; private set;
 		}
 
+		[Obsolete ("This method does nothing")]
 		public static void CheckChanged ()
 		{
 			//var plist = Path.Combine (XcodePath, "Contents", "Info.plist");
@@ -288,6 +289,9 @@ namespace Xamarin.MacDev
 		public static Version XcodeVersion { get; private set; }
 		public static string XcodeRevision { get; private set; }
 		
+#pragma warning disable 0067
+		[Obsolete ("This event is never raised")]
 		public static event Action Changed;
+#pragma warning restore 0067
 	}
 }
