@@ -26,15 +26,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="nunit.framework">
-      <HintPath>..\..\..\..\..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
-    </Reference>
+    <PackageReference Include="NUnit" Version="3.12.0" />
+    <PackageReference Include="NUnit.ConsoleRunner" Version="3.10.0" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="TestMobileProvisionIndex.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
     <None Include="TestData\Provisioning Profiles\29cbf4b4-a170-4c74-a29a-64ecd55b102e.mobileprovision" />
     <None Include="TestData\Provisioning Profiles\7079f389-6ff4-4290-bf76-c8a222947616.mobileprovision" />
   </ItemGroup>
