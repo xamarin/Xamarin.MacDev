@@ -81,7 +81,6 @@ namespace Xamarin.MacDev
 			if (!string.IsNullOrEmpty (env))
 				locations.Add (env);
 			locations.Add ("/Library/Frameworks/Xamarin.iOS.framework/Versions/Current");
-			locations.Add ("/Developer/MonoTouch");
 			DefaultLocations = locations.ToArray ();
 		}
 
