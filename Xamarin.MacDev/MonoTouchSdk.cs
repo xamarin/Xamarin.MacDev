@@ -285,8 +285,13 @@ namespace Xamarin.MacDev
 		ExtendedVersion extended_version;
 		public ExtendedVersion ExtendedVersion {
 			get {
-				if (extended_version == null)
+				if (extended_version == null) {
 					extended_version = ExtendedVersion.Read (Path.Combine (SdkDir, "buildinfo"));
+					if (extended_version == null) {
+						// 'buildinfo' doesn't work in a nuget package because of https://github.com/NuGet/Home/issues/8810, so use 'tools/buildinfo' instead.
+						extended_version = ExtendedVersion.Read (Path.Combine (SdkDir, "tools", "buildinfo"));
+					}
+				}
 				return extended_version;
 			}
 		}
