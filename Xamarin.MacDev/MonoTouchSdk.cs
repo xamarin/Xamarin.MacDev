@@ -72,7 +72,7 @@ namespace Xamarin.MacDev
 
 		DateTime lastMTExeWrite = DateTime.MinValue;
 		PDictionary versions;
-		bool hasUsrSubdir;
+		string mtouchPath;
 
 		static MonoTouchSdk ()
 		{
@@ -94,13 +94,15 @@ namespace Xamarin.MacDev
 
 		public string BinDir {
 			get {
-				return Path.Combine (SdkDir, hasUsrSubdir ? "usr/bin" : "bin");
+				// mtouch is in the bin dir
+				return Path.GetDirectoryName (mtouchPath);
 			}
 		}
 
 		public string LibDir {
 			get {
-				return Path.Combine (SdkDir, hasUsrSubdir ? "usr/lib" : "lib");
+				// the lib dir is next to the bin dir
+				return Path.Combine (Path.GetDirectoryName (BinDir), "lib");
 			}
 		}
 
@@ -179,26 +181,24 @@ namespace Xamarin.MacDev
 		
 		void Init ()
 		{
-			string currentLocation = IsInstalled ? Path.Combine (BinDir, "mtouch") : null;
+			string currentLocation = IsInstalled ? mtouchPath : null;
 
 			IsInstalled = false;
 			versions = null;
 
 			if (string.IsNullOrEmpty (SdkDir)) {
 				foreach (var loc in DefaultLocations) {
-					if (IsInstalled = ValidateSdkLocation (loc, out hasUsrSubdir)) {
+					if (IsInstalled = ValidateSdkLocation (loc, out mtouchPath)) {
 						SdkDir = loc;
 						break;
 					}
 				}
 			} else {
-				IsInstalled = ValidateSdkLocation (SdkDir, out hasUsrSubdir);
+				IsInstalled = ValidateSdkLocation (SdkDir, out mtouchPath);
 			}
 
-			string mtouch = null;
 			if (IsInstalled) {
-				mtouch = Path.Combine (BinDir, "mtouch");
-				lastMTExeWrite = File.GetLastWriteTimeUtc (mtouch);
+				lastMTExeWrite = File.GetLastWriteTimeUtc (mtouchPath);
 				Version = ReadVersion ();
 
 				if (Version.CompareTo (requiredXI) >= 0) {
@@ -235,7 +235,7 @@ namespace Xamarin.MacDev
 				AnalyticsService.ReportSdkVersion ("XS.Core.SDK.iOS.Version", string.Empty);
 			}
 
-			if (Changed != null && currentLocation != mtouch)
+			if (Changed != null && currentLocation != mtouchPath)
 				Changed (this, EventArgs.Empty);
 		}
 		
@@ -256,23 +256,31 @@ namespace Xamarin.MacDev
 
 		public static bool ValidateSdkLocation (string sdkDir)
 		{
-			bool hasUsrSubdir;
-
-			return ValidateSdkLocation (sdkDir, out hasUsrSubdir);
+			return ValidateSdkLocation (sdkDir, out string _);
 		}
 
 		public static bool ValidateSdkLocation (string sdkDir, out bool hasUsrSubdir)
 		{
 			hasUsrSubdir = false;
+			return ValidateSdkLocation (sdkDir, out string _);
+		}
+
+		public static bool ValidateSdkLocation (string sdkDir, out string mtouchPath)
+		{
+			mtouchPath = null;
 
 			if (!File.Exists (Path.Combine (sdkDir, "Version")))
 				return false;
 
-			if (File.Exists (Path.Combine (sdkDir, "bin", "mtouch")))
+			var path = Path.Combine (sdkDir, "bin", "mtouch");
+			if (File.Exists (path)) {
+				mtouchPath = path;
 				return true;
+			}
 
-			if (File.Exists (Path.Combine (sdkDir, "usr", "bin", "mtouch"))) {
-				hasUsrSubdir = true;
+			path = Path.Combine (sdkDir, "tools", "bin", "mtouch");
+			if (File.Exists (path)) {
+				mtouchPath = path;
 				return true;
 			}
 
@@ -367,7 +375,7 @@ namespace Xamarin.MacDev
 		{
 			if (IsInstalled) {
 				try {
-					var lastWrite = File.GetLastWriteTimeUtc (Path.Combine (BinDir, "mtouch"));
+					var lastWrite = File.GetLastWriteTimeUtc (mtouchPath);
 					if (lastWrite == lastMTExeWrite)
 						return;
 				} catch (IOException) {
