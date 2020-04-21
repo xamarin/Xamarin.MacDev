@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>{3682B815-854A-4895-9CC0-7E507B74D99B}</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Xamarin.MacDev.Shared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)AnalyticsService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AppleCodeSigningIdentity.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AppleIPhoneSdk.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AppleSdk.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AppleSdkSettings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AppleTVOSSdk.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AppleWatchSdk.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)EntitlementExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ExtendedVersion.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HttpMessageHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IMonoMacSdk.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IPhoneArchitecture.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IPhoneCertificate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IPhoneDeviceCapabilities.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IPhoneDeviceType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IPhoneImageSizes.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IPhoneSdkVersion.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Keychain.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LoggingService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MacOSXSdk.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MacOSXSdkVersion.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ManifestExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MobileProvision.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MobileProvisionIndex.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MonoMacSdk.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MonoTouchSdk.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PlatformAvailability.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PListObject.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ProcessArgumentBuilder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SQLite.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)XamMacSdk.cs" />
+  </ItemGroup>
+</Project>
