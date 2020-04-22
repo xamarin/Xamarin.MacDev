@@ -30,7 +30,7 @@ using System.Collections.Generic;
 
 namespace Xamarin.MacDev
 {
-	public abstract class AppleSdk
+	public abstract class AppleSdk : IAppleSdk
 	{
 		public string DeveloperRoot { get; protected set; }
 		public string VersionPlist { get; protected set; }
@@ -88,6 +88,11 @@ namespace Xamarin.MacDev
 		string GetSdkPlistFilename (string version, bool sim)
 		{
 			return Path.Combine (GetSdkPath (version, sim), "SDKSettings.plist");
+		}
+
+		bool IAppleSdk.SdkIsInstalled (IAppleSdkVersion version, bool is_simulator)
+		{
+			return SdkIsInstalled ((IPhoneSdkVersion) version, is_simulator);
 		}
 
 		public bool SdkIsInstalled (IPhoneSdkVersion version, bool sim)
@@ -161,6 +166,11 @@ namespace Xamarin.MacDev
 			});
 		}
 
+		IAppleSdkVersion IAppleSdk.GetClosestInstalledSdk (IAppleSdkVersion version, bool is_simulator)
+		{
+			return GetClosestInstalledSdk ((IPhoneSdkVersion) version, is_simulator);
+		}
+
 		public IPhoneSdkVersion GetClosestInstalledSdk (IPhoneSdkVersion v, bool sim)
 		{
 			//sorted low to high, so get first that's >= requested version
@@ -169,6 +179,11 @@ namespace Xamarin.MacDev
 					return i;
 			}
 			return IPhoneSdkVersion.UseDefault;
+		}
+
+		IList<IAppleSdkVersion> IAppleSdk.GetInstalledSdkVersions (bool is_simulator)
+		{
+			return GetInstalledSdkVersions (is_simulator).Cast<IAppleSdkVersion> ().ToArray ();
 		}
 
 		public IList<IPhoneSdkVersion> GetInstalledSdkVersions (bool sim)
@@ -226,6 +241,11 @@ namespace Xamarin.MacDev
 				return value.Value;
 
 			return null;
+		}
+
+		bool IAppleSdk.TryParseSdkVersion (string value, out IAppleSdkVersion version)
+		{
+			return IAppleSdkVersion_Extensions.TryParse<IPhoneSdkVersion> (value, out version);
 		}
 	}
 }
