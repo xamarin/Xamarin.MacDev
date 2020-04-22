@@ -40,5 +40,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)ProcessArgumentBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SQLite.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)XamMacSdk.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IAppleSdk.cs" />
   </ItemGroup>
 </Project>
