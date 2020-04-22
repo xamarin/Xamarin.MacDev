@@ -41,5 +41,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)SQLite.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)XamMacSdk.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IAppleSdk.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IAppleSdkVersion.cs" />
   </ItemGroup>
 </Project>

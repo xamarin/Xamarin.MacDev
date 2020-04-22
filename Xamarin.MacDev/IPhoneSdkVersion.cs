@@ -29,7 +29,7 @@ using System;
 
 namespace Xamarin.MacDev
 {
-	public struct IPhoneSdkVersion : IComparable<IPhoneSdkVersion>, IEquatable<IPhoneSdkVersion>
+	public struct IPhoneSdkVersion : IComparable<IPhoneSdkVersion>, IEquatable<IPhoneSdkVersion>, IAppleSdkVersion
 	{
 		int[] version;
 
@@ -57,6 +57,11 @@ namespace Xamarin.MacDev
 			this.version = version;
 		}
 		
+		void IAppleSdkVersion.SetVersion (int[] version)
+		{
+			this.version = version;
+		}
+
 		public static IPhoneSdkVersion Parse (string s)
 		{
 			var vstr = s.Split ('.');
@@ -70,24 +75,7 @@ namespace Xamarin.MacDev
 		
 		public static bool TryParse (string s, out IPhoneSdkVersion result)
 		{
-			result = new IPhoneSdkVersion ();
-
-			if (s == null)
-				return false;
-
-			var vstr = s.Split ('.');
-			var vint = new int[vstr.Length];
-
-			for (int j = 0; j < vstr.Length; j++) {
-				int component;
-				if (!int.TryParse (vstr[j], out component))
-					return false;
-
-				vint[j] = component;
-			}
-
-			result.version = vint;
-			return true;
+			return IAppleSdkVersion_Extensions.TryParse<IPhoneSdkVersion> (s, out result);
 		}
 		
 		public int[] Version { get { return version; } }
@@ -145,6 +133,11 @@ namespace Xamarin.MacDev
 			return false;
 		}
 		
+		bool IEquatable<IAppleSdkVersion>.Equals (IAppleSdkVersion other)
+		{
+			return Equals ((object) other);
+		}
+
 		public override int GetHashCode ()
 		{
 			unchecked {
@@ -188,6 +181,11 @@ namespace Xamarin.MacDev
 		
 		public bool IsUseDefault {
 			get { return version == null || version.Length == 0; }
+		}
+
+		IAppleSdkVersion IAppleSdkVersion.GetUseDefault ()
+		{
+			return UseDefault;
 		}
 
 #if !WINDOWS
