@@ -35,9 +35,7 @@ namespace Xamarin.MacDev {
 				vint [j] = component;
 			}
 
-			Console.WriteLine ("V before: {0}", result);
 			result.SetVersion (vint);
-			Console.WriteLine ("V after: {0} {1}", result, string.Join (".", vint));
 			return true;
 		}
 
