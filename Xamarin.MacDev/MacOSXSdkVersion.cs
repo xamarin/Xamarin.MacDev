@@ -27,7 +27,7 @@ using System;
 
 namespace Xamarin.MacDev
 {
-	public struct MacOSXSdkVersion : IComparable<MacOSXSdkVersion>, IEquatable<MacOSXSdkVersion>
+	public struct MacOSXSdkVersion : IComparable<MacOSXSdkVersion>, IEquatable<MacOSXSdkVersion>, IAppleSdkVersion
 	{
 		int[] version;
 		
@@ -35,6 +35,11 @@ namespace Xamarin.MacDev
 		{
 			if (version == null)
 				throw new ArgumentNullException ();
+			this.version = version;
+		}
+
+		void IAppleSdkVersion.SetVersion (int [] version)
+		{
 			this.version = version;
 		}
 
@@ -56,19 +61,7 @@ namespace Xamarin.MacDev
 		
 		public static bool TryParse (string s, out MacOSXSdkVersion result)
 		{
-			result = new MacOSXSdkVersion ();
-			if (s == null)
-				return false;
-			var vstr = s.Split ('.');
-			var vint = new int[vstr.Length];
-			for (int j = 0; j < vstr.Length; j++) {
-				int component;
-				if (!int.TryParse (vstr[j], out component))
-					return false;
-				vint[j] = component;
-			}
-			result.version = vint;
-			return true;
+			return IAppleSdkVersion_Extensions.TryParse<MacOSXSdkVersion> (s, out result);
 		}
 		
 		public int[] Version { get { return version; } }
@@ -124,6 +117,11 @@ namespace Xamarin.MacDev
 			return false;
 		}
 		
+		bool IEquatable<IAppleSdkVersion>.Equals (IAppleSdkVersion other)
+		{
+			return Equals ((object) other);
+		}
+
 		public override int GetHashCode ()
 		{
 			unchecked {
@@ -169,6 +167,16 @@ namespace Xamarin.MacDev
 			get {
 				return version == null || version.Length == 0;
 			}
+		}
+
+		IAppleSdkVersion IAppleSdkVersion.GetUseDefault ()
+		{
+			return UseDefault;
+		}
+
+		public static MacOSXSdkVersion GetDefault (IAppleSdk sdk)
+		{
+			return GetDefault ((MacOSXSdk) sdk);
 		}
 
 		public static MacOSXSdkVersion GetDefault (MacOSXSdk sdk)

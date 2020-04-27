@@ -30,7 +30,7 @@ using System.Collections.Generic;
 
 namespace Xamarin.MacDev
 {
-	public class MacOSXSdk
+	public class MacOSXSdk : IAppleSdk
 	{
 		List<MacOSXSdkVersion> knownOSVersions = new List<MacOSXSdkVersion> {
 			MacOSXSdkVersion.V10_7,
@@ -133,6 +133,11 @@ namespace Xamarin.MacDev
 		{
 			return DesktopPlatform;
 		}
+
+		string IAppleSdk.GetPlatformPath (bool isSimulator)
+		{
+			return GetPlatformPath ();
+		}
 		
 		public string GetSdkPath (MacOSXSdkVersion version)
 		{
@@ -143,12 +148,22 @@ namespace Xamarin.MacDev
 		{
 			return Path.Combine (SdkDeveloperRoot, "SDKs", "MacOSX" + version + ".sdk");
 		}
-		
+
+		string IAppleSdk.GetSdkPath (string version, bool isSimulator)
+		{
+			return GetSdkPath (version);
+		}
+
 		string GetSdkPlistFilename (string version)
 		{
 			return Path.Combine (GetSdkPath (version), "SDKSettings.plist");
 		}
-		
+
+		bool IAppleSdk.SdkIsInstalled (IAppleSdkVersion version, bool isSimulator)
+		{
+			return SdkIsInstalled ((MacOSXSdkVersion) version);
+		}
+
 		public bool SdkIsInstalled (MacOSXSdkVersion version)
 		{
 			foreach (var v in InstalledSdkVersions) {
@@ -231,6 +246,11 @@ namespace Xamarin.MacDev
 			return null;
 		}
 			
+		IAppleSdkVersion IAppleSdk.GetClosestInstalledSdk (IAppleSdkVersion version, bool isSimulator)
+		{
+			return GetClosestInstalledSdk ((MacOSXSdkVersion) version);
+		}
+
 		public MacOSXSdkVersion GetClosestInstalledSdk (MacOSXSdkVersion v)
 		{
 			// sorted low to high, so get first that's >= requested version
@@ -241,11 +261,21 @@ namespace Xamarin.MacDev
 			return MacOSXSdkVersion.UseDefault;
 		}
 		
+		IList<IAppleSdkVersion> IAppleSdk.GetInstalledSdkVersions (bool isSimulator)
+		{
+			return GetInstalledSdkVersions ().Cast<IAppleSdkVersion> ().ToArray ();
+		}
+
 		public IList<MacOSXSdkVersion> GetInstalledSdkVersions ()
 		{
 			return InstalledSdkVersions;
 		}
 		
+		bool IAppleSdk.TryParseSdkVersion (string value, out IAppleSdkVersion version)
+		{
+			return IAppleSdkVersion_Extensions.TryParse<MacOSXSdkVersion> (value, out version);
+		}
+
 		public class DTSettings
 		{
 			public string DTXcodeBuild { get; set; }
