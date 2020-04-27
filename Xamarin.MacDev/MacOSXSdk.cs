@@ -134,7 +134,7 @@ namespace Xamarin.MacDev
 			return DesktopPlatform;
 		}
 
-		string IAppleSdk.GetPlatformPath (bool is_simulator)
+		string IAppleSdk.GetPlatformPath (bool isSimulator)
 		{
 			return GetPlatformPath ();
 		}
@@ -149,7 +149,7 @@ namespace Xamarin.MacDev
 			return Path.Combine (SdkDeveloperRoot, "SDKs", "MacOSX" + version + ".sdk");
 		}
 
-		string IAppleSdk.GetSdkPath (string version, bool is_simulator)
+		string IAppleSdk.GetSdkPath (string version, bool isSimulator)
 		{
 			return GetSdkPath (version);
 		}
@@ -159,7 +159,7 @@ namespace Xamarin.MacDev
 			return Path.Combine (GetSdkPath (version), "SDKSettings.plist");
 		}
 
-		bool IAppleSdk.SdkIsInstalled (IAppleSdkVersion version, bool is_simulator)
+		bool IAppleSdk.SdkIsInstalled (IAppleSdkVersion version, bool isSimulator)
 		{
 			return SdkIsInstalled ((MacOSXSdkVersion) version);
 		}
@@ -246,7 +246,7 @@ namespace Xamarin.MacDev
 			return null;
 		}
 			
-		IAppleSdkVersion IAppleSdk.GetClosestInstalledSdk (IAppleSdkVersion version, bool is_simulator)
+		IAppleSdkVersion IAppleSdk.GetClosestInstalledSdk (IAppleSdkVersion version, bool isSimulator)
 		{
 			return GetClosestInstalledSdk ((MacOSXSdkVersion) version);
 		}
@@ -261,7 +261,7 @@ namespace Xamarin.MacDev
 			return MacOSXSdkVersion.UseDefault;
 		}
 		
-		IList<IAppleSdkVersion> IAppleSdk.GetInstalledSdkVersions (bool is_simulator)
+		IList<IAppleSdkVersion> IAppleSdk.GetInstalledSdkVersions (bool isSimulator)
 		{
 			return GetInstalledSdkVersions ().Cast<IAppleSdkVersion> ().ToArray ();
 		}

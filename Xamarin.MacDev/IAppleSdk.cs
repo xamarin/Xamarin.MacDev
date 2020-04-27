@@ -5,11 +5,11 @@ namespace Xamarin.MacDev {
 	public interface IAppleSdk {
 		bool IsInstalled { get; }
 		string DeveloperRoot { get; }
-		string GetPlatformPath (bool is_simulator);
-		string GetSdkPath (string version, bool is_simulator);
-		bool SdkIsInstalled (IAppleSdkVersion version, bool is_simulator);
+		string GetPlatformPath (bool isSimulator);
+		string GetSdkPath (string version, bool isSimulator);
+		bool SdkIsInstalled (IAppleSdkVersion version, bool isSimulator);
 		bool TryParseSdkVersion (string value, out IAppleSdkVersion version);
-		IAppleSdkVersion GetClosestInstalledSdk (IAppleSdkVersion version, bool is_simulator);
-		IList<IAppleSdkVersion> GetInstalledSdkVersions (bool is_simulator);
+		IAppleSdkVersion GetClosestInstalledSdk (IAppleSdkVersion version, bool isSimulator);
+		IList<IAppleSdkVersion> GetInstalledSdkVersions (bool isSimulator);
 	}
 }
