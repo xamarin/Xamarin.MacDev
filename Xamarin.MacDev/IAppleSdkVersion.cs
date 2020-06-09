@@ -18,22 +18,35 @@ namespace Xamarin.MacDev {
 			return v.Count > 0 ? v [v.Count - 1] : @this.GetUseDefault ();
 		}
 
-		public static bool TryParse<T> (string s, out T result) where T : IAppleSdkVersion, new()
+		public static bool TryParse (string s, out int[] result)
 		{
-			result = new T ();
-			if (s == null)
+			if (s == null) {
+				result = null;
 				return false;
+			}
 
 			var vstr = s.Split ('.');
-			var vint = new int [vstr.Length];
+			result = new int [vstr.Length];
 
 			for (int j = 0; j < vstr.Length; j++) {
 				int component;
 				if (!int.TryParse (vstr [j], out component))
 					return false;
 
-				vint [j] = component;
+				result [j] = component;
 			}
+
+			return true;
+		}
+
+		public static bool TryParse<T> (string s, out T result) where T : IAppleSdkVersion, new()
+		{
+			result = new T ();
+			if (s == null)
+				return false;
+
+			if (!TryParse (s, out var vint))
+				return false;
 
 			result.SetVersion (vint);
 			return true;
