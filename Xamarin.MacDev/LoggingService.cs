@@ -40,6 +40,11 @@ namespace Xamarin.MacDev
 			Logger = customLogger;
 		}
 
+		public static void LogError (string message)
+		{
+			LogError (message, (Exception) null);
+		}
+
 		public static void LogError (string messageFormat, params object[] args)
 		{
 			LogError (string.Format (messageFormat, args), (Exception)null);
@@ -49,18 +54,29 @@ namespace Xamarin.MacDev
 		{
 			if (Logger != null)
 				Logger.LogError (message, ex);
+			else {
+				if (ex == null) {
+					Console.WriteLine (message);
+				} else {
+					Console.WriteLine ($"{message}: {ex}");
+				}
+			}
 		}
 
 		public static void LogWarning (string messageFormat, params object[] args)
 		{
 			if (Logger != null)
 				Logger.LogWarning (messageFormat, args);
+			else
+				Console.WriteLine (messageFormat, args);
 		}
 
 		public static void LogInfo (string messageFormat, params object[] args)
 		{
 			if (Logger != null)
 				Logger.LogInfo (messageFormat, args);
+			else
+				Console.WriteLine (messageFormat, args);
 		}
 
 		[Conditional ("DEBUG")]
@@ -68,6 +84,8 @@ namespace Xamarin.MacDev
 		{
 			if (Logger != null)
 				Logger.LogDebug (messageFormat, args);
+			else
+				Console.WriteLine (messageFormat, args);
 		}
 	}
 
