@@ -454,6 +454,8 @@ namespace Xamarin.MacDev
 				return IOSExtensionPoint.SharedLinks;
 			case "com.apple.spotlight.index":
 				return IOSExtensionPoint.SpotlightIndex;
+			case "com.apple.authentication-services-credential-provider-ui":
+				return IOSExtensionPoint.AuthenticationServicesCredentialProviderUI;
 			}
 
 			return IOSExtensionPoint.Unknown;
@@ -885,6 +887,8 @@ namespace Xamarin.MacDev
 		//com.apple.Safari.sharedlinks-service
 		SharedLinks,
 		//com.apple.spotlight.index
-		SpotlightIndex
+		SpotlightIndex,
+		// com.apple.authentication-services-credential-provider-ui
+		AuthenticationServicesCredentialProviderUI
 	}
 }
