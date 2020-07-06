@@ -889,6 +889,6 @@ namespace Xamarin.MacDev
 		//com.apple.spotlight.index
 		SpotlightIndex,
 		// com.apple.authentication-services-credential-provider-ui
-		AuthenticationServicesCredentialProviderUI
+		AuthenticationServicesCredentialProviderUI,
 	}
 }
