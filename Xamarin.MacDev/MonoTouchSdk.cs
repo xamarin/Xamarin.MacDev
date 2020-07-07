@@ -157,6 +157,7 @@ namespace Xamarin.MacDev
 			ios.Add ("com.apple.message-payload-provider", new PString ("10.0"));
 			ios.Add ("com.apple.usernotifications.content-extension", new PString ("10.0"));
 			ios.Add ("com.apple.usernotifications.service", new PString ("10.0"));
+			ios.Add ("com.apple.authentication-services-credential-provider-ui", new PString ("12.0"));
 
 			tvos.Add ("com.apple.broadcast-services", new PString ("10.0"));
 			tvos.Add ("com.apple.tv-services", new PString ("9.0"));
