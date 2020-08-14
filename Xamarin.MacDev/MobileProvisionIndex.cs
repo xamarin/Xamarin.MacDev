@@ -33,7 +33,7 @@ namespace Xamarin.MacDev
 {
 	public class MobileProvisionIndex
 	{
-		static readonly string IndexFileName = Path.Combine (Environment.GetFolderPath (Environment.SpecialFolder.Personal), "Library", "Xamarin", "Provisioning Profiles.index");
+		static readonly string IndexFileName;
 		static readonly MobileProvisionCreationDateComparer CreationDateComparer = new MobileProvisionCreationDateComparer ();
 		const int IndexVersion = 1;
 
@@ -193,7 +193,23 @@ namespace Xamarin.MacDev
 		public DateTime LastModified { get; private set; }
 		public int Version { get; private set; }
 
-		MobileProvisionIndex ()
+        static MobileProvisionIndex()
+        {
+            string xamarinFolder;
+
+            if (Environment.OSVersion.Platform == PlatformID.Unix || Environment.OSVersion.Platform == PlatformID.MacOSX)
+            {
+                xamarinFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Library", "Xamarin");
+            }
+            else
+            {
+                xamarinFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Xamarin", "iOS", "Provisioning");
+            }
+
+            IndexFileName = Path.Combine(xamarinFolder, "Provisioning Profiles.index");
+        }
+
+        MobileProvisionIndex ()
 		{
 			ProvisioningProfiles = new List<ProvisioningProfile> ();
 		}
