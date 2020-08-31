@@ -799,6 +799,8 @@ namespace Xamarin.MacDev
 
 		public const string XSAppIconAssets = "XSAppIconAssets";
 		public const string XSLaunchImageAssets = "XSLaunchImageAssets";
+		public const string XSAccentColorAssets = "XSAccentColorAssets";
+		public const string NSAccentColorName = "NSAccentColorName";
 		
 		public const string MapKitDirections = "MKDirectionsApplicationSupportedModes";
 
