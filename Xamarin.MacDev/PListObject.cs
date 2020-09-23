@@ -1572,7 +1572,7 @@ namespace Xamarin.MacDev
 					if (!WriteObjectHead (dict, PlistType.dict, dict.Count))
 						return;
 
-					// it sucks we have to loop so many times, but we gotta do it
+					// it would be better not to loop so many times, but we have to do it
 					//  if we want to lay things out the same way apple does
 
 					var curRef = currentRef;
