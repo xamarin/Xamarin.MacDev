@@ -38,7 +38,6 @@ namespace Xamarin.MacDev
 		// Put newer SDKs at the top as we scan from 0 -> List.Count
 		public static readonly string[] DefaultRoots = new string[] {
 			"/Applications/Xcode.app",
-			"/Developer"
 		};
 		static DateTime lastWritten;
 
@@ -107,23 +106,25 @@ namespace Xamarin.MacDev
 		
 		public static string GetConfiguredSdkLocation ()
 		{
-			PDictionary plist;
+			PDictionary plist = null;
 			PString value;
-			bool binary;
 
 			try {
 				if (File.Exists (SettingsPath))
-					plist = PDictionary.FromFile (SettingsPath, out binary);
-				else
-					plist = new PDictionary ();
+					plist = PDictionary.FromFile (SettingsPath, out var _);
 			} catch (FileNotFoundException) {
-				plist = new PDictionary ();
 			}
 
-			if (!plist.TryGetValue ("AppleSdkRoot", out value))
-				return DefaultRoots[0];
+			// First try the configured location in Visual Studio
+			if (plist != null && plist.TryGetValue ("AppleSdkRoot", out value) && !string.IsNullOrEmpty (value?.Value))
+				return value.Value;
 
-			return value.Value;
+			// Then check the system's default Xcode
+			if (TryGetSystemXcode (out var path))
+				return path;
+
+			// Finally return the hardcoded default
+			return DefaultRoots [0];
 		}
 		
 		static void SetInvalid ()
@@ -152,6 +153,40 @@ namespace Xamarin.MacDev
 			Init ();
 		}
 
+		static bool TryGetSystemXcode (out string path)
+		{
+			path = null;
+			if (!File.Exists ("/usr/bin/xcode-select"))
+				return false;
+
+			try {
+				using var process = new Process ();
+				process.StartInfo.FileName = "/usr/bin/xcode-select";
+				process.StartInfo.Arguments = "--print-path";
+				process.StartInfo.RedirectStandardOutput = true;
+				process.StartInfo.UseShellExecute = false;
+				process.Start ();
+				var stdout = process.StandardOutput.ReadToEnd ();
+				process.WaitForExit ();
+
+				stdout = stdout.Trim ();
+				if (Directory.Exists (stdout)) {
+					if (stdout.EndsWith ("/Contents/Developer", StringComparison.Ordinal))
+						stdout = stdout.Substring (0, stdout.Length - "/Contents/Developer".Length);
+
+					path = stdout;
+					return true;
+				}
+
+				LoggingService.LogInfo ("The system's Xcode location {0} does not exist", stdout);
+
+				return false;
+			} catch (Exception e) {
+				LoggingService.LogInfo ("Could not get the system's Xcode location: {0}", e);
+				return false;
+			}
+		}
+
 		public static void Init ()
 		{
 			string devroot = null, vplist = null, xcode = null;
@@ -160,36 +195,8 @@ namespace Xamarin.MacDev
 			SetInvalid ();
 			
 			DeveloperRoot = Environment.GetEnvironmentVariable ("MD_APPLE_SDK_ROOT");
-			if (string.IsNullOrEmpty (DeveloperRoot)) {
+			if (string.IsNullOrEmpty (DeveloperRoot))
 				DeveloperRoot = GetConfiguredSdkLocation ();
-
-				if (string.IsNullOrEmpty (DeveloperRoot) && File.Exists ("/usr/bin/xcode-select")) {
-					var startInfo = new ProcessStartInfo ("/usr/bin/xcode-select", "--print-path");
-					startInfo.RedirectStandardOutput = true;
-					startInfo.UseShellExecute = false;
-
-					var process = new Process ();
-					var stdout = string.Empty;
-
-					try {
-						process.StartInfo = startInfo;
-						process.OutputDataReceived += (sender, e) => stdout += e.Data;
-						process.Start ();
-						process.WaitForExit ();
-					} catch (Win32Exception) {
-						stdout = string.Empty;
-					}
-
-					stdout = stdout.Trim ();
-
-					if (!string.IsNullOrEmpty (stdout) && Directory.Exists (stdout)) {
-						if (stdout.EndsWith ("/Contents/Developer", StringComparison.Ordinal))
-							stdout = stdout.Substring (0, stdout.Length - "/Contents/Developer".Length);
-
-						DeveloperRoot = stdout;
-					}
-				}
-			}
 
 			if (string.IsNullOrEmpty (DeveloperRoot)) {
 				foreach (var v in DefaultRoots)  {
