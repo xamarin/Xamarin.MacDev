@@ -234,6 +234,15 @@ namespace Xamarin.MacDev
 				foreach (var v in str.Split (',')) {
 					AppleDeviceFamily family;
 
+					if (v == "5") {
+						// Xcode 12 beta 1 adds a '5' for SUPPORTED_DEVICE_FAMILIES here:
+						// Contents/Developer/Platforms/AppleTVSimulator.platform/Developer/SDKs/AppleTVSimulator.sdk/SDKSettings.plist
+						// the value isn't documented anywhere, and it can't be selected in Xcode's UI,
+						// which means we have no idea what it means, so just skip it for now.
+						LoggingService.LogWarning ($"Skipped unknown device family: {v}");
+						continue;
+					}
+
 					if (Enum.TryParse<AppleDeviceFamily> (v, out family))
 						devices |= family.ToDeviceType ();
 				}
@@ -790,6 +799,8 @@ namespace Xamarin.MacDev
 
 		public const string XSAppIconAssets = "XSAppIconAssets";
 		public const string XSLaunchImageAssets = "XSLaunchImageAssets";
+		public const string XSAccentColorAssets = "XSAccentColorAssets";
+		public const string NSAccentColorName = "NSAccentColorName";
 		
 		public const string MapKitDirections = "MKDirectionsApplicationSupportedModes";
 
