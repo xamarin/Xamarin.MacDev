@@ -105,6 +105,11 @@ namespace Xamarin.MacDev
 
 		public AppleDTSdkSettings GetSdkSettings (IPhoneSdkVersion sdk, bool isSim)
 		{
+			return GetSdkSettings ((IAppleSdkVersion) sdk, isSim);
+		}
+
+		public AppleDTSdkSettings GetSdkSettings (IAppleSdkVersion sdk, bool isSim)
+		{
 			var cache = isSim ? simSettingsCache : sdkSettingsCache;
 
 			AppleDTSdkSettings settings;
@@ -122,7 +127,7 @@ namespace Xamarin.MacDev
 			return settings;
 		}
 
-		AppleDTSdkSettings LoadSdkSettings (IPhoneSdkVersion sdk, bool isSim)
+		AppleDTSdkSettings LoadSdkSettings (IAppleSdkVersion sdk, bool isSim)
 		{
 			var settings = new AppleDTSdkSettings ();
 
@@ -164,6 +169,11 @@ namespace Xamarin.MacDev
 				DTXcodeBuild = GrabRootString (VersionPlist, "ProductBuildVersion"),
 				BuildMachineOSBuild = GrabRootString (systemVersionPlist, "ProductBuildVersion"),
 			});
+		}
+
+		public AppleDTSettings GetAppleDTSettings ()
+		{
+			return GetDTSettings ();
 		}
 
 		IAppleSdkVersion IAppleSdk.GetClosestInstalledSdk (IAppleSdkVersion version, bool isSimulator)

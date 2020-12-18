@@ -43,7 +43,7 @@ namespace Xamarin.MacDev
             		MacOSXSdkVersion.V10_14
         	};
 
-		static readonly Dictionary<string, DTSdkSettings> sdkSettingsCache = new Dictionary<string, DTSdkSettings> ();
+		static readonly Dictionary<string, AppleDTSdkSettings> sdkSettingsCache = new Dictionary<string, AppleDTSdkSettings> ();
 		static DTSettings dtSettings;
 
 		public string DeveloperRoot { get; private set; }
@@ -174,12 +174,28 @@ namespace Xamarin.MacDev
 			return false;
 		}
 		
+		[Obsolete ("Use the 'GetSdkSettings (IAppleSdkVersion)' overload instead.")]
 		public DTSdkSettings GetSdkSettings (MacOSXSdkVersion sdk)
 		{
-			Dictionary<string, DTSdkSettings> cache = sdkSettingsCache;
+			var settings = GetSdkSettings ((IAppleSdkVersion) sdk);
+			return new DTSdkSettings {
+				AlternateSDK = settings.AlternateSDK,
+				CanonicalName = settings.CanonicalName,
+				DTCompiler = settings.DTCompiler,
+				DTSDKBuild = settings.DTSDKBuild,
+			};
+		}
+
+		public AppleDTSdkSettings GetSdkSettings (IAppleSdkVersion sdk, bool isSimulator)
+		{
+			return GetSdkSettings (sdk);
+		}
+
+		public AppleDTSdkSettings GetSdkSettings (IAppleSdkVersion sdk)
+		{
+			Dictionary<string, AppleDTSdkSettings> cache = sdkSettingsCache;
 			
-			DTSdkSettings settings;
-			if (cache.TryGetValue (sdk.ToString (), out settings))
+			if (cache.TryGetValue (sdk.ToString (), out var settings))
 				return settings;
 			
 			try {
@@ -193,7 +209,7 @@ namespace Xamarin.MacDev
 			return settings;
 		}
 		
-		DTSdkSettings LoadSdkSettings (MacOSXSdkVersion sdk)
+		AppleDTSdkSettings LoadSdkSettings (IAppleSdkVersion sdk)
 		{
 			string filename = GetSdkPlistFilename (sdk.ToString ());
 
@@ -201,7 +217,7 @@ namespace Xamarin.MacDev
 				return null;
 
 			var plist = PDictionary.FromFile (filename);
-			var settings = new DTSdkSettings ();
+			var settings = new AppleDTSdkSettings ();
 
 			settings.CanonicalName = plist.GetString ("CanonicalName").Value;
 
@@ -218,7 +234,13 @@ namespace Xamarin.MacDev
 			return settings;
 		}
 		
+		[Obsolete ("Use GetAppleDTSettings instead")]
 		public DTSettings GetDTSettings ()
+		{
+			return GetSettings ();
+		}
+
+		DTSettings GetSettings ()
 		{
 			if (dtSettings != null)
 				return dtSettings;
@@ -233,6 +255,17 @@ namespace Xamarin.MacDev
 				DTXcodeBuild = GrabRootString (VersionPlist, "ProductBuildVersion"),
 				BuildMachineOSBuild = GrabRootString (systemVersionPlist, "ProductBuildVersion"),
 			});
+		}
+
+		public AppleDTSettings GetAppleDTSettings ()
+		{
+			var settings = GetSettings ();
+			return new AppleDTSettings {
+				DTPlatformBuild = settings.DTPlatformBuild,
+				DTPlatformVersion = settings.DTPlatformVersion,
+				BuildMachineOSBuild = settings.BuildMachineOSBuild,
+				DTXcodeBuild = settings.DTXcodeBuild,
+			};
 		}
 		
 		static string GrabRootString (string file, string key)

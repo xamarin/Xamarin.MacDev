@@ -11,5 +11,7 @@ namespace Xamarin.MacDev {
 		bool TryParseSdkVersion (string value, out IAppleSdkVersion version);
 		IAppleSdkVersion GetClosestInstalledSdk (IAppleSdkVersion version, bool isSimulator);
 		IList<IAppleSdkVersion> GetInstalledSdkVersions (bool isSimulator);
+		AppleDTSettings GetAppleDTSettings ();
+		AppleDTSdkSettings GetSdkSettings (IAppleSdkVersion version, bool isSimulator);
 	}
 }
