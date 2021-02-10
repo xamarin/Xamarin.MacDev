@@ -159,6 +159,43 @@ namespace Xamarin.MacDev
 			return Path.Combine (GetSdkPath (version), "SDKSettings.plist");
 		}
 
+		Dictionary<string, string> catalyst_version_map_ios_to_macos;
+		Dictionary<string, string> catalyst_version_map_macos_to_ios;
+
+		void LoadCatalystVersionMaps (string version)
+		{
+			if (catalyst_version_map_ios_to_macos != null && catalyst_version_map_macos_to_ios != null)
+				return;
+
+			catalyst_version_map_ios_to_macos = new Dictionary<string, string> ();
+			catalyst_version_map_macos_to_ios = new Dictionary<string, string> ();
+
+			var fn = GetSdkPlistFilename (version);
+			var plist = PDictionary.FromFile (fn);
+			if (plist.TryGetValue ("VersionMap", out PDictionary versionMap)) {
+				if (versionMap.TryGetValue ("iOSMac_macOS", out PDictionary versionMapiOSToMac)) {
+					foreach (var kvp in versionMapiOSToMac)
+						catalyst_version_map_ios_to_macos [kvp.Key] = ((PString) kvp.Value).Value;
+				}
+				if (versionMap.TryGetValue ("macOS_iOSMac", out PDictionary versionMapMacToiOS)) {
+					foreach (var kvp in versionMapMacToiOS)
+						catalyst_version_map_macos_to_ios [kvp.Key] = ((PString) kvp.Value).Value;
+				}
+			}
+		}
+
+		public Dictionary<string, string> GetCatalystVersionMap_iOS_to_Mac (string version)
+		{
+			LoadCatalystVersionMaps (version);
+			return catalyst_version_map_ios_to_macos;
+		}
+
+		public Dictionary<string, string> GetCatalystVersionMap_Mac_to_iOS (string version)
+		{
+			LoadCatalystVersionMaps (version);
+			return catalyst_version_map_macos_to_ios;
+		}
+
 		bool IAppleSdk.SdkIsInstalled (IAppleSdkVersion version, bool isSimulator)
 		{
 			return SdkIsInstalled ((MacOSXSdkVersion) version);
