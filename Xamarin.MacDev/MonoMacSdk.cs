@@ -65,27 +65,27 @@ namespace Xamarin.MacDev
 					LoggingService.LogInfo ("Found MonoMac, version {0}.", Version);
 			} else {
 				lastExeWrite = DateTime.MinValue;
-				Version = new MacOSXSdkVersion ();
+				Version = new AppleSdkVersion ();
 				LoggingService.LogInfo ("MonoMac not installed. Can't find {0}.", LegacyFrameworkAssembly);
 			}
 		}
 		
-		MacOSXSdkVersion ReadVersion ()
+		AppleSdkVersion ReadVersion ()
 		{
 			var versionFile = Path.Combine (SdkDir, "Version");
 			if (File.Exists (versionFile)) {
 				try {
-					return MacOSXSdkVersion.Parse (File.ReadAllText (versionFile).Trim ());
+					return AppleSdkVersion.Parse (File.ReadAllText (versionFile).Trim ());
 				} catch (Exception ex) {
 					LoggingService.LogError ("Failed to read MonoMac version", ex);
 				}
 			}
 			
-			return new MacOSXSdkVersion ();
+			return new AppleSdkVersion ();
 		}
 		
 		public bool IsInstalled { get; private set; }
-		public MacOSXSdkVersion Version { get; private set; }
+		public AppleSdkVersion Version { get; private set; }
 		
 		public void CheckCaches ()
 		{

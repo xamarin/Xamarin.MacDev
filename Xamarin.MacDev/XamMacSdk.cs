@@ -16,13 +16,13 @@ namespace Xamarin.MacDev
 {
 	public sealed class XamMacSdk : IMonoMacSdk
 	{
-		static readonly MacOSXSdkVersion[] MacOSXSdkVersions = {
-			MacOSXSdkVersion.V10_7,
-			MacOSXSdkVersion.V10_8,
-			MacOSXSdkVersion.V10_9,
-			MacOSXSdkVersion.V10_10,
-			MacOSXSdkVersion.V10_11,
-			MacOSXSdkVersion.V10_12
+		static readonly AppleSdkVersion [] MacOSXSdkVersions = {
+			AppleSdkVersion.V10_7,
+			AppleSdkVersion.V10_8,
+			AppleSdkVersion.V10_9,
+			AppleSdkVersion.V10_10,
+			AppleSdkVersion.V10_11,
+			AppleSdkVersion.V10_12
 		};
 
 		readonly Dictionary<string, DateTime> lastWriteTimes = new Dictionary<string, DateTime> ();
@@ -32,7 +32,7 @@ namespace Xamarin.MacDev
 
 		public bool IsInstalled { get; private set; }
 
-		public MacOSXSdkVersion Version { get; private set; }
+		public AppleSdkVersion Version { get; private set; }
 		public string SdkNotInstalledReason { get; private set; }
 
 		public string FrameworkDirectory { get; private set; }
@@ -55,7 +55,7 @@ namespace Xamarin.MacDev
 
 		public event EventHandler Changed;
 
-		static PArray CreateKnownSdkVersionsArray (IList<MacOSXSdkVersion> versions)
+		static PArray CreateKnownSdkVersionsArray (IList<AppleSdkVersion> versions)
 		{
 			var array = new PArray ();
 
@@ -89,23 +89,23 @@ namespace Xamarin.MacDev
 			return minExtensionVersions;
 		}
 
-		static PArray CreateDefaultFeatures (MacOSXSdkVersion version)
+		static PArray CreateDefaultFeatures (AppleSdkVersion version)
 		{
 			var features = new PArray ();
 
-			if (version >= new MacOSXSdkVersion (1, 9, 0))
+			if (version >= new AppleSdkVersion (1, 9, 0))
 				features.Add (new PString ("activation"));
-			if (version >= new MacOSXSdkVersion (1, 11, 0) && version < new MacOSXSdkVersion (2, 5, 0))
+			if (version >= new AppleSdkVersion (1, 11, 0) && version < new AppleSdkVersion (2, 5, 0))
 				features.Add (new PString ("ref-counting"));
-			if (version >= new MacOSXSdkVersion (2, 5, 0))
+			if (version >= new AppleSdkVersion (2, 5, 0))
 				features.Add (new PString ("modern-http-client"));
-			if (version >= new MacOSXSdkVersion (2, 10, 0))
+			if (version >= new AppleSdkVersion (2, 10, 0))
 				features.Add (new PString ("mono-symbol-archive"));
 
 			return features;
 		}
 
-		static PDictionary CreateDefaultVersionsPlist (MacOSXSdkVersion version)
+		static PDictionary CreateDefaultVersionsPlist (AppleSdkVersion version)
 		{
 			var versions = new PDictionary ();
 
@@ -151,7 +151,7 @@ namespace Xamarin.MacDev
 				return;
 			}
 
-			var paths = Version >= new MacOSXSdkVersion (1, 9, 0)
+			var paths = Version >= new AppleSdkVersion (1, 9, 0)
 				? Detect2x ()
 				: Detect1x ();
 
@@ -182,7 +182,7 @@ namespace Xamarin.MacDev
 
 			SupportsFullProfile =
 				File.Exists (UnifiedFullProfileFrameworkAssembly) &&
-				Version >= new MacOSXSdkVersion (1, 11, 2, 3);
+				Version >= new AppleSdkVersion (1, 11, 2, 3);
 		}
 
 		IEnumerable<string> Detect1x ()
@@ -191,10 +191,10 @@ namespace Xamarin.MacDev
 			var appDriverPath = monoMacAppLauncherPath;
 
 			// 1.2.13 began bundling its own launcher
-			if (Version >= new MacOSXSdkVersion (1, 2, 13))
+			if (Version >= new AppleSdkVersion (1, 2, 13))
 				appDriverPath = Path.Combine (FrameworkDirectory, "lib", "mono", "XamMacLauncher");
 
-			if (Version < new MacOSXSdkVersion (1, 4, 0))
+			if (Version < new AppleSdkVersion (1, 4, 0))
 				usrPrefix = "usr";
 
 			yield return MmpPath = Path.Combine (FrameworkDirectory, usrPrefix, "bin", "mmp");
@@ -213,7 +213,7 @@ namespace Xamarin.MacDev
 			versions = new PDictionary ();
 			lastWriteTimes.Clear ();
 			IsInstalled = false;
-			Version = new MacOSXSdkVersion ();
+			Version = new AppleSdkVersion ();
 
 			SdkNotInstalledReason = string.Format ("Xamarin.Mac not installed. Can't find {0}.", pathMissing);
 
@@ -223,13 +223,13 @@ namespace Xamarin.MacDev
 				LoggingService.LogInfo (SdkNotInstalledReason);
 		}
 
-		MacOSXSdkVersion ReadVersion (string versionPath)
+		AppleSdkVersion ReadVersion (string versionPath)
 		{
 			try {
-				return MacOSXSdkVersion.Parse (File.ReadAllText (versionPath).Trim ());
+				return AppleSdkVersion.Parse (File.ReadAllText (versionPath).Trim ());
 			} catch (Exception ex) {
 				LoggingService.LogError ("Failed to read Xamarin.Mac version", ex);
-				return new MacOSXSdkVersion ();
+				return new AppleSdkVersion ();
 			}
 		}
 
@@ -265,15 +265,15 @@ namespace Xamarin.MacDev
 		}
 
 		public bool SupportsMSBuild {
-			get { return Version >= new MacOSXSdkVersion (1, 9, 0); }
+			get { return Version >= new AppleSdkVersion (1, 9, 0); }
 		}
 
 		public bool SupportsV2Features {
-			get { return Version >= new MacOSXSdkVersion (1, 9, 0); }
+			get { return Version >= new AppleSdkVersion (1, 9, 0); }
 		}
 
 		public bool SupportsNewStyleActivation {
-			get { return Version >= new MacOSXSdkVersion (1, 9, 0); }
+			get { return Version >= new AppleSdkVersion (1, 9, 0); }
 		}
 
 		public bool SupportsFullProfile { get; private set; }
