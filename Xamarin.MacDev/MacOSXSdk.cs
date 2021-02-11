@@ -270,6 +270,9 @@ namespace Xamarin.MacDev
 		
 		static string GrabRootString (string file, string key)
 		{
+			if (!File.Exists (file))
+				return null;
+
 			var dict = PDictionary.FromFile (file);
 			PString value;
 
