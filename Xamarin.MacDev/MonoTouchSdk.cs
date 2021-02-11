@@ -33,42 +33,42 @@ namespace Xamarin.MacDev
 {
 	public class MonoTouchSdk
 	{
-		static readonly IPhoneSdkVersion[] iOSSdkVersions = {
-			IPhoneSdkVersion.V6_0,
-			IPhoneSdkVersion.V6_1,
-			IPhoneSdkVersion.V7_0,
-			IPhoneSdkVersion.V7_1,
-			IPhoneSdkVersion.V8_0,
-			IPhoneSdkVersion.V8_1,
-			IPhoneSdkVersion.V8_2,
-			IPhoneSdkVersion.V8_3,
-			IPhoneSdkVersion.V8_4,
-			IPhoneSdkVersion.V9_0,
-			IPhoneSdkVersion.V9_1,
-			IPhoneSdkVersion.V9_2,
-			IPhoneSdkVersion.V9_3,
-			IPhoneSdkVersion.V10_0,
-			IPhoneSdkVersion.V10_1
+		static readonly AppleSdkVersion [] iOSSdkVersions = {
+			AppleSdkVersion.V6_0,
+			AppleSdkVersion.V6_1,
+			AppleSdkVersion.V7_0,
+			AppleSdkVersion.V7_1,
+			AppleSdkVersion.V8_0,
+			AppleSdkVersion.V8_1,
+			AppleSdkVersion.V8_2,
+			AppleSdkVersion.V8_3,
+			AppleSdkVersion.V8_4,
+			AppleSdkVersion.V9_0,
+			AppleSdkVersion.V9_1,
+			AppleSdkVersion.V9_2,
+			AppleSdkVersion.V9_3,
+			AppleSdkVersion.V10_0,
+			AppleSdkVersion.V10_1
 		};
-		static readonly IPhoneSdkVersion[] watchOSSdkVersions = {
-			IPhoneSdkVersion.V2_0,
-			IPhoneSdkVersion.V2_1,
-			IPhoneSdkVersion.V2_2,
-			IPhoneSdkVersion.V3_0,
-			IPhoneSdkVersion.V3_1
+		static readonly AppleSdkVersion [] watchOSSdkVersions = {
+			AppleSdkVersion.V2_0,
+			AppleSdkVersion.V2_1,
+			AppleSdkVersion.V2_2,
+			AppleSdkVersion.V3_0,
+			AppleSdkVersion.V3_1
 		};
-		static readonly IPhoneSdkVersion[] tvOSSdkVersions = {
-			IPhoneSdkVersion.V9_0,
-			IPhoneSdkVersion.V9_1,
-			IPhoneSdkVersion.V9_2,
-			IPhoneSdkVersion.V10_0
+		static readonly AppleSdkVersion [] tvOSSdkVersions = {
+			AppleSdkVersion.V9_0,
+			AppleSdkVersion.V9_1,
+			AppleSdkVersion.V9_2,
+			AppleSdkVersion.V10_0
 		};
 
 		public static readonly string[] DefaultLocations;
 
 		// Note: We require Xamarin.iOS 10.4 because it is the first version to bundle mlaunch. Prior to that Xamarin Studio would ship it but that is no longer the case.
 		// (We also need 10.4 for the Versions.plist, although we have a handy fallback if that file is missing)
-		static IPhoneSdkVersion requiredXI = IPhoneSdkVersion.V10_4;
+		static AppleSdkVersion requiredXI = AppleSdkVersion.V10_4;
 
 		DateTime lastMTExeWrite = DateTime.MinValue;
 		PDictionary versions;
@@ -110,7 +110,7 @@ namespace Xamarin.MacDev
 
 		public event EventHandler Changed;
 
-		static PArray CreateKnownSdkVersionsArray (IList<IPhoneSdkVersion> versions)
+		static PArray CreateKnownSdkVersionsArray (IList<AppleSdkVersion> versions)
 		{
 			var array = new PArray ();
 
@@ -219,7 +219,7 @@ namespace Xamarin.MacDev
 				} else {
 					SdkNotInstalledReason = string.Format ("Found unsupported Xamarin.iOS, version {0}.\nYou need Xamarin.iOS {1} or above.", Version, requiredXI.ToString ());
 					LoggingService.LogWarning (SdkNotInstalledReason);
-					Version = new IPhoneSdkVersion ();
+					Version = new AppleSdkVersion ();
 					versions = new PDictionary ();
 					IsInstalled = false;
 				}
@@ -227,7 +227,7 @@ namespace Xamarin.MacDev
 				AnalyticsService.ReportSdkVersion ("XS.Core.SDK.iOS.Version", Version.ToString ());
 			} else {
 				lastMTExeWrite = DateTime.MinValue;
-				Version = new IPhoneSdkVersion ();
+				Version = new AppleSdkVersion ();
 				versions = new PDictionary ();
 
 				SdkNotInstalledReason = string.Format ("Xamarin.iOS not installed.\nCan't find mtouch or the Version file at {0}.", SdkDir);
@@ -240,19 +240,19 @@ namespace Xamarin.MacDev
 				Changed (this, EventArgs.Empty);
 		}
 		
-		IPhoneSdkVersion ReadVersion ()
+		AppleSdkVersion ReadVersion ()
 		{
 			var versionFile = Path.Combine (SdkDir, "Version");
 
 			if (File.Exists (versionFile)) {
 				try {
-					return IPhoneSdkVersion.Parse (File.ReadAllText (versionFile).Trim ());
+					return AppleSdkVersion.Parse (File.ReadAllText (versionFile).Trim ());
 				} catch (Exception ex) {
 					LoggingService.LogError ("Failed to read Xamarin.iOS version", ex);
 				}
 			}
 
-			return new IPhoneSdkVersion ();
+			return new AppleSdkVersion ();
 		}
 
 		public static bool ValidateSdkLocation (string sdkDir)
@@ -289,7 +289,7 @@ namespace Xamarin.MacDev
 		}
 
 		public bool IsInstalled { get; private set; }
-		public IPhoneSdkVersion Version { get; private set; }
+		public AppleSdkVersion Version { get; private set; }
 
 		ExtendedVersion extended_version;
 		public ExtendedVersion ExtendedVersion {
@@ -327,9 +327,9 @@ namespace Xamarin.MacDev
 			}
 		}
 
-		public IList<IPhoneSdkVersion> GetKnownSdkVersions (PlatformName platform)
+		public IList<AppleSdkVersion> GetKnownSdkVersions (PlatformName platform)
 		{
-			var list = new List<IPhoneSdkVersion> ();
+			var list = new List<AppleSdkVersion> ();
 			var key = GetPlatformKey (platform);
 			PDictionary knownVersions;
 
@@ -338,9 +338,7 @@ namespace Xamarin.MacDev
 
 				if (knownVersions.TryGetValue (key, out array)) {
 					foreach (var knownVersion in array.OfType<PString> ()) {
-						IPhoneSdkVersion version;
-
-						if (IPhoneSdkVersion.TryParse (knownVersion.Value, out version))
+						if (AppleSdkVersion.TryParse (knownVersion.Value, out var version))
 							list.Add (version);
 					}
 				}
@@ -349,7 +347,7 @@ namespace Xamarin.MacDev
 			return list;
 		}
 
-		public IPhoneSdkVersion GetMinimumExtensionVersion (PlatformName platform, string extension)
+		public AppleSdkVersion GetMinimumExtensionVersion (PlatformName platform, string extension)
 		{
 			var key = GetPlatformKey (platform);
 			PDictionary minExtensionVersions;
@@ -361,15 +359,13 @@ namespace Xamarin.MacDev
 					PString value;
 
 					if (extensions.TryGetValue (extension, out value)) {
-						IPhoneSdkVersion version;
-
-						if (IPhoneSdkVersion.TryParse (value.Value, out version))
+						if (AppleSdkVersion.TryParse (value.Value, out var version))
 							return version;
 					}
 				}
 			}
 
-			return IPhoneSdkVersion.V8_0;
+			return AppleSdkVersion.V8_0;
 		}
 		
 		public void CheckCaches ()

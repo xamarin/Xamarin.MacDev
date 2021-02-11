@@ -32,15 +32,15 @@ namespace Xamarin.MacDev
 {
 	public class MacOSXSdk : IAppleSdk
 	{
-		List<MacOSXSdkVersion> knownOSVersions = new List<MacOSXSdkVersion> {
-			MacOSXSdkVersion.V10_7,
-			MacOSXSdkVersion.V10_8,
-			MacOSXSdkVersion.V10_9,
-			MacOSXSdkVersion.V10_10,
-			MacOSXSdkVersion.V10_11,
-			MacOSXSdkVersion.V10_12,
-			MacOSXSdkVersion.V10_13,
-            		MacOSXSdkVersion.V10_14
+		List<AppleSdkVersion> knownOSVersions = new List<AppleSdkVersion> {
+			AppleSdkVersion.V10_7,
+			AppleSdkVersion.V10_8,
+			AppleSdkVersion.V10_9,
+			AppleSdkVersion.V10_10,
+			AppleSdkVersion.V10_11,
+			AppleSdkVersion.V10_12,
+			AppleSdkVersion.V10_13,
+			AppleSdkVersion.V10_14,
         	};
 
 		static readonly Dictionary<string, AppleDTSdkSettings> sdkSettingsCache = new Dictionary<string, AppleDTSdkSettings> ();
@@ -82,19 +82,19 @@ namespace Xamarin.MacDev
 			if (IsInstalled) {
 				InstalledSdkVersions = EnumerateSdks (Path.Combine (SdkDeveloperRoot, "SDKs"), "MacOSX");
 			} else {
-				InstalledSdkVersions = new MacOSXSdkVersion[0];
+				InstalledSdkVersions = new AppleSdkVersion [0];
 			}
 		}
 
 		public bool IsInstalled { get; private set; }
-		public MacOSXSdkVersion[] InstalledSdkVersions { get; private set; }
+		public AppleSdkVersion [] InstalledSdkVersions { get; private set; }
 
-		public IList<MacOSXSdkVersion> KnownOSVersions { get { return knownOSVersions; } }
+		public IList<AppleSdkVersion> KnownOSVersions { get { return knownOSVersions; } }
 		
-		static MacOSXSdkVersion[] EnumerateSdks (string sdkDir, string name)
+		static AppleSdkVersion [] EnumerateSdks (string sdkDir, string name)
 		{
 			if (!Directory.Exists (sdkDir))
-				return new MacOSXSdkVersion[0];
+				return new AppleSdkVersion [0];
 			
 			var sdks = new List<string> ();
 			
@@ -114,10 +114,10 @@ namespace Xamarin.MacDev
 				sdks.Add (dirName);
 			}
 			
-			var vs = new List<MacOSXSdkVersion> ();
+			var vs = new List<AppleSdkVersion> ();
 			foreach (var s in sdks) {
 				try {
-					vs.Add (MacOSXSdkVersion.Parse (s));
+					vs.Add (AppleSdkVersion.Parse (s));
 				} catch (Exception ex) {
 					LoggingService.LogError ("Could not parse {0} SDK version '{1}':\n{2}", name, s, ex);
 				}
@@ -139,7 +139,7 @@ namespace Xamarin.MacDev
 			return GetPlatformPath ();
 		}
 		
-		public string GetSdkPath (MacOSXSdkVersion version)
+		public string GetSdkPath (AppleSdkVersion version)
 		{
 			return GetSdkPath (version.ToString ());
 		}
@@ -161,10 +161,10 @@ namespace Xamarin.MacDev
 
 		bool IAppleSdk.SdkIsInstalled (IAppleSdkVersion version, bool isSimulator)
 		{
-			return SdkIsInstalled ((MacOSXSdkVersion) version);
+			return SdkIsInstalled ((AppleSdkVersion) version);
 		}
 
-		public bool SdkIsInstalled (MacOSXSdkVersion version)
+		public bool SdkIsInstalled (AppleSdkVersion version)
 		{
 			foreach (var v in InstalledSdkVersions) {
 				if (v.Equals (version))
@@ -284,17 +284,17 @@ namespace Xamarin.MacDev
 			
 		IAppleSdkVersion IAppleSdk.GetClosestInstalledSdk (IAppleSdkVersion version, bool isSimulator)
 		{
-			return GetClosestInstalledSdk ((MacOSXSdkVersion) version);
+			return GetClosestInstalledSdk ((AppleSdkVersion) version);
 		}
 
-		public MacOSXSdkVersion GetClosestInstalledSdk (MacOSXSdkVersion v)
+		public AppleSdkVersion GetClosestInstalledSdk (AppleSdkVersion v)
 		{
 			// sorted low to high, so get first that's >= requested version
 			foreach (var i in GetInstalledSdkVersions ()) {
 				if (i.CompareTo (v) >= 0)
 					return i;
 			}
-			return MacOSXSdkVersion.UseDefault;
+			return AppleSdkVersion.UseDefault;
 		}
 		
 		IList<IAppleSdkVersion> IAppleSdk.GetInstalledSdkVersions (bool isSimulator)
@@ -302,14 +302,14 @@ namespace Xamarin.MacDev
 			return GetInstalledSdkVersions ().Cast<IAppleSdkVersion> ().ToArray ();
 		}
 
-		public IList<MacOSXSdkVersion> GetInstalledSdkVersions ()
+		public IList<AppleSdkVersion> GetInstalledSdkVersions ()
 		{
 			return InstalledSdkVersions;
 		}
 		
 		bool IAppleSdk.TryParseSdkVersion (string value, out IAppleSdkVersion version)
 		{
-			return IAppleSdkVersion_Extensions.TryParse<MacOSXSdkVersion> (value, out version);
+			return IAppleSdkVersion_Extensions.TryParse<AppleSdkVersion> (value, out version);
 		}
 
 		public class DTSettings

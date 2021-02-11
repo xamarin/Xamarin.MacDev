@@ -42,8 +42,8 @@ namespace Xamarin.MacDev
 		public string SimPlatform { get { return Path.Combine (DeveloperRoot, "Platforms/" + SimulatorPlatformName + ".platform"); } }
 
 		public bool IsInstalled { get; private set; }
-		public IPhoneSdkVersion[] InstalledSdkVersions { get; private set; }
-		public IPhoneSdkVersion[] InstalledSimVersions { get; private set; }
+		public AppleSdkVersion[] InstalledSdkVersions { get; private set; }
+		public AppleSdkVersion[] InstalledSimVersions { get; private set; }
 
 		readonly Dictionary<string, AppleDTSdkSettings> sdkSettingsCache = new Dictionary<string, AppleDTSdkSettings> ();
 		readonly Dictionary<string, AppleDTSdkSettings> simSettingsCache = new Dictionary<string, AppleDTSdkSettings> ();
@@ -61,8 +61,8 @@ namespace Xamarin.MacDev
 				InstalledSdkVersions = EnumerateSdks (Path.Combine (DevicePlatform, "Developer/SDKs"), DevicePlatformName);
 				InstalledSimVersions = EnumerateSdks (Path.Combine (SimPlatform, "Developer/SDKs"), SimulatorPlatformName);
 			} else {
-				InstalledSdkVersions = new IPhoneSdkVersion[0];
-				InstalledSimVersions = new IPhoneSdkVersion[0];
+				InstalledSdkVersions = new AppleSdkVersion [0];
+				InstalledSimVersions = new AppleSdkVersion [0];
 			}
 		}
 
@@ -72,7 +72,7 @@ namespace Xamarin.MacDev
 			return sim ? SimPlatform : DevicePlatform;
 		}
 
-		public string GetSdkPath (IPhoneSdkVersion version, bool sim)
+		public string GetSdkPath (IAppleSdkVersion version, bool sim)
 		{
 			return GetSdkPath (version.ToString (), sim);
 		}
@@ -92,10 +92,10 @@ namespace Xamarin.MacDev
 
 		bool IAppleSdk.SdkIsInstalled (IAppleSdkVersion version, bool isSimulator)
 		{
-			return SdkIsInstalled ((IPhoneSdkVersion) version, isSimulator);
+			return SdkIsInstalled ((AppleSdkVersion) version, isSimulator);
 		}
 
-		public bool SdkIsInstalled (IPhoneSdkVersion version, bool sim)
+		public bool SdkIsInstalled (AppleSdkVersion version, bool sim)
 		{
 			foreach (var v in (sim? InstalledSimVersions : InstalledSdkVersions))
 				if (v.Equals (version))
@@ -103,7 +103,7 @@ namespace Xamarin.MacDev
 			return false;
 		}
 
-		public AppleDTSdkSettings GetSdkSettings (IPhoneSdkVersion sdk, bool isSim)
+		public AppleDTSdkSettings GetSdkSettings (AppleSdkVersion sdk, bool isSim)
 		{
 			return GetSdkSettings ((IAppleSdkVersion) sdk, isSim);
 		}
@@ -178,17 +178,17 @@ namespace Xamarin.MacDev
 
 		IAppleSdkVersion IAppleSdk.GetClosestInstalledSdk (IAppleSdkVersion version, bool isSimulator)
 		{
-			return GetClosestInstalledSdk ((IPhoneSdkVersion) version, isSimulator);
+			return GetClosestInstalledSdk ((AppleSdkVersion) version, isSimulator);
 		}
 
-		public IPhoneSdkVersion GetClosestInstalledSdk (IPhoneSdkVersion v, bool sim)
+		public AppleSdkVersion GetClosestInstalledSdk (AppleSdkVersion v, bool sim)
 		{
 			//sorted low to high, so get first that's >= requested version
 			foreach (var i in GetInstalledSdkVersions (sim)) {
 				if (i.CompareTo (v) >= 0)
 					return i;
 			}
-			return IPhoneSdkVersion.UseDefault;
+			return AppleSdkVersion.UseDefault;
 		}
 
 		IList<IAppleSdkVersion> IAppleSdk.GetInstalledSdkVersions (bool isSimulator)
@@ -196,15 +196,15 @@ namespace Xamarin.MacDev
 			return GetInstalledSdkVersions (isSimulator).Cast<IAppleSdkVersion> ().ToArray ();
 		}
 
-		public IList<IPhoneSdkVersion> GetInstalledSdkVersions (bool sim)
+		public IList<AppleSdkVersion> GetInstalledSdkVersions (bool sim)
 		{
 			return sim ? InstalledSimVersions : InstalledSdkVersions;
 		}
 
-		protected static IPhoneSdkVersion[] EnumerateSdks (string sdkDir, string name)
+		protected static AppleSdkVersion [] EnumerateSdks (string sdkDir, string name)
 		{
 			if (!Directory.Exists (sdkDir))
-				return new IPhoneSdkVersion[0];
+				return new AppleSdkVersion [0];
 
 			var sdks = new List<string> ();
 
@@ -225,10 +225,10 @@ namespace Xamarin.MacDev
 					sdks.Add (d);
 			}
 
-			var vs = new List<IPhoneSdkVersion> ();
+			var vs = new List<AppleSdkVersion> ();
 			foreach (var s in sdks) {
 				try {
-					vs.Add (IPhoneSdkVersion.Parse (s));
+					vs.Add (AppleSdkVersion.Parse (s));
 				} catch (Exception ex) {
 					LoggingService.LogError ("Could not parse {0} SDK version '{1}':\n{2}", name, s, ex.ToString ());
 				}
@@ -255,7 +255,7 @@ namespace Xamarin.MacDev
 
 		bool IAppleSdk.TryParseSdkVersion (string value, out IAppleSdkVersion version)
 		{
-			return IAppleSdkVersion_Extensions.TryParse<IPhoneSdkVersion> (value, out version);
+			return IAppleSdkVersion_Extensions.TryParse<AppleSdkVersion> (value, out version);
 		}
 	}
 }

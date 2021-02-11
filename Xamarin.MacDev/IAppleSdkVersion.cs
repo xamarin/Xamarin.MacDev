@@ -4,6 +4,7 @@ namespace Xamarin.MacDev {
 		bool IsUseDefault { get; }
 		void SetVersion (int [] version);
 		IAppleSdkVersion GetUseDefault ();
+		int [] Version { get; }
 	}
 
 	public static class IAppleSdkVersion_Extensions {
@@ -57,6 +58,88 @@ namespace Xamarin.MacDev {
 			var rv = TryParse<T> (s, out T tmp);
 			result = tmp;
 			return rv;
+		}
+
+		public static T Parse<T> (string s) where T: IAppleSdkVersion, new()
+		{
+			var vstr = s.Split ('.');
+			var vint = new int [vstr.Length];
+			for (int j = 0; j < vstr.Length; j++)
+				vint [j] = int.Parse (vstr [j]);
+			var rv = new T ();
+			rv.SetVersion (vint);
+			return rv;
+		}
+
+		public static bool Equals (IAppleSdkVersion a, IAppleSdkVersion b)
+		{
+			if ((object) a == (object) b)
+				return true;
+
+			if (a != null ^ b != null)
+				return false;
+
+			var x = a.Version;
+			var y = b.Version;
+			if (x == null || y == null || x.Length != y.Length)
+				return false;
+
+			for (int i = 0; i < x.Length; i++)
+				if (x [i] != y [i])
+					return false;
+
+			return true;
+		}
+
+		public static bool Equals (IAppleSdkVersion @this, object other)
+		{
+			if (other is IAppleSdkVersion obj)
+				return Equals (@this, obj);
+			return false;
+		}
+
+		public static int CompareTo (IAppleSdkVersion @this, IAppleSdkVersion other)
+		{
+			var x = @this.Version;
+			var y = other.Version;
+			if (ReferenceEquals (x, y))
+				return 0;
+
+			if (x == null)
+				return -1;
+			if (y == null)
+				return 1;
+
+			for (int i = 0; i < Math.Min (x.Length, y.Length); i++) {
+				int res = x [i] - y [i];
+				if (res != 0)
+					return res;
+			}
+			return x.Length - y.Length;
+		}
+
+		public static string ToString (IAppleSdkVersion @this)
+		{
+			if (@this.IsUseDefault)
+				return "";
+
+			var version = @this.Version;
+			var v = new string [version.Length];
+			for (int i = 0; i < v.Length; i++)
+				v [i] = version [i].ToString ();
+
+			return string.Join (".", v);
+		}
+
+		public static int GetHashCode (IAppleSdkVersion @this)
+		{
+			unchecked {
+				var x = @this.Version;
+				int acc = 0;
+				for (int i = 0; i < x.Length; i++)
+					acc ^= x [i] << i;
+				return acc;
+			}
 		}
 	}
 }

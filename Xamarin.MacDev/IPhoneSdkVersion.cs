@@ -29,6 +29,7 @@ using System;
 
 namespace Xamarin.MacDev
 {
+	[Obsolete ("Use 'AppleSdkVersion' instead.")]
 	public struct IPhoneSdkVersion : IComparable<IPhoneSdkVersion>, IEquatable<IPhoneSdkVersion>, IAppleSdkVersion
 	{
 		int[] version;
@@ -64,13 +65,7 @@ namespace Xamarin.MacDev
 
 		public static IPhoneSdkVersion Parse (string s)
 		{
-			var vstr = s.Split ('.');
-			var vint = new int[vstr.Length];
-
-			for (int j = 0; j < vstr.Length; j++)
-				vint[j] = int.Parse (vstr[j]);
-
-			return new IPhoneSdkVersion (vint);
+			return IAppleSdkVersion_Extensions.Parse<IPhoneSdkVersion> (s);
 		}
 		
 		public static bool TryParse (string s, out IPhoneSdkVersion result)
@@ -82,71 +77,32 @@ namespace Xamarin.MacDev
 		
 		public override string ToString ()
 		{
-			if (IsUseDefault)
-				return "";
-
-			var v = new string [version.Length];
-			for (int i = 0; i < v.Length; i++)
-				v[i] = version[i].ToString ();
-
-			return string.Join (".", v);
+			return IAppleSdkVersion_Extensions.ToString (this);
 		}
 		
 		public int CompareTo (IPhoneSdkVersion other)
 		{
-			var x = Version;
-			var y = other.Version;
-			if (ReferenceEquals (x, y))
-				return 0;
-			
-			if (x == null)
-				return -1;
-			if (y == null)
-				return 1;
-			
-			for (int i = 0; i < Math.Min (x.Length,y.Length); i++) {
-				int res = x[i] - y[i];
-				if (res != 0)
-					return res;
-			}
-			return x.Length - y.Length;
+			return IAppleSdkVersion_Extensions.CompareTo (this, other);
 		}
-		
+
+		public bool Equals (IAppleSdkVersion other)
+		{
+			return IAppleSdkVersion_Extensions.Equals (this, other);
+		}
+
 		public bool Equals (IPhoneSdkVersion other)
 		{
-			var x = Version;
-			var y = other.Version;
-			if (ReferenceEquals (x, y))
-				return true;
-			if (x == null || y == null || x.Length != y.Length)
-				return false;
-			for (int i = 0; i < x.Length; i++)
-				if (x[i] != y[i])
-					return false;
-			return true;
+			return IAppleSdkVersion_Extensions.Equals (this, other);
 		}
 		
 		public override bool Equals (object obj)
 		{
-			if (obj is IPhoneSdkVersion)
-				return Equals ((IPhoneSdkVersion)obj);
-			return false;
+			return IAppleSdkVersion_Extensions.Equals (this, obj);
 		}
 		
-		bool IEquatable<IAppleSdkVersion>.Equals (IAppleSdkVersion other)
-		{
-			return Equals ((object) other);
-		}
-
 		public override int GetHashCode ()
 		{
-			unchecked {
-				var x = Version;
-				int acc = 0;
-				for (int i = 0; i < x.Length; i++)
-					acc ^= x[i] << i;
-				return acc;
-			}
+			return IAppleSdkVersion_Extensions.GetHashCode (this);
 		}
 		
 		public static bool operator == (IPhoneSdkVersion a, IPhoneSdkVersion b)
@@ -189,15 +145,15 @@ namespace Xamarin.MacDev
 		}
 
 #if !WINDOWS
-		public IPhoneSdkVersion ResolveIfDefault (AppleSdk sdk, bool sim)
+		public IAppleSdkVersion ResolveIfDefault (AppleSdk sdk, bool sim)
 		{
 			return IsUseDefault ? GetDefault (sdk, sim) : this;
 		}
 
-		public static IPhoneSdkVersion GetDefault (AppleSdk sdk, bool sim)
+		public static IAppleSdkVersion GetDefault (AppleSdk sdk, bool sim)
 		{
 			var v = sdk.GetInstalledSdkVersions (sim);
-			return v.Count > 0 ? v[v.Count - 1] : UseDefault;
+			return v.Count > 0 ? v[v.Count - 1] : (IAppleSdkVersion) UseDefault;
 		}
 #endif
 
