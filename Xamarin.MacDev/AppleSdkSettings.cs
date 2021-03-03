@@ -153,7 +153,7 @@ namespace Xamarin.MacDev
 			Init ();
 		}
 
-		static bool TryGetSystemXcode (out string path)
+		public static bool TryGetSystemXcode (out string path)
 		{
 			path = null;
 			if (!File.Exists ("/usr/bin/xcode-select"))
