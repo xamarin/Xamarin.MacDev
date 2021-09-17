@@ -23,6 +23,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -56,36 +58,40 @@ namespace Xamarin.MacDev {
 			}
 		}
 
-		public static bool TryGetMacOSVersion (string sdkDirectory, Version iOSVersion, out Version macOSVersion)
+		public static bool TryGetMacOSVersion (string sdkDirectory, Version iOSVersion, out Version? macOSVersion, out ICollection<string> knowniOSVersions)
 		{
 			macOSVersion = null;
 
-			if (!TryGetMacOSVersion (sdkDirectory, iOSVersion.ToString (), out var strValue))
+			if (!TryGetMacOSVersion (sdkDirectory, iOSVersion.ToString (), out var strValue, out knowniOSVersions))
 				return false;
 
 			return Version.TryParse (strValue, out macOSVersion);
 		}
 
-		public static bool TryGetMacOSVersion (string sdkDirectory, string iOSVersion, out string macOSVersion)
+		public static bool TryGetMacOSVersion (string sdkDirectory, string iOSVersion, out string macOSVersion, out ICollection<string> knowniOSVersions)
 		{
 			LoadVersionMaps (sdkDirectory, out var map, out var _);
+
+			knowniOSVersions = map.Keys;
 
 			return map.TryGetValue (iOSVersion.ToString (), out macOSVersion);
 		}
 
-		public static bool TryGetiOSVersion (string sdkDirectory, Version macOSVersion, out Version iOSVersion)
+		public static bool TryGetiOSVersion (string sdkDirectory, Version macOSVersion, out Version? iOSVersion, out ICollection<string> knownMacOSVersions)
 		{
 			iOSVersion = null;
 
-			if (!TryGetiOSVersion (sdkDirectory, macOSVersion.ToString (), out var strValue))
+			if (!TryGetiOSVersion (sdkDirectory, macOSVersion.ToString (), out var strValue, out knownMacOSVersions))
 				return false;
 
 			return Version.TryParse (strValue, out iOSVersion);
 		}
 
-		public static bool TryGetiOSVersion (string sdkDirectory, string macOSVersion, out string iOSVersion)
+		public static bool TryGetiOSVersion (string sdkDirectory, string macOSVersion, out string iOSVersion, out ICollection<string> knownMacOSVersions)
 		{
 			LoadVersionMaps (sdkDirectory, out var _, out var map);
+
+			knownMacOSVersions = map.Keys;
 
 			return map.TryGetValue (macOSVersion.ToString (), out iOSVersion);
 		}
