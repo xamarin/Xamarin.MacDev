@@ -38,6 +38,7 @@ namespace Xamarin.MacDev
 		IPhoneAndIPad = IPhone | IPad,
 		Watch         = 1 << 12,
 		TV            = 1 << 13,
+		MacCatalystOptimizedForMac   = 1 << 14,
 	}
 
 	public enum AppleDeviceFamily
@@ -47,6 +48,7 @@ namespace Xamarin.MacDev
 		TV     = 3,
 		Watch  = 4,
 		IPod   = 5,
+		MacCatalystOptimizedForMac = 6, // Not documented, Xcode sets this value when selecting the "Optimize interface for Mac" option.
 	}
 
 	public static class IPhoneDeviceTypeExtensions
@@ -91,6 +93,8 @@ namespace Xamarin.MacDev
 				return IPhoneDeviceType.TV;
 			case AppleDeviceFamily.Watch:
 				return IPhoneDeviceType.Watch;
+			case AppleDeviceFamily.MacCatalystOptimizedForMac:
+				return IPhoneDeviceType.MacCatalystOptimizedForMac;
 			default:
 				throw new ArgumentOutOfRangeException (string.Format ("Unknown device family: {0}", family));
 			}
