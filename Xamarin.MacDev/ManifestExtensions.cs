@@ -218,6 +218,8 @@ namespace Xamarin.MacDev
 				return AppleDeviceFamily.TV;
 			case 4:
 				return AppleDeviceFamily.Watch;
+			case 6:
+				return AppleDeviceFamily.MacCatalystOptimizedForMac;
 			default:
 				throw new ArgumentOutOfRangeException (string.Format ("Unknown device family: {0}", number.Value));
 			}
