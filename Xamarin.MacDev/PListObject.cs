@@ -153,7 +153,7 @@ namespace Xamarin.MacDev
 			return new PString (value);
 		}
 		
-		public static implicit operator PObject (int value)
+		public static implicit operator PObject (long value)
 		{
 			return new PNumber (value);
 		}
@@ -1108,9 +1108,9 @@ namespace Xamarin.MacDev
 #if !POBJECT_INTERNAL
 	public
 #endif
-	class PNumber : PValueObject<int>
+	class PNumber : PValueObject<long>
 	{
-		public PNumber (int value) : base(value)
+		public PNumber (long value) : base(value)
 		{
 		}
 		
@@ -1122,7 +1122,7 @@ namespace Xamarin.MacDev
 		#if POBJECT_MONOMAC
 		public override NSObject Convert ()
 		{
-			return NSNumber.FromInt32 (Value);
+			return NSNumber.FromInt64 (Value);
 		}
 		#endif
 
@@ -1132,8 +1132,7 @@ namespace Xamarin.MacDev
 
 		public override bool TrySetValueFromString (string text, IFormatProvider formatProvider)
 		{
-			int result;
-			if (int.TryParse (text, NumberStyles.Integer, formatProvider, out result)) {
+			if (long.TryParse (text, NumberStyles.Integer, formatProvider, out var result)) {
 				Value = result;
 				return true;
 			}
@@ -1463,9 +1462,9 @@ namespace Xamarin.MacDev
 					case 1:
 						return bytes[0];
 					case 2:
-						return BitConverter.ToInt16 (bytes, 0);
+						return BitConverter.ToUInt16 (bytes, 0);
 					case 4:
-						return BitConverter.ToInt32 (bytes, 0);
+						return BitConverter.ToUInt32 (bytes, 0);
 					case 8:
 						return BitConverter.ToInt64 (bytes, 0);
 					}
@@ -1638,22 +1637,22 @@ namespace Xamarin.MacDev
 					}
 				}
 
-				void Write (int value)
+				void Write (long value)
 				{
-					if (value < 0) { //they always write negative numbers with 8 bytes
+					if (value < 0 || value > uint.MaxValue) { //they always write negative numbers with 8 bytes
 						stream.WriteByte ((byte)PlistType.integer | 0x3);
-						var bytes = MakeBigEndian (BitConverter.GetBytes ((long)value));
+						var bytes = MakeBigEndian (BitConverter.GetBytes (value));
 						stream.Write (bytes, 0, bytes.Length);
-					} else if (value >= 0 && value < byte.MaxValue) {
+					} else if (value <= byte.MaxValue) {
 						stream.WriteByte ((byte)PlistType.integer);
 						stream.WriteByte ((byte)value);
-					} else if (value >= short.MinValue && value < short.MaxValue) {
+					} else if (value <= ushort.MaxValue) {
 						stream.WriteByte ((byte)PlistType.integer | 0x1);
 						var bytes = MakeBigEndian (BitConverter.GetBytes ((short)value));
 						stream.Write (bytes, 0, bytes.Length);
-					} else {
+					} else if (value <= uint.MaxValue) {
 						stream.WriteByte ((byte)PlistType.integer | 0x2);
-						var bytes = MakeBigEndian (BitConverter.GetBytes (value));
+						var bytes = MakeBigEndian (BitConverter.GetBytes ((int) value));
 						stream.Write (bytes, 0, bytes.Length);
 					}
 				}
@@ -2374,7 +2373,7 @@ namespace Xamarin.MacDev
 					return ReadObject ();
 
 				case PlistType.integer:
-					return new PNumber ((int)ReadInteger ()); //FIXME: should PNumber handle 64-bit values? ReadInteger can if necessary
+					return new PNumber (ReadInteger ());
 				case PlistType.real:
 					return new PReal (ReadReal ());    //FIXME: we should probably make PNumber take floating point as well as ints
 

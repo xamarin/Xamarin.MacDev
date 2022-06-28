@@ -291,7 +291,7 @@ namespace Xamarin.MacDev
 
 			PNumber ttl;
 			if (doc.TryGetValue ("TimeToLive", out ttl) && ttl != null)
-				TimeToLive = ttl.Value;
+				TimeToLive = (int) ttl.Value;
 
 			PString uuid;
 			if (doc.TryGetValue ("UUID", out uuid) && uuid != null)
@@ -299,7 +299,7 @@ namespace Xamarin.MacDev
 
 			PNumber version;
 			if (doc.TryGetValue ("Version", out version) && version != null)
-				Version = version.Value;
+				Version = (int) version.Value;
 		}
 
 		public void Save (string path)

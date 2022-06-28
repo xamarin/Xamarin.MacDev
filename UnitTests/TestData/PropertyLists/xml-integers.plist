@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Negative1</key>
+	<integer>-1</integer>
+	<key>SByteMaxValueMinusOne</key>
+	<integer>126</integer>
+	<key>SByteMaxValue</key>
+	<integer>127</integer>
+	<key>ByteMaxValueMinusOne</key>
+	<integer>254</integer>
+	<key>ByteMaxValue</key>
+	<integer>255</integer>
+	<key>ShortMaxValueMinusOne</key>
+	<integer>32766</integer>
+	<key>ShortMaxValue</key>
+	<integer>32767</integer>
+	<key>UShortMaxValueMinusOne</key>
+	<integer>65534</integer>
+	<key>UShortMaxValue</key>
+	<integer>65535</integer>
+	<key>IntMaxValueMinusOne</key>
+	<integer>2147483646</integer>
+	<key>IntMaxValue</key>
+	<integer>2147483647</integer>
+	<key>IntMaxValuePlusOne</key>
+	<integer>2147483648</integer>
+	<key>UIntMaxValue</key>
+	<integer>4294967295</integer>
+	<key>UIntMaxValuePlusOne</key>
+	<integer>4294967296</integer>
+</dict>
+</plist>
