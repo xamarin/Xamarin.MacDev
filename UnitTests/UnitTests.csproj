@@ -8,10 +8,22 @@
     <PackageReference Include="NUnit.ConsoleRunner" Version="3.10.0" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="TestData\PropertyLists\" />
+    <None Remove="TestData\PropertyLists\xml-integers.plist" />
+    <None Remove="TestData\PropertyLists\binary-integers.plist" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="TestData\Provisioning Profiles\29cbf4b4-a170-4c74-a29a-64ecd55b102e.mobileprovision" />
     <None Include="TestData\Provisioning Profiles\7079f389-6ff4-4290-bf76-c8a222947616.mobileprovision" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Xamarin.MacDev\Xamarin.MacDev.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="TestData\PropertyLists\" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestData\PropertyLists\binary-integers.plist" />
+    <EmbeddedResource Include="TestData\PropertyLists\xml-integers.plist" />
   </ItemGroup>
 </Project>
