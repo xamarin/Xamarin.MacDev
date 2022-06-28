@@ -30,5 +30,7 @@
 	<integer>4294967295</integer>
 	<key>UIntMaxValuePlusOne</key>
 	<integer>4294967296</integer>
+	<key>LongMaxValue</key>
+	<integer>9223372036854775807</integer>
 </dict>
 </plist>

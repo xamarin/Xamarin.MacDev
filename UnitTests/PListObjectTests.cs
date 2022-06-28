@@ -53,6 +53,10 @@ namespace UnitTests
             new KeyValuePair<string, long> ("IntMaxValuePlusOne", ((long) int.MaxValue) + 1),
             new KeyValuePair<string, long> ("UIntMaxValue", uint.MaxValue),
             new KeyValuePair<string, long> ("UIntMaxValuePlusOne", ((long) uint.MaxValue) + 1),
+            new KeyValuePair<string, long> ("LongMaxValue", long.MaxValue),
+
+            // FIXME: Apple supports up to ulong.MaxValue
+            // new KeyValuePair<string, long> ("ULongMaxValue", ulong.MaxValue),
         };
 
         [TestCase ("xml-integers.plist")]
