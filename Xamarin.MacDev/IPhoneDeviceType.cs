@@ -69,7 +69,10 @@ namespace Xamarin.MacDev
 			if ((type & IPhoneDeviceType.Watch) == IPhoneDeviceType.Watch)
 				rv.Add (AppleDeviceFamily.Watch);
 
-			return rv;
+            if ((type & IPhoneDeviceType.MacCatalystOptimizedForMac) == IPhoneDeviceType.MacCatalystOptimizedForMac)
+                rv.Add(AppleDeviceFamily.MacCatalystOptimizedForMac);
+
+            return rv;
 		}
 
 		public static IPhoneDeviceType ToDeviceType (this IEnumerable<AppleDeviceFamily> families)
