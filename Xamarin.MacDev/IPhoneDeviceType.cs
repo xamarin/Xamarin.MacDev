@@ -28,80 +28,80 @@ using System.Collections.Generic;
 
 namespace Xamarin.MacDev
 {
-    [Flags]
-    public enum IPhoneDeviceType
-    {
-        NotSet = 0,
-        // Use different values than AppleDeviceFamily to catch incorrect usage earlier.
-        IPhone = 1 << 10,
-        IPad = 1 << 11,
-        IPhoneAndIPad = IPhone | IPad,
-        Watch = 1 << 12,
-        TV = 1 << 13,
-        MacCatalystOptimizedForMac = 1 << 14,
-    }
+	[Flags]
+	public enum IPhoneDeviceType
+	{
+		NotSet = 0,
+		// Use different values than AppleDeviceFamily to catch incorrect usage earlier.
+		IPhone = 1 << 10,
+		IPad = 1 << 11,
+		IPhoneAndIPad = IPhone | IPad,
+		Watch = 1 << 12,
+		TV = 1 << 13,
+		MacCatalystOptimizedForMac = 1 << 14,
+	}
 
-    public enum AppleDeviceFamily
-    {
-        IPhone = 1,
-        IPad = 2,
-        TV = 3,
-        Watch = 4,
-        IPod = 5,
-        MacCatalystOptimizedForMac = 6, // Not documented, Xcode sets this value when selecting the "Optimize interface for Mac" option.
-    }
+	public enum AppleDeviceFamily
+	{
+		IPhone = 1,
+		IPad = 2,
+		TV = 3,
+		Watch = 4,
+		IPod = 5,
+		MacCatalystOptimizedForMac = 6, // Not documented, Xcode sets this value when selecting the "Optimize interface for Mac" option.
+	}
 
-    public static class IPhoneDeviceTypeExtensions
-    {
-        public static IList<AppleDeviceFamily> ToDeviceFamily(this IPhoneDeviceType type)
-        {
-            var rv = new List<AppleDeviceFamily>();
+	public static class IPhoneDeviceTypeExtensions
+	{
+		public static IList<AppleDeviceFamily> ToDeviceFamily(this IPhoneDeviceType type)
+		{
+			var rv = new List<AppleDeviceFamily>();
 
-            if ((type & IPhoneDeviceType.IPhone) == IPhoneDeviceType.IPhone)
-                rv.Add(AppleDeviceFamily.IPhone);
+			if ((type & IPhoneDeviceType.IPhone) == IPhoneDeviceType.IPhone)
+				rv.Add(AppleDeviceFamily.IPhone);
 
-            if ((type & IPhoneDeviceType.IPad) == IPhoneDeviceType.IPad)
-                rv.Add(AppleDeviceFamily.IPad);
+			if ((type & IPhoneDeviceType.IPad) == IPhoneDeviceType.IPad)
+				rv.Add(AppleDeviceFamily.IPad);
 
-            if ((type & IPhoneDeviceType.TV) == IPhoneDeviceType.TV)
-                rv.Add(AppleDeviceFamily.TV);
+			if ((type & IPhoneDeviceType.TV) == IPhoneDeviceType.TV)
+				rv.Add(AppleDeviceFamily.TV);
 
-            if ((type & IPhoneDeviceType.Watch) == IPhoneDeviceType.Watch)
-                rv.Add(AppleDeviceFamily.Watch);
+			if ((type & IPhoneDeviceType.Watch) == IPhoneDeviceType.Watch)
+				rv.Add(AppleDeviceFamily.Watch);
 
-            if ((type & IPhoneDeviceType.MacCatalystOptimizedForMac) == IPhoneDeviceType.MacCatalystOptimizedForMac)
-                rv.Add(AppleDeviceFamily.MacCatalystOptimizedForMac);
+			if ((type & IPhoneDeviceType.MacCatalystOptimizedForMac) == IPhoneDeviceType.MacCatalystOptimizedForMac)
+				rv.Add(AppleDeviceFamily.MacCatalystOptimizedForMac);
 
-            return rv;
-        }
+			return rv;
+		}
 
-        public static IPhoneDeviceType ToDeviceType(this IEnumerable<AppleDeviceFamily> families)
-        {
-            var rv = IPhoneDeviceType.NotSet;
+		public static IPhoneDeviceType ToDeviceType(this IEnumerable<AppleDeviceFamily> families)
+		{
+			var rv = IPhoneDeviceType.NotSet;
 
-            foreach (var family in families)
-                rv |= ToDeviceType(family);
+			foreach (var family in families)
+				rv |= ToDeviceType(family);
 
-            return rv;
-        }
+			return rv;
+		}
 
-        public static IPhoneDeviceType ToDeviceType(this AppleDeviceFamily family)
-        {
-            switch (family)
-            {
-                case AppleDeviceFamily.IPhone:
-                    return IPhoneDeviceType.IPhone;
-                case AppleDeviceFamily.IPad:
-                    return IPhoneDeviceType.IPad;
-                case AppleDeviceFamily.TV:
-                    return IPhoneDeviceType.TV;
-                case AppleDeviceFamily.Watch:
-                    return IPhoneDeviceType.Watch;
-                case AppleDeviceFamily.MacCatalystOptimizedForMac:
-                    return IPhoneDeviceType.MacCatalystOptimizedForMac;
-                default:
-                    throw new ArgumentOutOfRangeException(string.Format("Unknown device family: {0}", family));
-            }
-        }
-    }
+		public static IPhoneDeviceType ToDeviceType(this AppleDeviceFamily family)
+		{
+			switch (family)
+			{
+				case AppleDeviceFamily.IPhone:
+					return IPhoneDeviceType.IPhone;
+				case AppleDeviceFamily.IPad:
+					return IPhoneDeviceType.IPad;
+				case AppleDeviceFamily.TV:
+					return IPhoneDeviceType.TV;
+				case AppleDeviceFamily.Watch:
+					return IPhoneDeviceType.Watch;
+				case AppleDeviceFamily.MacCatalystOptimizedForMac:
+					return IPhoneDeviceType.MacCatalystOptimizedForMac;
+				default:
+					throw new ArgumentOutOfRangeException(string.Format("Unknown device family: {0}", family));
+			}
+		}
+	}
 }
