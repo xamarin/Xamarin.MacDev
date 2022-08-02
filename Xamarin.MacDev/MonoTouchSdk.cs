@@ -311,6 +311,7 @@ namespace Xamarin.MacDev
 			case PlatformName.iOS: return "iOS";
 			case PlatformName.WatchOS: return "watchOS";
 			case PlatformName.TvOS: return "tvOS";
+			case PlatformName.MacOSX: return "MacCatalyst";
 			default: throw new ArgumentOutOfRangeException (nameof (platform));
 			}
 		}
