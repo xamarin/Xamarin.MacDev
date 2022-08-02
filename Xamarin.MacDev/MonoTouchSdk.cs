@@ -338,9 +338,22 @@ namespace Xamarin.MacDev
 				PArray array;
 
 				if (knownVersions.TryGetValue (key, out array)) {
-					foreach (var knownVersion in array.OfType<PString> ()) {
-						if (AppleSdkVersion.TryParse (knownVersion.Value, out var version))
-							list.Add (version);
+					versions.TryGetValue("MacCatalystVersionMap", out PDictionary macCatalystVersionMap);
+
+					foreach (var knownVersion in array.OfType<PString>())
+					{
+						string versionValue = knownVersion.Value;
+
+						// For MacCatalyst we need to convert the versions to supported versions using the map
+						if (platform == PlatformName.MacOSX) {
+							if (macCatalystVersionMap != null) {
+								if (macCatalystVersionMap.TryGetValue(knownVersion, out PString value))
+									versionValue = value.Value;
+							}
+						}
+
+						if (AppleSdkVersion.TryParse(versionValue, out var version))
+							list.Add(version);
 					}
 				}
 			}
