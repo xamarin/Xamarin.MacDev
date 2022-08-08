@@ -658,6 +658,34 @@ namespace Xamarin.MacDev
 				dict[ManifestKeys.XSLaunchImageAssets] = vpath;
 		}
 
+		public static string GetAccentColorAssets (this PDictionary dict)
+		{
+			var str = dict.Get<PString> (ManifestKeys.XSAccentColorAssets);
+			return str == null ? null : str.Value;
+		}
+
+		public static void SetAccentColorAssets (this PDictionary dict, string vpath)
+		{
+			if (string.IsNullOrEmpty (vpath))
+				dict.Remove (ManifestKeys.XSAccentColorAssets);
+			else
+				dict[ManifestKeys.XSAccentColorAssets] = vpath;
+		}
+
+		public static string GetAccentColorName (this PDictionary dict)
+		{
+			var str = dict.Get<PString> (ManifestKeys.NSAccentColorName);
+			return str == null ? null : str.Value;
+		}
+
+		public static void SetAccentColorName (this PDictionary dict, string value)
+		{
+			if (string.IsNullOrEmpty (value))
+				dict.Remove (ManifestKeys.NSAccentColorName);
+			else
+				dict[ManifestKeys.NSAccentColorName] = value;
+		}
+
 		#endregion
 
 		public static bool GetBoolean (this PDictionary dict, string key)
