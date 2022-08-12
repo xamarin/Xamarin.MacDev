@@ -32,6 +32,16 @@ namespace Xamarin.MacDev
 	{
 		#region CoreFoundation Manifest Keys
 
+		public static PArray GetUTExportedTypeDeclaration(this PDictionary dict)
+		{
+			return dict.Get<PArray>(ManifestKeys.UTExportedTypeDeclaration);
+		}
+
+		public static PArray GetUTImportedTypeDeclaration(this PDictionary dict)
+		{
+			return dict.Get<PArray>(ManifestKeys.UTImportedTypeDeclaration);
+		}
+
 		public static string GetCFBundleDisplayName (this PDictionary dict)
 		{
 			var str = dict.Get<PString> (ManifestKeys.CFBundleDisplayName);
@@ -838,6 +848,9 @@ namespace Xamarin.MacDev
 		public const string NSExceptionDomains = "NSExceptionDomains";
 		public const string NSAllowsArbitraryLoads = "NSAllowsArbitraryLoads";
 		public const string NSTemporaryExceptionAllowsInsecureHTTPLoads = "NSTemporaryExceptionAllowsInsecureHTTPLoads";
+
+		public const string UTExportedTypeDeclaration = nameof(UTExportedTypeDeclaration);
+		public const string UTImportedTypeDeclaration = nameof(UTImportedTypeDeclaration);
 	}
 
 	public static class WatchComplicationSupportedFamiliesStrings
