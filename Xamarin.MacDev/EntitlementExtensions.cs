@@ -58,6 +58,23 @@ namespace Xamarin.MacDev
 		public const string Calendar = "com.apple.security.personal-information.calendars";
 		public const string PhotosLibrary = "com.apple.security.personal-information.photos-library";
 		public const string AppleEvents = "com.apple.security.automation.apple-events";
+		
+		public const string AppAttest = "com.apple.developer.devicecheck.appattest-environment";
+		public const string CommunicatesWithDrivers = "com.apple.developer.driverkit.communicates-with-drivers";
+		public const string CommunicationNotifications = "com.apple.developer.usernotifications.communication";
+		public const string CustomNetworkProtocol = "com.apple.developer.networking.custom-protocol";
+		public const string ExtendedVirtualAddressing = "com.apple.developer.kernel.extended-virtual-addressing";
+		public const string FamilyControls = "com.apple.developer.family-controls";
+		public const string FileProviderTestingMode = "com.apple.developer.fileprovider.testing-mode";
+		public const string GameCenter = "com.apple.developer.game-center";
+		public const string GameControllers = "GCSupportedGameControllers";
+		public const string GroupActivities = "com.apple.developer.group-session";
+		public const string IncreasedMemoryLimit = "com.apple.developer.kernel.increased-memory-limit";
+		public const string MDMManagedAssociatedDomains = "com.apple.developer.associated-domains.mdm-managed";
+		public const string PushToTalk = "com.apple.developer.push-to-talk";
+		public const string SharedWithYou = "com.apple.developer.shared-with-you";
+		public const string TimeSensitiveNotifications = "com.apple.developer.usernotifications.time-sensitive";
+		public const string WeatherKit = "com.apple.developer.weatherkit";
 
 		static string[] allKeys;
 
