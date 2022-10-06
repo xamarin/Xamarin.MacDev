@@ -1,4 +1,4 @@
-﻿// 
+// 
 // AppleSdk.cs
 //  
 // Authors: Rolf Bjarne Kvinge <rolf@xamarin.com>
@@ -24,14 +24,12 @@
 // THE SOFTWARE.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Collections.Generic;
 
-namespace Xamarin.MacDev
-{
-	public abstract class AppleSdk : IAppleSdk
-	{
+namespace Xamarin.MacDev {
+	public abstract class AppleSdk : IAppleSdk {
 		public string DeveloperRoot { get; protected set; }
 		public string VersionPlist { get; protected set; }
 
@@ -42,8 +40,8 @@ namespace Xamarin.MacDev
 		public string SimPlatform { get { return Path.Combine (DeveloperRoot, "Platforms/" + SimulatorPlatformName + ".platform"); } }
 
 		public bool IsInstalled { get; private set; }
-		public AppleSdkVersion[] InstalledSdkVersions { get; private set; }
-		public AppleSdkVersion[] InstalledSimVersions { get; private set; }
+		public AppleSdkVersion [] InstalledSdkVersions { get; private set; }
+		public AppleSdkVersion [] InstalledSimVersions { get; private set; }
 
 		readonly Dictionary<string, AppleDTSdkSettings> sdkSettingsCache = new Dictionary<string, AppleDTSdkSettings> ();
 		readonly Dictionary<string, AppleDTSdkSettings> simSettingsCache = new Dictionary<string, AppleDTSdkSettings> ();
@@ -97,7 +95,7 @@ namespace Xamarin.MacDev
 
 		public bool SdkIsInstalled (AppleSdkVersion version, bool sim)
 		{
-			foreach (var v in (sim? InstalledSimVersions : InstalledSdkVersions))
+			foreach (var v in (sim ? InstalledSimVersions : InstalledSdkVersions))
 				if (v.Equals (version))
 					return true;
 			return false;
@@ -123,7 +121,7 @@ namespace Xamarin.MacDev
 				LoggingService.LogError (string.Format ("Error loading settings for SDK {0} {1}", sdkName, sdk), ex);
 			}
 
-			cache[sdk.ToString ()] = settings;
+			cache [sdk.ToString ()] = settings;
 			return settings;
 		}
 

@@ -31,28 +31,26 @@
 // Binary format reference: http://opensource.apple.com/source/CF/CF-635.21/CFBinaryPList.c
 
 using System;
-using System.IO;
-using System.Xml;
-using System.Text;
-using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
+using System.Linq;
 using System.Security;
+using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 #if POBJECT_MONOMAC
 using MonoMac.Foundation;
 using MonoMac.ObjCRuntime;
 #endif
 
-namespace Xamarin.MacDev
-{
+namespace Xamarin.MacDev {
 #if !POBJECT_INTERNAL
 	public
 #endif
-	abstract class PObject
-	{
+	abstract class PObject {
 		public static PObject Create (PObjectType type)
 		{
 			switch (type) {
@@ -67,7 +65,7 @@ namespace Xamarin.MacDev
 			case PObjectType.Boolean:
 				return new PBoolean (true);
 			case PObjectType.Data:
-				return new PData (new byte[0]);
+				return new PData (new byte [0]);
 			case PObjectType.String:
 				return new PString ("");
 			case PObjectType.Date:
@@ -85,7 +83,7 @@ namespace Xamarin.MacDev
 			if (obj is PArray)
 				return ((PArray) obj).Select (k => new KeyValuePair<string, PObject> (k is IPValueObject ? ((IPValueObject) k).Value.ToString () : null, k));
 
-			return Enumerable.Empty <KeyValuePair<string, PObject>> ();
+			return Enumerable.Empty<KeyValuePair<string, PObject>> ();
 		}
 
 		PObjectContainer parent;
@@ -98,42 +96,42 @@ namespace Xamarin.MacDev
 				parent = value;
 			}
 		}
-		
+
 		public abstract PObject Clone ();
-		
+
 		public void Replace (PObject newObject)
 		{
 			var p = Parent;
 			if (p is PDictionary) {
-				var dict = (PDictionary)p;
+				var dict = (PDictionary) p;
 				var key = dict.GetKey (this);
 				if (key == null)
 					return;
 				Remove ();
-				dict[key] = newObject;
+				dict [key] = newObject;
 			} else if (p is PArray) {
-				var arr = (PArray)p;
+				var arr = (PArray) p;
 				arr.Replace (this, newObject);
 			}
 		}
-		
+
 		public string Key {
 			get {
 				if (Parent is PDictionary) {
-					var dict = (PDictionary)Parent;
+					var dict = (PDictionary) Parent;
 					return dict.GetKey (this);
 				}
 				return null;
 			}
 		}
-		
+
 		public void Remove ()
 		{
 			if (Parent is PDictionary) {
-				var dict = (PDictionary)Parent;
+				var dict = (PDictionary) Parent;
 				dict.Remove (Key);
 			} else if (Parent is PArray) {
-				var arr = (PArray)Parent;
+				var arr = (PArray) Parent;
 				arr.Remove (this);
 			} else {
 				if (Parent == null)
@@ -142,62 +140,62 @@ namespace Xamarin.MacDev
 			}
 		}
 
-		#if POBJECT_MONOMAC
+#if POBJECT_MONOMAC
 		public abstract NSObject Convert ();
-		#endif
+#endif
 
 		public abstract PObjectType Type { get; }
-		
+
 		public static implicit operator PObject (string value)
 		{
 			return new PString (value);
 		}
-		
+
 		public static implicit operator PObject (long value)
 		{
 			return new PNumber (value);
 		}
-		
+
 		public static implicit operator PObject (double value)
 		{
 			return new PReal (value);
 		}
-		
+
 		public static implicit operator PObject (bool value)
 		{
 			return new PBoolean (value);
 		}
-		
+
 		public static implicit operator PObject (DateTime value)
 		{
 			return new PDate (value);
 		}
-		
-		public static implicit operator PObject (byte[] value)
+
+		public static implicit operator PObject (byte [] value)
 		{
 			return new PData (value);
 		}
-		
+
 		protected virtual void OnChanged (EventArgs e)
 		{
 			if (SuppressChangeEvents)
 				return;
-			
+
 			var handler = Changed;
 			if (handler != null)
 				handler (this, e);
-			
+
 			if (Parent != null)
 				Parent.OnCollectionChanged (Key, this);
 		}
-		
+
 		protected bool SuppressChangeEvents {
 			get; set;
 		}
-		
+
 		public event EventHandler Changed;
 
-		public byte[] ToByteArray (PropertyListFormat format)
+		public byte [] ToByteArray (PropertyListFormat format)
 		{
 			using (var stream = new MemoryStream ()) {
 				using (var context = format.StartWriting (stream))
@@ -206,7 +204,7 @@ namespace Xamarin.MacDev
 			}
 		}
 
-		public byte[] ToByteArray (bool binary)
+		public byte [] ToByteArray (bool binary)
 		{
 			var format = binary ? PropertyListFormat.Binary : PropertyListFormat.Xml;
 
@@ -223,7 +221,7 @@ namespace Xamarin.MacDev
 			return Encoding.UTF8.GetString (ToByteArray (PropertyListFormat.Xml));
 		}
 
-		#if POBJECT_MONOMAC
+#if POBJECT_MONOMAC
 		static readonly IntPtr selObjCType = Selector.GetHandle ("objCType");
 
 		public static PObject FromNSObject (NSObject val)
@@ -281,9 +279,9 @@ namespace Xamarin.MacDev
 			
 			throw new NotSupportedException (val.ToString ());
 		}
-		#endif
+#endif
 
-		public static PObject FromByteArray (byte[] array, int startIndex, int length, out bool isBinary)
+		public static PObject FromByteArray (byte [] array, int startIndex, int length, out bool isBinary)
 		{
 			var ctx = PropertyListFormat.Binary.StartReading (array, startIndex, length);
 
@@ -304,7 +302,7 @@ namespace Xamarin.MacDev
 			}
 		}
 
-		public static PObject FromByteArray (byte[] array, out bool isBinary)
+		public static PObject FromByteArray (byte [] array, out bool isBinary)
 		{
 			return FromByteArray (array, 0, array.Length, out isBinary);
 		}
@@ -406,12 +404,11 @@ namespace Xamarin.MacDev
 			return tempfile;
 		}
 	}
-	
+
 #if !POBJECT_INTERNAL
 	public
 #endif
-	abstract class PObjectContainer : PObject
-	{
+	abstract class PObjectContainer : PObject {
 		public abstract int Count { get; }
 
 		public bool Reload (string fileName)
@@ -477,12 +474,11 @@ namespace Xamarin.MacDev
 
 		public event EventHandler<PObjectContainerEventArgs> CollectionChanged;
 	}
-	
+
 #if !POBJECT_INTERNAL
 	public
 #endif
-	interface IPValueObject
-	{
+	interface IPValueObject {
 		object Value { get; set; }
 		bool TrySetValueFromString (string text, IFormatProvider formatProvider);
 	}
@@ -490,8 +486,7 @@ namespace Xamarin.MacDev
 #if !POBJECT_INTERNAL
 	public
 #endif
-	abstract class PValueObject<T> : PObject, IPValueObject
-	{
+	abstract class PValueObject<T> : PObject, IPValueObject {
 		T val;
 		public T Value {
 			get {
@@ -502,24 +497,24 @@ namespace Xamarin.MacDev
 				OnChanged (EventArgs.Empty);
 			}
 		}
-		
+
 		object IPValueObject.Value {
 			get { return Value; }
 			set { Value = (T) value; }
 		}
-		
+
 		protected PValueObject (T value)
 		{
 			Value = value;
 		}
-		
+
 		protected PValueObject ()
 		{
 		}
 
 		public static implicit operator T (PValueObject<T> pObj)
 		{
-			return pObj != null ? pObj.Value : default(T);
+			return pObj != null ? pObj.Value : default (T);
 		}
 
 		public abstract bool TrySetValueFromString (string text, IFormatProvider formatProvider);
@@ -528,15 +523,14 @@ namespace Xamarin.MacDev
 #if !POBJECT_INTERNAL
 	public
 #endif
-	class PDictionary : PObjectContainer, IEnumerable<KeyValuePair<string, PObject>>
-	{
-		static readonly byte[] BeginMarkerBytes = Encoding.ASCII.GetBytes ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-		static readonly byte[] EndMarkerBytes = Encoding.ASCII.GetBytes ("</plist>");
+	class PDictionary : PObjectContainer, IEnumerable<KeyValuePair<string, PObject>> {
+		static readonly byte [] BeginMarkerBytes = Encoding.ASCII.GetBytes ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+		static readonly byte [] EndMarkerBytes = Encoding.ASCII.GetBytes ("</plist>");
 
 		readonly Dictionary<string, PObject> dict;
 		readonly List<string> order;
-		
-		public PObject this[string key] {
+
+		public PObject this [string key] {
 			get {
 				PObject value;
 				if (dict.TryGetValue (key, out value))
@@ -548,16 +542,16 @@ namespace Xamarin.MacDev
 				bool exists = dict.TryGetValue (key, out existing);
 				if (!exists)
 					order.Add (key);
-				
-				dict[key] = value;
-				
+
+				dict [key] = value;
+
 				if (exists)
 					OnChildReplaced (key, existing, value);
 				else
 					OnChildAdded (key, value);
 			}
 		}
-		
+
 		public void Add (string key, PObject value)
 		{
 			dict.Add (key, value);
@@ -565,7 +559,7 @@ namespace Xamarin.MacDev
 
 			OnChildAdded (key, value);
 		}
-		
+
 		public void InsertAfter (string keyBefore, string key, PObject value)
 		{
 			dict.Add (key, value);
@@ -573,16 +567,16 @@ namespace Xamarin.MacDev
 
 			OnChildAdded (key, value);
 		}
-		
+
 		public override int Count {
 			get { return dict.Count; }
 		}
-		
+
 		#region IEnumerable[KeyValuePair[System.String,PObject]] implementation
 		public IEnumerator<KeyValuePair<string, PObject>> GetEnumerator ()
 		{
 			foreach (var key in order)
-				yield return new KeyValuePair<string, PObject> (key, dict[key]);
+				yield return new KeyValuePair<string, PObject> (key, dict [key]);
 		}
 		#endregion
 
@@ -592,13 +586,13 @@ namespace Xamarin.MacDev
 			return GetEnumerator ();
 		}
 		#endregion
-		
+
 		public PDictionary ()
 		{
 			dict = new Dictionary<string, PObject> ();
 			order = new List<string> ();
 		}
-		
+
 		public override PObject Clone ()
 		{
 			var clone = new PDictionary ();
@@ -608,7 +602,7 @@ namespace Xamarin.MacDev
 
 			return clone;
 		}
-		
+
 		public bool ContainsKey (string name)
 		{
 			return dict.ContainsKey (name);
@@ -637,16 +631,16 @@ namespace Xamarin.MacDev
 		{
 			return ChangeKey (obj, newKey, null);
 		}
-		
+
 		public bool ChangeKey (PObject obj, string newKey, PObject newValue)
 		{
 			var oldkey = GetKey (obj);
 			if (oldkey == null || dict.ContainsKey (newKey))
 				return false;
-			
+
 			dict.Remove (oldkey);
 			dict.Add (newKey, newValue ?? obj);
-			order[order.IndexOf (oldkey)] = newKey;
+			order [order.IndexOf (oldkey)] = newKey;
 			if (newValue != null) {
 				OnChildRemoved (oldkey, obj);
 				OnChildAdded (newKey, newValue);
@@ -665,7 +659,7 @@ namespace Xamarin.MacDev
 			}
 			return null;
 		}
-		
+
 		public T Get<T> (string key) where T : PObject
 		{
 			PObject obj;
@@ -690,7 +684,7 @@ namespace Xamarin.MacDev
 			return value != null;
 		}
 
-		#if POBJECT_MONOMAC
+#if POBJECT_MONOMAC
 		public override NSObject Convert ()
 		{
 			List<NSObject> objs = new List<NSObject> ();
@@ -703,16 +697,16 @@ namespace Xamarin.MacDev
 			}
 			return NSDictionary.FromObjectsAndKeys (objs.ToArray (), keys.ToArray ());
 		}
-		#endif
+#endif
 
-		static int IndexOf (byte[] haystack, int startIndex, byte[] needle)
+		static int IndexOf (byte [] haystack, int startIndex, byte [] needle)
 		{
 			int maxLength = haystack.Length - needle.Length;
 			int n;
 
 			for (int i = startIndex; i < maxLength; i++) {
 				for (n = 0; n < needle.Length; n++) {
-					if (haystack[i+n] != needle[n])
+					if (haystack [i + n] != needle [n])
 						break;
 				}
 
@@ -723,17 +717,17 @@ namespace Xamarin.MacDev
 			return -1;
 		}
 
-		public static new PDictionary FromByteArray (byte[] array, int startIndex, int length, out bool isBinary)
+		public static new PDictionary FromByteArray (byte [] array, int startIndex, int length, out bool isBinary)
 		{
 			return (PDictionary) PObject.FromByteArray (array, startIndex, length, out isBinary);
 		}
 
-		public static new PDictionary FromByteArray (byte[] array, out bool isBinary)
+		public static new PDictionary FromByteArray (byte [] array, out bool isBinary)
 		{
 			return (PDictionary) PObject.FromByteArray (array, out isBinary);
 		}
 
-		public static PDictionary FromBinaryXml (byte[] array)
+		public static PDictionary FromBinaryXml (byte [] array)
 		{
 			//find the raw plist within the .mobileprovision file
 			int start = IndexOf (array, 0, BeginMarkerBytes);
@@ -747,7 +741,7 @@ namespace Xamarin.MacDev
 
 			return FromByteArray (array, start, length, out binary);
 		}
-		
+
 		[Obsolete ("Use FromFile")]
 		public static PDictionary Load (string fileName)
 		{
@@ -799,66 +793,65 @@ namespace Xamarin.MacDev
 			var result = Get<PString> (key);
 
 			if (result == null)
-				this[key] = new PString (value);
+				this [key] = new PString (value);
 			else
 				result.Value = value;
 		}
-		
+
 		public PString GetString (string key)
 		{
 			var result = Get<PString> (key);
 
 			if (result == null)
-				this[key] = result = new PString ("");
+				this [key] = result = new PString ("");
 
 			return result;
 		}
-		
+
 		public PArray GetArray (string key)
 		{
 			var result = Get<PArray> (key);
 
 			if (result == null)
-				this[key] = result = new PArray ();
+				this [key] = result = new PArray ();
 
 			return result;
 		}
-		
+
 		public override PObjectType Type {
 			get { return PObjectType.Dictionary; }
 		}
 	}
-	
+
 #if !POBJECT_INTERNAL
 	public
 #endif
-	class PArray : PObjectContainer, IEnumerable<PObject>
-	{
+	class PArray : PObjectContainer, IEnumerable<PObject> {
 		List<PObject> list;
-		
+
 		public override int Count {
 			get { return list.Count; }
 		}
-		
-		public PObject this[int i] {
+
+		public PObject this [int i] {
 			get {
-				return list[i];
+				return list [i];
 			}
 			set {
 				if (i < 0 || i >= Count)
 					throw new ArgumentOutOfRangeException ();
-				var existing = list[i];
-				list[i] = value;
+				var existing = list [i];
+				list [i] = value;
 
 				OnChildReplaced (null, existing, value);
 			}
 		}
-		
+
 		public PArray ()
 		{
 			list = new List<PObject> ();
 		}
-		
+
 		public override PObject Clone ()
 		{
 			var array = new PArray ();
@@ -876,7 +869,7 @@ namespace Xamarin.MacDev
 				OnChanged (EventArgs.Empty);
 			return result;
 		}
-		
+
 		public void Add (PObject obj)
 		{
 			list.Add (obj);
@@ -892,14 +885,14 @@ namespace Xamarin.MacDev
 		public void Replace (PObject oldObj, PObject newObject)
 		{
 			for (int i = 0; i < Count; i++) {
-				if (list[i] == oldObj) {
-					list[i] = newObject;
+				if (list [i] == oldObj) {
+					list [i] = newObject;
 					OnChildReplaced (null, oldObj, newObject);
 					break;
 				}
 			}
 		}
-		
+
 		public void Remove (PObject obj)
 		{
 			if (list.Remove (obj))
@@ -908,7 +901,7 @@ namespace Xamarin.MacDev
 
 		public void RemoveAt (int index)
 		{
-			var obj = list[index];
+			var obj = list [index];
 			list.RemoveAt (index);
 			OnChildRemoved (null, obj);
 		}
@@ -924,18 +917,18 @@ namespace Xamarin.MacDev
 			OnCleared ();
 		}
 
-		#if POBJECT_MONOMAC
+#if POBJECT_MONOMAC
 		public override NSObject Convert ()
 		{
 			return NSArray.FromNSObjects (list.Select (x => x.Convert ()).ToArray ());
 		}
-		#endif
+#endif
 
 		public override string ToString ()
 		{
 			return string.Format ("[PArray: Items={0}]", Count);
 		}
-		
+
 		public void AssignStringList (string strList)
 		{
 			SuppressChangeEvents = true;
@@ -952,7 +945,7 @@ namespace Xamarin.MacDev
 			}
 		}
 
-		public string[] ToStringArray ()
+		public string [] ToStringArray ()
 		{
 			var strlist = new List<string> ();
 
@@ -961,7 +954,7 @@ namespace Xamarin.MacDev
 
 			return strlist.ToArray ();
 		}
-		
+
 		public string ToStringList ()
 		{
 			var sb = new StringBuilder ();
@@ -972,17 +965,17 @@ namespace Xamarin.MacDev
 			}
 			return sb.ToString ();
 		}
-		
+
 		public IEnumerator<PObject> GetEnumerator ()
 		{
 			return list.GetEnumerator ();
 		}
-		
+
 		IEnumerator IEnumerable.GetEnumerator ()
 		{
 			return list.GetEnumerator ();
 		}
-		
+
 		public override PObjectType Type {
 			get { return PObjectType.Array; }
 		}
@@ -991,23 +984,22 @@ namespace Xamarin.MacDev
 #if !POBJECT_INTERNAL
 	public
 #endif
-	class PBoolean : PValueObject<bool>
-	{
-		public PBoolean (bool value) : base(value)
+	class PBoolean : PValueObject<bool> {
+		public PBoolean (bool value) : base (value)
 		{
 		}
-		
+
 		public override PObject Clone ()
 		{
 			return new PBoolean (Value);
 		}
 
-		#if POBJECT_MONOMAC
+#if POBJECT_MONOMAC
 		public override NSObject Convert ()
 		{
 			return NSNumber.FromBoolean (Value);
 		}
-		#endif
+#endif
 
 		public override PObjectType Type {
 			get { return PObjectType.Boolean; }
@@ -1030,15 +1022,14 @@ namespace Xamarin.MacDev
 			return false;
 		}
 	}
-	
+
 #if !POBJECT_INTERNAL
 	public
 #endif
-	class PData : PValueObject<byte[]>
-	{
-		static readonly byte[] Empty = new byte [0];
+	class PData : PValueObject<byte []> {
+		static readonly byte [] Empty = new byte [0];
 
-		#if POBJECT_MONOMAC
+#if POBJECT_MONOMAC
 		public override NSObject Convert ()
 		{
 			// Work around a bug in NSData.FromArray as it cannot (currently) handle
@@ -1048,17 +1039,17 @@ namespace Xamarin.MacDev
 			else
 				return NSData.FromArray (Value);
 		}
-		#endif
+#endif
 
-		public PData (byte[] value) : base(value ?? Empty)
+		public PData (byte [] value) : base (value ?? Empty)
 		{
 		}
-		
+
 		public override PObject Clone ()
 		{
 			return new PData (Value);
 		}
-		
+
 		public override PObjectType Type {
 			get { return PObjectType.Data; }
 		}
@@ -1068,27 +1059,26 @@ namespace Xamarin.MacDev
 			return false;
 		}
 	}
-	
+
 #if !POBJECT_INTERNAL
 	public
 #endif
-	class PDate : PValueObject<DateTime>
-	{
-		public PDate (DateTime value) : base(value)
+	class PDate : PValueObject<DateTime> {
+		public PDate (DateTime value) : base (value)
 		{
 		}
-		
+
 		public override PObject Clone ()
 		{
 			return new PDate (Value);
 		}
 
-		#if POBJECT_MONOMAC
+#if POBJECT_MONOMAC
 		public override NSObject Convert ()
 		{
 			return (NSDate) Value;
 		}
-		#endif
+#endif
 
 		public override PObjectType Type {
 			get { return PObjectType.Date; }
@@ -1104,27 +1094,26 @@ namespace Xamarin.MacDev
 			return false;
 		}
 	}
-	
+
 #if !POBJECT_INTERNAL
 	public
 #endif
-	class PNumber : PValueObject<long>
-	{
-		public PNumber (long value) : base(value)
+	class PNumber : PValueObject<long> {
+		public PNumber (long value) : base (value)
 		{
 		}
-		
+
 		public override PObject Clone ()
 		{
 			return new PNumber (Value);
 		}
 
-		#if POBJECT_MONOMAC
+#if POBJECT_MONOMAC
 		public override NSObject Convert ()
 		{
 			return NSNumber.FromInt64 (Value);
 		}
-		#endif
+#endif
 
 		public override PObjectType Type {
 			get { return PObjectType.Number; }
@@ -1143,28 +1132,27 @@ namespace Xamarin.MacDev
 #if !POBJECT_INTERNAL
 	public
 #endif
-	class PReal : PValueObject<double>
-	{
-		public PReal (double value) : base(value)
+	class PReal : PValueObject<double> {
+		public PReal (double value) : base (value)
 		{
 		}
-		
+
 		public override PObject Clone ()
 		{
 			return new PReal (Value);
 		}
-		
+
 #if POBJECT_MONOMAC
 		public override NSObject Convert ()
 		{
 			return NSNumber.FromDouble (Value);
 		}
 #endif
-		
+
 		public override PObjectType Type {
 			get { return PObjectType.Real; }
 		}
-		
+
 		public override bool TrySetValueFromString (string text, IFormatProvider formatProvider)
 		{
 			double result;
@@ -1175,29 +1163,28 @@ namespace Xamarin.MacDev
 			return false;
 		}
 	}
-	
+
 #if !POBJECT_INTERNAL
 	public
 #endif
-	class PString : PValueObject<string>
-	{
+	class PString : PValueObject<string> {
 		public PString (string value) : base (value)
 		{
 			if (value == null)
 				throw new ArgumentNullException (nameof (value));
 		}
-		
+
 		public override PObject Clone ()
 		{
 			return new PString (Value);
 		}
 
-		#if POBJECT_MONOMAC
+#if POBJECT_MONOMAC
 		public override NSObject Convert ()
 		{
 			return new NSString (Value);
 		}
-		#endif
+#endif
 
 		public override PObjectType Type {
 			get { return PObjectType.String; }
@@ -1213,8 +1200,7 @@ namespace Xamarin.MacDev
 #if !POBJECT_INTERNAL
 	public
 #endif
-	abstract class PropertyListFormat
-	{
+	abstract class PropertyListFormat {
 		public static readonly PropertyListFormat Xml = new XmlFormat ();
 		public static readonly PropertyListFormat Binary = new BinaryFormat ();
 		public static readonly PropertyListFormat Json = new JsonFormat ();
@@ -1225,12 +1211,12 @@ namespace Xamarin.MacDev
 			return Binary.StartReading (input) ?? Xml.StartReading (input);
 		}
 
-		public static ReadWriteContext CreateReadContext (byte[] array, int startIndex, int length)
+		public static ReadWriteContext CreateReadContext (byte [] array, int startIndex, int length)
 		{
 			return CreateReadContext (new MemoryStream (array, startIndex, length));
 		}
 
-		public static ReadWriteContext CreateReadContext (byte[] array)
+		public static ReadWriteContext CreateReadContext (byte [] array)
 		{
 			return CreateReadContext (new MemoryStream (array, 0, array.Length));
 		}
@@ -1239,21 +1225,20 @@ namespace Xamarin.MacDev
 		public abstract ReadWriteContext StartReading (Stream input);
 		public abstract ReadWriteContext StartWriting (Stream output);
 
-		public ReadWriteContext StartReading (byte[] array, int startIndex, int length)
+		public ReadWriteContext StartReading (byte [] array, int startIndex, int length)
 		{
 			return StartReading (new MemoryStream (array, startIndex, length));
 		}
 
-		public ReadWriteContext StartReading (byte[] array)
+		public ReadWriteContext StartReading (byte [] array)
 		{
 			return StartReading (new MemoryStream (array, 0, array.Length));
 		}
 
-		class BinaryFormat : PropertyListFormat
-		{
+		class BinaryFormat : PropertyListFormat {
 			// magic is bplist + 2 byte version id
-			static readonly byte[] BPLIST_MAGIC   = { 0x62, 0x70, 0x6C, 0x69, 0x73, 0x74 };  // "bplist"
-			static readonly byte[] BPLIST_VERSION = { 0x30, 0x30 }; // "00"
+			static readonly byte [] BPLIST_MAGIC = { 0x62, 0x70, 0x6C, 0x69, 0x73, 0x74 };  // "bplist"
+			static readonly byte [] BPLIST_VERSION = { 0x30, 0x30 }; // "00"
 
 			public override ReadWriteContext StartReading (Stream input)
 			{
@@ -1262,7 +1247,7 @@ namespace Xamarin.MacDev
 
 				input.Seek (0, SeekOrigin.Begin);
 				for (var i = 0; i < BPLIST_MAGIC.Length; i++) {
-					if ((byte)input.ReadByte () != BPLIST_MAGIC [i])
+					if ((byte) input.ReadByte () != BPLIST_MAGIC [i])
 						return null;
 				}
 
@@ -1296,7 +1281,7 @@ namespace Xamarin.MacDev
 				//for writing
 				List<object> objectRefs;
 				int currentRef;
-				long[] offsets;
+				long [] offsets;
 
 				public Context (Stream stream, bool reading)
 				{
@@ -1317,9 +1302,9 @@ namespace Xamarin.MacDev
 				{
 					var b = stream.ReadByte ();
 					var len = 0L;
-					var type = (PlistType)(b & 0xF0);
+					var type = (PlistType) (b & 0xF0);
 					if (type == PlistType.@null) {
-						type = (PlistType)b;
+						type = (PlistType) b;
 					} else {
 						len = b & 0x0F;
 						if (len == 0xF) {
@@ -1328,14 +1313,14 @@ namespace Xamarin.MacDev
 						}
 					}
 					CurrentType = type;
-					currentLength = (int)len;
+					currentLength = (int) len;
 				}
 
 				protected override long ReadInteger ()
 				{
 					switch (CurrentType) {
 					case PlistType.integer:
-						return ReadBigEndianInteger ((int)Math.Pow (2, currentLength));
+						return ReadBigEndianInteger ((int) Math.Pow (2, currentLength));
 					}
 
 					throw new NotSupportedException ("Integer of type: " + CurrentType);
@@ -1343,7 +1328,7 @@ namespace Xamarin.MacDev
 
 				protected override double ReadReal ()
 				{
-					var bytes = ReadBigEndianBytes ((int)Math.Pow (2, currentLength));
+					var bytes = ReadBigEndianBytes ((int) Math.Pow (2, currentLength));
 					switch (CurrentType) {
 					case PlistType.real:
 						switch (bytes.Length) {
@@ -1365,10 +1350,10 @@ namespace Xamarin.MacDev
 					// We need to manually convert the seconds to ticks because
 					//  .NET DateTime/TimeSpan methods dealing with (milli)seconds
 					//  round to the nearest millisecond (bxc #29079)
-					return AppleEpoch.AddTicks ((long)(seconds * TicksPerSecond));
+					return AppleEpoch.AddTicks ((long) (seconds * TicksPerSecond));
 				}
 
-				protected override byte[] ReadData ()
+				protected override byte [] ReadData ()
 				{
 					var bytes = new byte [currentLength];
 					stream.Read (bytes, 0, currentLength);
@@ -1377,7 +1362,7 @@ namespace Xamarin.MacDev
 
 				protected override string ReadString ()
 				{
-					byte[] bytes;
+					byte [] bytes;
 					switch (CurrentType) {
 					case PlistType.@string: // ASCII
 						bytes = new byte [currentLength];
@@ -1421,7 +1406,7 @@ namespace Xamarin.MacDev
 					var len = currentLength;
 					var keys = new string [len];
 					for (var i = 0; i < len; i++)
-						keys [i] = ((PString)ReadObjectByRef ()).Value;
+						keys [i] = ((PString) ReadObjectByRef ()).Value;
 					for (var i = 0; i < len; i++)
 						dict.Add (keys [i], ReadObjectByRef ());
 
@@ -1431,12 +1416,12 @@ namespace Xamarin.MacDev
 				PObject ReadObjectByRef ()
 				{
 					// read index into offset table
-					var objRef = (long)ReadBigEndianUInteger (trailer.ObjectRefSize);
+					var objRef = (long) ReadBigEndianUInteger (trailer.ObjectRefSize);
 
 					// read offset in file from table
 					var lastPos = stream.Position;
 					stream.Seek (trailer.OffsetTableOffset + objRef * trailer.OffsetEntrySize, SeekOrigin.Begin);
-					stream.Seek ((long)ReadBigEndianUInteger (trailer.OffsetEntrySize), SeekOrigin.Begin);
+					stream.Seek ((long) ReadBigEndianUInteger (trailer.OffsetEntrySize), SeekOrigin.Begin);
 
 					ReadObjectHead ();
 					var obj = ReadObject ();
@@ -1446,7 +1431,7 @@ namespace Xamarin.MacDev
 					return obj;
 				}
 
-				byte[] ReadBigEndianBytes (int count)
+				byte [] ReadBigEndianBytes (int count)
 				{
 					var bytes = new byte [count];
 					stream.Read (bytes, 0, count);
@@ -1460,7 +1445,7 @@ namespace Xamarin.MacDev
 					var bytes = ReadBigEndianBytes (numBytes);
 					switch (numBytes) {
 					case 1:
-						return bytes[0];
+						return bytes [0];
 					case 2:
 						return BitConverter.ToUInt16 (bytes, 0);
 					case 4:
@@ -1476,7 +1461,7 @@ namespace Xamarin.MacDev
 					var bytes = ReadBigEndianBytes (numBytes);
 					switch (numBytes) {
 					case 1:
-						return bytes[0];
+						return bytes [0];
 					case 2:
 						return BitConverter.ToUInt16 (bytes, 0);
 					case 4:
@@ -1504,7 +1489,7 @@ namespace Xamarin.MacDev
 
 				protected override void Write (PBoolean boolean)
 				{
-					WriteObjectHead (boolean, boolean? PlistType.@true : PlistType.@false);
+					WriteObjectHead (boolean, boolean ? PlistType.@true : PlistType.@false);
 				}
 
 				protected override void Write (PNumber number)
@@ -1537,10 +1522,10 @@ namespace Xamarin.MacDev
 				protected override void Write (PString str)
 				{
 					var type = PlistType.@string;
-					byte[] bytes;
+					byte [] bytes;
 
 					if (str.Value.Any (c => c > 127)) {
-						type  = PlistType.wideString;
+						type = PlistType.wideString;
 						bytes = Encoding.BigEndianUnicode.GetBytes (str.Value);
 					} else {
 						bytes = Encoding.ASCII.GetBytes (str.Value);
@@ -1604,7 +1589,7 @@ namespace Xamarin.MacDev
 					case PlistType.@false:
 					case PlistType.@true:
 					case PlistType.fill:
-						stream.WriteByte ((byte)type);
+						stream.WriteByte ((byte) type);
 						break;
 					case PlistType.date:
 						stream.WriteByte (0x33);
@@ -1614,9 +1599,9 @@ namespace Xamarin.MacDev
 						break;
 					default:
 						if (size < 15) {
-							stream.WriteByte ((byte)((byte)type | size));
+							stream.WriteByte ((byte) ((byte) type | size));
 						} else {
-							stream.WriteByte ((byte)((byte)type | 0xF));
+							stream.WriteByte ((byte) ((byte) type | 0xF));
 							Write (size);
 						}
 						break;
@@ -1627,11 +1612,11 @@ namespace Xamarin.MacDev
 				void Write (double value)
 				{
 					if (value >= float.MinValue && value <= float.MaxValue) {
-						stream.WriteByte ((byte)PlistType.real | 0x2);
+						stream.WriteByte ((byte) PlistType.real | 0x2);
 						var bytes = MakeBigEndian (BitConverter.GetBytes ((float) value));
 						stream.Write (bytes, 0, bytes.Length);
 					} else {
-						stream.WriteByte ((byte)PlistType.real | 0x3);
+						stream.WriteByte ((byte) PlistType.real | 0x3);
 						var bytes = MakeBigEndian (BitConverter.GetBytes (value));
 						stream.Write (bytes, 0, bytes.Length);
 					}
@@ -1640,18 +1625,18 @@ namespace Xamarin.MacDev
 				void Write (long value)
 				{
 					if (value < 0 || value > uint.MaxValue) { //they always write negative numbers with 8 bytes
-						stream.WriteByte ((byte)PlistType.integer | 0x3);
+						stream.WriteByte ((byte) PlistType.integer | 0x3);
 						var bytes = MakeBigEndian (BitConverter.GetBytes (value));
 						stream.Write (bytes, 0, bytes.Length);
 					} else if (value <= byte.MaxValue) {
-						stream.WriteByte ((byte)PlistType.integer);
-						stream.WriteByte ((byte)value);
+						stream.WriteByte ((byte) PlistType.integer);
+						stream.WriteByte ((byte) value);
 					} else if (value <= ushort.MaxValue) {
-						stream.WriteByte ((byte)PlistType.integer | 0x1);
-						var bytes = MakeBigEndian (BitConverter.GetBytes ((short)value));
+						stream.WriteByte ((byte) PlistType.integer | 0x1);
+						var bytes = MakeBigEndian (BitConverter.GetBytes ((short) value));
 						stream.Write (bytes, 0, bytes.Length);
 					} else if (value <= uint.MaxValue) {
-						stream.WriteByte ((byte)PlistType.integer | 0x2);
+						stream.WriteByte ((byte) PlistType.integer | 0x2);
 						var bytes = MakeBigEndian (BitConverter.GetBytes ((int) value));
 						stream.Write (bytes, 0, bytes.Length);
 					}
@@ -1659,17 +1644,17 @@ namespace Xamarin.MacDev
 
 				void Write (long value, int byteCount)
 				{
-					byte[] bytes;
+					byte [] bytes;
 					switch (byteCount) {
 					case 1:
-						stream.WriteByte ((byte)value);
+						stream.WriteByte ((byte) value);
 						break;
 					case 2:
-						bytes = MakeBigEndian (BitConverter.GetBytes ((short)value));
+						bytes = MakeBigEndian (BitConverter.GetBytes ((short) value));
 						stream.Write (bytes, 0, bytes.Length);
 						break;
 					case 4:
-						bytes = MakeBigEndian (BitConverter.GetBytes ((int)value));
+						bytes = MakeBigEndian (BitConverter.GetBytes ((int) value));
 						stream.Write (bytes, 0, bytes.Length);
 						break;
 					case 8:
@@ -1707,13 +1692,13 @@ namespace Xamarin.MacDev
 						switch (pobj.Type) {
 
 						case PObjectType.Array:
-							foreach (var child in (PArray)obj)
+							foreach (var child in (PArray) obj)
 								MakeObjectRefs (child, ref count);
 							break;
 						case PObjectType.Dictionary:
-							foreach (var child in (PDictionary)obj)
+							foreach (var child in (PDictionary) obj)
 								MakeObjectRefs (child.Key, ref count);
-							foreach (var child in (PDictionary)obj)
+							foreach (var child in (PDictionary) obj)
 								MakeObjectRefs (child.Value, ref count);
 							break;
 						}
@@ -1727,7 +1712,7 @@ namespace Xamarin.MacDev
 						return false;
 
 					return pobj.Type == PObjectType.Boolean || pobj.Type == PObjectType.Array || pobj.Type == PObjectType.Dictionary ||
-						(pobj.Type == PObjectType.String && ((PString)pobj).Value.Any (c => c > 255)); //LAMESPEC: this is weird. Some things are duplicated
+						(pobj.Type == PObjectType.String && ((PString) pobj).Value.Any (c => c > 255)); //LAMESPEC: this is weird. Some things are duplicated
 				}
 
 				int GetObjRef (object obj)
@@ -1749,7 +1734,7 @@ namespace Xamarin.MacDev
 					return 8;
 				}
 
-				static byte[] MakeBigEndian (byte[] bytes)
+				static byte [] MakeBigEndian (byte [] bytes)
 				{
 					if (BitConverter.IsLittleEndian)
 						Array.Reverse (bytes);
@@ -1773,8 +1758,7 @@ namespace Xamarin.MacDev
 					}
 				}
 
-				class PObjectEqualityComparer : IEqualityComparer<object>
-				{
+				class PObjectEqualityComparer : IEqualityComparer<object> {
 					public static readonly PObjectEqualityComparer Instance = new PObjectEqualityComparer ();
 
 					PObjectEqualityComparer ()
@@ -1810,8 +1794,7 @@ namespace Xamarin.MacDev
 					}
 				}
 
-				struct CFBinaryPlistTrailer
-				{
+				struct CFBinaryPlistTrailer {
 					const int TRAILER_SIZE = 26;
 
 					public int OffsetEntrySize;
@@ -1827,9 +1810,9 @@ namespace Xamarin.MacDev
 						var result = new CFBinaryPlistTrailer {
 							OffsetEntrySize = ctx.stream.ReadByte (),
 							ObjectRefSize = ctx.stream.ReadByte (),
-							ObjectCount = (long)ctx.ReadBigEndianUInt64 (),
-							TopLevelRef = (long)ctx.ReadBigEndianUInt64 (),
-							OffsetTableOffset = (long)ctx.ReadBigEndianUInt64 ()
+							ObjectCount = (long) ctx.ReadBigEndianUInt64 (),
+							TopLevelRef = (long) ctx.ReadBigEndianUInt64 (),
+							OffsetTableOffset = (long) ctx.ReadBigEndianUInt64 ()
 						};
 						ctx.stream.Seek (pos, SeekOrigin.Begin);
 						return result;
@@ -1837,11 +1820,11 @@ namespace Xamarin.MacDev
 
 					public void Write (Context ctx)
 					{
-						byte[] bytes;
-						ctx.stream.WriteByte ((byte)OffsetEntrySize);
-						ctx.stream.WriteByte ((byte)ObjectRefSize);
+						byte [] bytes;
+						ctx.stream.WriteByte ((byte) OffsetEntrySize);
+						ctx.stream.WriteByte ((byte) ObjectRefSize);
 						//LAMESPEC: apple's comments say this is the number of entries in the offset table, but this really *is* number of objects??!?!
-						bytes = MakeBigEndian (BitConverter.GetBytes ((long)ctx.objectRefs.Count));
+						bytes = MakeBigEndian (BitConverter.GetBytes ((long) ctx.objectRefs.Count));
 						ctx.stream.Write (bytes, 0, bytes.Length);
 						bytes = new byte [8]; //top level always at offset 0
 						ctx.stream.Write (bytes, 0, bytes.Length);
@@ -1854,8 +1837,7 @@ namespace Xamarin.MacDev
 
 		// Adapted from:
 		//https://github.com/mono/monodevelop/blob/07d9e6c07e5be8fe1d8d6f4272d3969bb087a287/main/src/addins/MonoDevelop.MacDev/MonoDevelop.MacDev.Plist/PlistDocument.cs
-		class XmlFormat : PropertyListFormat
-		{
+		class XmlFormat : PropertyListFormat {
 			const string PLIST_HEADER = @"<?xml version=""1.0"" encoding=""UTF-8""?>
 <!DOCTYPE plist PUBLIC ""-//Apple//DTD PLIST 1.0//EN"" ""http://www.apple.com/DTDs/PropertyList-1.0.dtd"">
 <plist version=""1.0"">
@@ -1863,7 +1845,7 @@ namespace Xamarin.MacDev
 			static readonly Encoding outputEncoding = new UTF8Encoding (false, false);
 
 			public override ReadWriteContext StartReading (Stream input)
-			{ 
+			{
 				//allow DTD but not try to resolve it from web
 				var settings = new XmlReaderSettings () {
 					CloseInput = true,
@@ -1896,8 +1878,7 @@ namespace Xamarin.MacDev
 				return new Context (writer);
 			}
 
-			class Context : ReadWriteContext
-			{
+			class Context : ReadWriteContext {
 				const string DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssK";
 
 				XmlReader reader;
@@ -1953,7 +1934,7 @@ namespace Xamarin.MacDev
 					return DateTime.ParseExact (reader.ReadElementContentAsString (), DATETIME_FORMAT, CultureInfo.InvariantCulture).ToUniversalTime ();
 				}
 
-				protected override byte[] ReadData ()
+				protected override byte [] ReadData ()
 				{
 					return Convert.FromBase64String (reader.ReadElementContentAsString ());
 				}
@@ -2052,7 +2033,7 @@ namespace Xamarin.MacDev
 				#region XML writing members
 				protected override void Write (PBoolean boolean)
 				{
-					WriteLine (boolean.Value? "<true/>" : "<false/>");
+					WriteLine (boolean.Value ? "<true/>" : "<false/>");
 				}
 
 				protected override void Write (PNumber number)
@@ -2145,8 +2126,7 @@ namespace Xamarin.MacDev
 			}
 		}
 
-		class JsonFormat : PropertyListFormat
-		{
+		class JsonFormat : PropertyListFormat {
 			static readonly Encoding outputEncoding = new UTF8Encoding (false, false);
 
 			public override ReadWriteContext StartReading (Stream input)
@@ -2161,8 +2141,7 @@ namespace Xamarin.MacDev
 				return new Context (writer);
 			}
 
-			class Context : ReadWriteContext
-			{
+			class Context : ReadWriteContext {
 				const string DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssK";
 
 				readonly TextWriter writer;
@@ -2341,24 +2320,22 @@ namespace Xamarin.MacDev
 			}
 		}
 
-		public abstract class ReadWriteContext : IDisposable
-		{
+		public abstract class ReadWriteContext : IDisposable {
 			// Binary: The type is encoded in the 4 high bits; the low bits are data (except: null, true, false)
 			// Xml: The enum value name == element tag name (this actually reads a superset of the format, since null, fill and wideString are not plist xml elements afaik)
-			protected enum PlistType : byte
-			{
-				@null      = 0x00,
-				@false     = 0x08,
-				@true      = 0x09,
-				fill       = 0x0F,
-				integer    = 0x10,
-				real       = 0x20,
-				date       = 0x30,
-				data       = 0x40,
-				@string    = 0x50,
+			protected enum PlistType : byte {
+				@null = 0x00,
+				@false = 0x08,
+				@true = 0x09,
+				fill = 0x0F,
+				integer = 0x10,
+				real = 0x20,
+				date = 0x30,
+				data = 0x40,
+				@string = 0x50,
 				wideString = 0x60,
-				array      = 0xA0,
-				dict       = 0xD0,
+				array = 0xA0,
+				dict = 0xD0,
 			}
 
 			#region Reading members
@@ -2406,7 +2383,7 @@ namespace Xamarin.MacDev
 			protected abstract long ReadInteger ();
 			protected abstract double ReadReal ();
 			protected abstract DateTime ReadDate ();
-			protected abstract byte[] ReadData ();
+			protected abstract byte [] ReadData ();
 			protected abstract string ReadString ();
 
 			public abstract bool ReadArray (PArray array);
@@ -2418,28 +2395,28 @@ namespace Xamarin.MacDev
 			{
 				switch (value.Type) {
 				case PObjectType.Boolean:
-					Write ((PBoolean)value);
+					Write ((PBoolean) value);
 					return;
 				case PObjectType.Number:
-					Write ((PNumber)value);
+					Write ((PNumber) value);
 					return;
 				case PObjectType.Real:
-					Write ((PReal)value);
+					Write ((PReal) value);
 					return;
 				case PObjectType.Date:
-					Write ((PDate)value);
+					Write ((PDate) value);
 					return;
 				case PObjectType.Data:
-					Write ((PData)value);
+					Write ((PData) value);
 					return;
 				case PObjectType.String:
-					Write ((PString)value);
+					Write ((PString) value);
 					return;
 				case PObjectType.Array:
-					Write ((PArray)value);
+					Write ((PArray) value);
 					return;
 				case PObjectType.Dictionary:
-					Write ((PDictionary)value);
+					Write ((PDictionary) value);
 					return;
 				}
 				throw new NotSupportedException (value.Type.ToString ());
@@ -2473,8 +2450,7 @@ namespace Xamarin.MacDev
 #if !POBJECT_INTERNAL
 	public
 #endif
-	sealed class PObjectContainerEventArgs : EventArgs
-	{
+	sealed class PObjectContainerEventArgs : EventArgs {
 		internal PObjectContainerEventArgs (PObjectContainerAction action, string key, PObject oldItem, PObject newItem)
 		{
 			Action = action;
@@ -2503,8 +2479,7 @@ namespace Xamarin.MacDev
 #if !POBJECT_INTERNAL
 	public
 #endif
-	enum PObjectType
-	{
+	enum PObjectType {
 		Dictionary,
 		Array,
 		Real,

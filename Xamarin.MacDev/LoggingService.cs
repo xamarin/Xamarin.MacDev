@@ -26,10 +26,8 @@
 using System;
 using System.Diagnostics;
 
-namespace Xamarin.MacDev
-{
-	public static class LoggingService
-	{
+namespace Xamarin.MacDev {
+	public static class LoggingService {
 		static ICustomLogger Logger;
 
 		/// <summary>
@@ -40,9 +38,9 @@ namespace Xamarin.MacDev
 			Logger = customLogger;
 		}
 
-		public static void LogError (string messageFormat, params object[] args)
+		public static void LogError (string messageFormat, params object [] args)
 		{
-			LogError (string.Format (messageFormat, args), (Exception)null);
+			LogError (string.Format (messageFormat, args), (Exception) null);
 		}
 
 		public static void LogError (string message, Exception ex)
@@ -51,31 +49,30 @@ namespace Xamarin.MacDev
 				Logger.LogError (message, ex);
 		}
 
-		public static void LogWarning (string messageFormat, params object[] args)
+		public static void LogWarning (string messageFormat, params object [] args)
 		{
 			if (Logger != null)
 				Logger.LogWarning (messageFormat, args);
 		}
 
-		public static void LogInfo (string messageFormat, params object[] args)
+		public static void LogInfo (string messageFormat, params object [] args)
 		{
 			if (Logger != null)
 				Logger.LogInfo (messageFormat, args);
 		}
 
 		[Conditional ("DEBUG")]
-		public static void LogDebug (string messageFormat, params object[] args)
+		public static void LogDebug (string messageFormat, params object [] args)
 		{
 			if (Logger != null)
 				Logger.LogDebug (messageFormat, args);
 		}
 	}
 
-	public interface ICustomLogger
-	{
+	public interface ICustomLogger {
 		void LogError (string message, Exception ex);
-		void LogWarning (string messageFormat, params object[] args);
-		void LogInfo (string messageFormat, object[] args);
-		void LogDebug (string messageFormat, params object[] args);
+		void LogWarning (string messageFormat, params object [] args);
+		void LogInfo (string messageFormat, object [] args);
+		void LogDebug (string messageFormat, params object [] args);
 	}
 }

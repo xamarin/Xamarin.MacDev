@@ -24,14 +24,12 @@
 // THE SOFTWARE.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Collections.Generic;
 
-namespace Xamarin.MacDev
-{
-	public class MacOSXSdk : IAppleSdk
-	{
+namespace Xamarin.MacDev {
+	public class MacOSXSdk : IAppleSdk {
 		List<AppleSdkVersion> knownOSVersions = new List<AppleSdkVersion> {
 			AppleSdkVersion.V10_7,
 			AppleSdkVersion.V10_8,
@@ -41,7 +39,7 @@ namespace Xamarin.MacDev
 			AppleSdkVersion.V10_12,
 			AppleSdkVersion.V10_13,
 			AppleSdkVersion.V10_14,
-        	};
+			};
 
 		static readonly Dictionary<string, AppleDTSdkSettings> sdkSettingsCache = new Dictionary<string, AppleDTSdkSettings> ();
 		static DTSettings dtSettings;
@@ -50,10 +48,10 @@ namespace Xamarin.MacDev
 		public string VersionPlist { get; private set; }
 		public string DesktopPlatform { get; private set; }
 		public string SdkDeveloperRoot { get; private set; }
-		
+
 		const string PLATFORM_VERSION_PLIST = "version.plist";
 		const string SYSTEM_VERSION_PLIST = "/System/Library/CoreServices/SystemVersion.plist";
-		
+
 		public MacOSXSdk (string developerRoot, string versionPlist)
 		{
 			var platformDir = Path.Combine (developerRoot, "Platforms", "MacOSX.platform");
@@ -72,10 +70,10 @@ namespace Xamarin.MacDev
 
 			if (InstalledSdkVersions.Length > 0) {
 				// Enumerable.Union is there to ensure we add the latest installed sdk to the list (even if it's not in knownOSVersions)
-				knownOSVersions = knownOSVersions.Where (x => x < InstalledSdkVersions[0]).Union (InstalledSdkVersions).ToList ();
+				knownOSVersions = knownOSVersions.Where (x => x < InstalledSdkVersions [0]).Union (InstalledSdkVersions).ToList ();
 			}
 		}
-		
+
 		void Init ()
 		{
 			IsInstalled = File.Exists (Path.Combine (DesktopPlatform, "Info.plist"));
@@ -90,30 +88,30 @@ namespace Xamarin.MacDev
 		public AppleSdkVersion [] InstalledSdkVersions { get; private set; }
 
 		public IList<AppleSdkVersion> KnownOSVersions { get { return knownOSVersions; } }
-		
+
 		static AppleSdkVersion [] EnumerateSdks (string sdkDir, string name)
 		{
 			if (!Directory.Exists (sdkDir))
 				return new AppleSdkVersion [0];
-			
+
 			var sdks = new List<string> ();
-			
+
 			foreach (var dir in Directory.GetDirectories (sdkDir)) {
 				string dirName = Path.GetFileName (dir);
 				if (!dirName.StartsWith (name, StringComparison.Ordinal) || !dirName.EndsWith (".sdk", StringComparison.Ordinal))
 					continue;
-				
+
 				if (!File.Exists (Path.Combine (dir, "SDKSettings.plist")))
 					continue;
-				
+
 				int verLength = dirName.Length - (name.Length + ".sdk".Length);
 				if (verLength == 0)
 					continue;
-				
+
 				dirName = dirName.Substring (name.Length, verLength);
 				sdks.Add (dirName);
 			}
-			
+
 			var vs = new List<AppleSdkVersion> ();
 			foreach (var s in sdks) {
 				try {
@@ -122,13 +120,13 @@ namespace Xamarin.MacDev
 					LoggingService.LogError ("Could not parse {0} SDK version '{1}':\n{2}", name, s, ex);
 				}
 			}
-			
+
 			var versions = vs.ToArray ();
 			Array.Sort (versions);
-			
+
 			return versions;
 		}
-		
+
 		public string GetPlatformPath ()
 		{
 			return DesktopPlatform;
@@ -138,12 +136,12 @@ namespace Xamarin.MacDev
 		{
 			return GetPlatformPath ();
 		}
-		
+
 		public string GetSdkPath (AppleSdkVersion version)
 		{
 			return GetSdkPath (version.ToString ());
 		}
-		
+
 		public string GetSdkPath (string version)
 		{
 			return Path.Combine (SdkDeveloperRoot, "SDKs", "MacOSX" + version + ".sdk");
@@ -193,10 +191,10 @@ namespace Xamarin.MacDev
 				if (v.Equals (version))
 					return true;
 			}
-			
+
 			return false;
 		}
-		
+
 		[Obsolete ("Use the 'GetSdkSettings (IAppleSdkVersion)' overload instead.")]
 		public DTSdkSettings GetSdkSettings (MacOSXSdkVersion sdk)
 		{
@@ -217,21 +215,21 @@ namespace Xamarin.MacDev
 		public AppleDTSdkSettings GetSdkSettings (IAppleSdkVersion sdk)
 		{
 			Dictionary<string, AppleDTSdkSettings> cache = sdkSettingsCache;
-			
+
 			if (cache.TryGetValue (sdk.ToString (), out var settings))
 				return settings;
-			
+
 			try {
 				settings = LoadSdkSettings (sdk);
 			} catch (Exception ex) {
 				LoggingService.LogError (string.Format ("Error loading settings for SDK MacOSX {0}", sdk), ex);
 			}
-			
-			cache[sdk.ToString ()] = settings;
-			
+
+			cache [sdk.ToString ()] = settings;
+
 			return settings;
 		}
-		
+
 		AppleDTSdkSettings LoadSdkSettings (IAppleSdkVersion sdk)
 		{
 			string filename = GetSdkPlistFilename (sdk.ToString ());
@@ -256,7 +254,7 @@ namespace Xamarin.MacDev
 
 			return settings;
 		}
-		
+
 		[Obsolete ("Use GetAppleDTSettings instead")]
 		public DTSettings GetDTSettings ()
 		{
@@ -290,7 +288,7 @@ namespace Xamarin.MacDev
 				DTXcodeBuild = settings.DTXcodeBuild,
 			};
 		}
-		
+
 		static string GrabRootString (string file, string key)
 		{
 			if (!File.Exists (file))
@@ -304,7 +302,7 @@ namespace Xamarin.MacDev
 
 			return null;
 		}
-			
+
 		IAppleSdkVersion IAppleSdk.GetClosestInstalledSdk (IAppleSdkVersion version, bool isSimulator)
 		{
 			return GetClosestInstalledSdk ((AppleSdkVersion) version);
@@ -319,7 +317,7 @@ namespace Xamarin.MacDev
 			}
 			return AppleSdkVersion.UseDefault;
 		}
-		
+
 		IList<IAppleSdkVersion> IAppleSdk.GetInstalledSdkVersions (bool isSimulator)
 		{
 			return GetInstalledSdkVersions ().Cast<IAppleSdkVersion> ().ToArray ();
@@ -329,22 +327,20 @@ namespace Xamarin.MacDev
 		{
 			return InstalledSdkVersions;
 		}
-		
+
 		bool IAppleSdk.TryParseSdkVersion (string value, out IAppleSdkVersion version)
 		{
 			return IAppleSdkVersion_Extensions.TryParse<AppleSdkVersion> (value, out version);
 		}
 
-		public class DTSettings
-		{
+		public class DTSettings {
 			public string DTXcodeBuild { get; set; }
 			public string DTPlatformVersion { get; set; }
 			public string DTPlatformBuild { get; set; }
 			public string BuildMachineOSBuild { get; set; }
 		}
 
-		public class DTSdkSettings
-		{
+		public class DTSdkSettings {
 			public string CanonicalName { get; set; }
 			public string AlternateSDK { get; set; }
 			public string DTCompiler { get; set; }

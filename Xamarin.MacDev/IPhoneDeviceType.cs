@@ -26,33 +26,29 @@
 using System;
 using System.Collections.Generic;
 
-namespace Xamarin.MacDev
-{
+namespace Xamarin.MacDev {
 	[Flags]
-	public enum IPhoneDeviceType
-	{
-		NotSet        = 0,
+	public enum IPhoneDeviceType {
+		NotSet = 0,
 		// Use different values than AppleDeviceFamily to catch incorrect usage earlier.
-		IPhone        = 1 << 10,
-		IPad          = 1 << 11,
+		IPhone = 1 << 10,
+		IPad = 1 << 11,
 		IPhoneAndIPad = IPhone | IPad,
-		Watch         = 1 << 12,
-		TV            = 1 << 13,
-		MacCatalystOptimizedForMac   = 1 << 14,
+		Watch = 1 << 12,
+		TV = 1 << 13,
+		MacCatalystOptimizedForMac = 1 << 14,
 	}
 
-	public enum AppleDeviceFamily
-	{
+	public enum AppleDeviceFamily {
 		IPhone = 1,
-		IPad   = 2,
-		TV     = 3,
-		Watch  = 4,
-		IPod   = 5,
+		IPad = 2,
+		TV = 3,
+		Watch = 4,
+		IPod = 5,
 		MacCatalystOptimizedForMac = 6, // Not documented, Xcode sets this value when selecting the "Optimize interface for Mac" option.
 	}
 
-	public static class IPhoneDeviceTypeExtensions
-	{
+	public static class IPhoneDeviceTypeExtensions {
 		public static IList<AppleDeviceFamily> ToDeviceFamily (this IPhoneDeviceType type)
 		{
 			var rv = new List<AppleDeviceFamily> ();

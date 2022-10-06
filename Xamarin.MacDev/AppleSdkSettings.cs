@@ -25,18 +25,16 @@
 // THE SOFTWARE.
 
 using System;
-using System.IO;
-using System.Diagnostics;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
 
-namespace Xamarin.MacDev
-{
-	public static class AppleSdkSettings
-	{
+namespace Xamarin.MacDev {
+	public static class AppleSdkSettings {
 		static readonly string SettingsPath;
 
 		// Put newer SDKs at the top as we scan from 0 -> List.Count
-		public static readonly string[] DefaultRoots = new string[] {
+		public static readonly string [] DefaultRoots = new string [] {
 			"/Applications/Xcode.app",
 		};
 		static DateTime lastWritten;
@@ -49,7 +47,7 @@ namespace Xamarin.MacDev
 			vplist = Path.Combine (root, "Contents", "version.plist");
 			devroot = Path.Combine (root, "Contents", "Developer");
 		}
-		
+
 		static void GetOldPaths (string root, out string xcode, out string vplist, out string devroot)
 		{
 			xcode = Path.Combine (root, "Applications", "Xcode.app");
@@ -70,14 +68,14 @@ namespace Xamarin.MacDev
 			GetNewPaths (location, out xcode, out vplist, out devroot);
 			if (ValidatePaths (xcode, vplist, devroot))
 				return true;
-			
+
 			GetOldPaths (location, out xcode, out vplist, out devroot);
 			if (ValidatePaths (xcode, vplist, devroot))
 				return true;
 
 			return false;
 		}
-		
+
 		public static void SetConfiguredSdkLocation (string location)
 		{
 			PDictionary plist;
@@ -103,7 +101,7 @@ namespace Xamarin.MacDev
 			//if (changed != null)
 			//	changed ();
 		}
-		
+
 		public static string GetConfiguredSdkLocation ()
 		{
 			PDictionary plist = null;
@@ -126,7 +124,7 @@ namespace Xamarin.MacDev
 			// Finally return the hardcoded default
 			return DefaultRoots [0];
 		}
-		
+
 		static void SetInvalid ()
 		{
 			XcodePath = string.Empty;
@@ -139,7 +137,7 @@ namespace Xamarin.MacDev
 			XcodeRevision = string.Empty;
 			lastWritten = DateTime.MinValue;
 		}
-		
+
 		static AppleSdkSettings ()
 		{
 			var home = Environment.GetFolderPath (Environment.SpecialFolder.Personal);
@@ -193,13 +191,13 @@ namespace Xamarin.MacDev
 			bool foundSdk = false;
 
 			SetInvalid ();
-			
+
 			DeveloperRoot = Environment.GetEnvironmentVariable ("MD_APPLE_SDK_ROOT");
 			if (string.IsNullOrEmpty (DeveloperRoot))
 				DeveloperRoot = GetConfiguredSdkLocation ();
 
 			if (string.IsNullOrEmpty (DeveloperRoot)) {
-				foreach (var v in DefaultRoots)  {
+				foreach (var v in DefaultRoots) {
 					if (ValidateSdkLocation (v, out xcode, out vplist, out devroot)) {
 						foundSdk = true;
 						break;
@@ -216,7 +214,7 @@ namespace Xamarin.MacDev
 			} else {
 				foundSdk = true;
 			}
-			
+
 			if (foundSdk) {
 				XcodePath = xcode;
 				DeveloperRoot = devroot;
@@ -234,12 +232,12 @@ namespace Xamarin.MacDev
 					SetInvalid ();
 					return;
 				}
-				
+
 				lastWritten = File.GetLastWriteTimeUtc (plist);
-				
+
 				XcodeVersion = new Version (3, 2, 6);
 				XcodeRevision = "0";
-				
+
 				// DTXCode was introduced after xcode 3.2.6 so it may not exist
 				var dict = PDictionary.FromFile (plist);
 
@@ -289,13 +287,13 @@ namespace Xamarin.MacDev
 			//	Changed ();
 			//}
 		}
-		
+
 		public static bool IsValid { get; private set; }
 		public static string DTXcode { get; private set; }
-		
+
 		public static Version XcodeVersion { get; private set; }
 		public static string XcodeRevision { get; private set; }
-		
+
 #pragma warning disable 0067
 		[Obsolete ("This event is never raised")]
 		public static event Action Changed;

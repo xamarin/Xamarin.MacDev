@@ -1,10 +1,8 @@
-﻿using System;
+using System;
 using System.IO;
 
-namespace Xamarin.MacDev
-{
-	public class ExtendedVersion
-	{
+namespace Xamarin.MacDev {
+	public class ExtendedVersion {
 		public Version Version { get; set; }
 		public string Hash { get; set; }
 		public string Branch { get; set; }
@@ -38,7 +36,7 @@ namespace Xamarin.MacDev
 				case "BuildDate":
 					rv.BuildDate = value;
 					break;
-				}	
+				}
 			}
 			return rv;
 		}

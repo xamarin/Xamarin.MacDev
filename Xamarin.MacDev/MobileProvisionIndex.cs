@@ -1,4 +1,4 @@
-﻿//
+//
 // MobileProvisionIndex.cs
 //
 // Author: Jeffrey Stedfast <jeff@xamarin.com>
@@ -24,21 +24,18 @@
 // THE SOFTWARE.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 
-namespace Xamarin.MacDev
-{
-	public class MobileProvisionIndex
-	{
+namespace Xamarin.MacDev {
+	public class MobileProvisionIndex {
 		static readonly string IndexFileName;
 		static readonly MobileProvisionCreationDateComparer CreationDateComparer = new MobileProvisionCreationDateComparer ();
 		const int IndexVersion = 1;
 
-		public class DeveloperCertificate
-		{
+		public class DeveloperCertificate {
 			public string Name { get; private set; }
 			public string Thumbprint { get; private set; }
 
@@ -67,8 +64,7 @@ namespace Xamarin.MacDev
 			}
 		}
 
-		public class ProvisioningProfile
-		{
+		public class ProvisioningProfile {
 			public string FileName { get; private set; }
 			public DateTime LastModified { get; private set; }
 
@@ -101,7 +97,7 @@ namespace Xamarin.MacDev
 
 				if (provision.Platforms != null) {
 					for (int i = 0; i < provision.Platforms.Length; i++)
-						Platforms.Add (provision.Platforms[i]);
+						Platforms.Add (provision.Platforms [i]);
 				}
 
 				PString identifier;
@@ -113,7 +109,7 @@ namespace Xamarin.MacDev
 					ApplicationIdentifier = string.Empty;
 
 				for (int i = 0; i < provision.DeveloperCertificates.Count; i++)
-					DeveloperCertificates.Add (new DeveloperCertificate (provision.DeveloperCertificates[i]));
+					DeveloperCertificates.Add (new DeveloperCertificate (provision.DeveloperCertificates [i]));
 			}
 
 			internal static ProvisioningProfile Load (string fileName)
@@ -169,18 +165,17 @@ namespace Xamarin.MacDev
 
 				writer.Write (Platforms.Count);
 				for (int i = 0; i < Platforms.Count; i++)
-					writer.Write (Platforms[i].ToString ());
+					writer.Write (Platforms [i].ToString ());
 
 				writer.Write (ApplicationIdentifier);
 
 				writer.Write (DeveloperCertificates.Count);
 				for (int i = 0; i < DeveloperCertificates.Count; i++)
-					DeveloperCertificates[i].Write (writer);
+					DeveloperCertificates [i].Write (writer);
 			}
 		}
 
-		class MobileProvisionCreationDateComparer : IComparer<ProvisioningProfile>
-		{
+		class MobileProvisionCreationDateComparer : IComparer<ProvisioningProfile> {
 			public int Compare (ProvisioningProfile x, ProvisioningProfile y)
 			{
 				return y.CreationDate.CompareTo (x.CreationDate);
@@ -193,23 +188,20 @@ namespace Xamarin.MacDev
 		public DateTime LastModified { get; private set; }
 		public int Version { get; private set; }
 
-        static MobileProvisionIndex()
-        {
-            string xamarinFolder;
+		static MobileProvisionIndex ()
+		{
+			string xamarinFolder;
 
-            if (Environment.OSVersion.Platform == PlatformID.Unix || Environment.OSVersion.Platform == PlatformID.MacOSX)
-            {
-                xamarinFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Library", "Xamarin");
-            }
-            else
-            {
-                xamarinFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Xamarin", "iOS", "Provisioning");
-            }
+			if (Environment.OSVersion.Platform == PlatformID.Unix || Environment.OSVersion.Platform == PlatformID.MacOSX) {
+				xamarinFolder = Path.Combine (Environment.GetFolderPath (Environment.SpecialFolder.Personal), "Library", "Xamarin");
+			} else {
+				xamarinFolder = Path.Combine (Environment.GetFolderPath (Environment.SpecialFolder.LocalApplicationData), "Xamarin", "iOS", "Provisioning");
+			}
 
-            IndexFileName = Path.Combine(xamarinFolder, "Provisioning Profiles.index");
-        }
+			IndexFileName = Path.Combine (xamarinFolder, "Provisioning Profiles.index");
+		}
 
-        MobileProvisionIndex ()
+		MobileProvisionIndex ()
 		{
 			ProvisioningProfiles = new List<ProvisioningProfile> ();
 		}
@@ -258,7 +250,7 @@ namespace Xamarin.MacDev
 
 						writer.Write (ProvisioningProfiles.Count);
 						for (int i = 0; i < ProvisioningProfiles.Count; i++)
-							ProvisioningProfiles[i].Write (writer);
+							ProvisioningProfiles [i].Write (writer);
 					}
 				}
 
@@ -317,7 +309,7 @@ namespace Xamarin.MacDev
 						var table = new Dictionary<string, ProvisioningProfile> ();
 
 						foreach (var profile in index.ProvisioningProfiles)
-							table[profile.FileName] = profile;
+							table [profile.FileName] = profile;
 
 						foreach (var fileName in Directory.EnumerateFiles (profilesDir)) {
 							if (!fileName.EndsWith (".mobileprovision", StringComparison.Ordinal) && !fileName.EndsWith (".provisionprofile", StringComparison.Ordinal))
@@ -423,7 +415,7 @@ namespace Xamarin.MacDev
 
 			// iterate over the profiles in reverse order so that we load newer profiles first (optimization for the 'unique' case)
 			for (int i = index.ProvisioningProfiles.Count - 1; i >= 0; i--) {
-				var profile = index.ProvisioningProfiles[i];
+				var profile = index.ProvisioningProfiles [i];
 
 				if (!profile.FileName.EndsWith (extension, StringComparison.Ordinal)) {
 					failures?.Add ($"The profile '{profile.Name}' is not applicable because its FileName ({profile.FileName}) does not end with '{extension}'.");
@@ -444,8 +436,8 @@ namespace Xamarin.MacDev
 					int idx;
 
 					if (dictionary.TryGetValue (profile.Name, out idx)) {
-						if (profile.CreationDate > list[idx].CreationDate)
-							list[idx] = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
+						if (profile.CreationDate > list [idx].CreationDate)
+							list [idx] = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
 					} else {
 						var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
 						dictionary.Add (profile.Name, list.Count);
@@ -470,7 +462,7 @@ namespace Xamarin.MacDev
 
 			// iterate over the profiles in reverse order so that we load newer profiles first (optimization for the 'unique' case)
 			for (int i = index.ProvisioningProfiles.Count - 1; i >= 0; i--) {
-				var profile = index.ProvisioningProfiles[i];
+				var profile = index.ProvisioningProfiles [i];
 
 				if (!profile.FileName.EndsWith (extension, StringComparison.Ordinal)) {
 					failures?.Add ($"The profile '{profile.Name}' is not applicable because its FileName ({profile.FileName}) does not end with '{extension}'.");
@@ -496,8 +488,8 @@ namespace Xamarin.MacDev
 					int idx;
 
 					if (dictionary.TryGetValue (profile.Name, out idx)) {
-						if (profile.CreationDate > list[idx].CreationDate)
-							list[idx] = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
+						if (profile.CreationDate > list [idx].CreationDate)
+							list [idx] = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
 					} else {
 						var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
 						dictionary.Add (profile.Name, list.Count);
@@ -532,7 +524,7 @@ namespace Xamarin.MacDev
 
 			// iterate over the profiles in reverse order so that we load newer profiles first (optimization for the 'unique' case)
 			for (int i = index.ProvisioningProfiles.Count - 1; i >= 0; i--) {
-				var profile = index.ProvisioningProfiles[i];
+				var profile = index.ProvisioningProfiles [i];
 
 				if (!profile.FileName.EndsWith (extension, StringComparison.Ordinal)) {
 					failures?.Add ($"The profile '{profile.Name}' is not applicable because its FileName ({profile.FileName}) does not end with '{extension}'.");
@@ -564,8 +556,8 @@ namespace Xamarin.MacDev
 						int idx;
 
 						if (dictionary.TryGetValue (profile.Name, out idx)) {
-							if (profile.CreationDate > list[idx].CreationDate)
-								list[idx] = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
+							if (profile.CreationDate > list [idx].CreationDate)
+								list [idx] = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
 						} else {
 							var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
 							dictionary.Add (profile.Name, list.Count);
@@ -595,7 +587,7 @@ namespace Xamarin.MacDev
 
 			// iterate over the profiles in reverse order so that we load newer profiles first (optimization for the 'unique' case)
 			for (int i = index.ProvisioningProfiles.Count - 1; i >= 0; i--) {
-				var profile = index.ProvisioningProfiles[i];
+				var profile = index.ProvisioningProfiles [i];
 
 				if (!profile.FileName.EndsWith (extension, StringComparison.Ordinal)) {
 					failures?.Add ($"The profile '{profile.Name}' is not applicable because its FileName ({profile.FileName}) does not end with '{extension}'.");
@@ -624,7 +616,7 @@ namespace Xamarin.MacDev
 				if ((dot = id.IndexOf ('.')) != -1)
 					id = id.Substring (dot + 1);
 
-				if (id.Length > 0 && id[id.Length - 1] == '*') {
+				if (id.Length > 0 && id [id.Length - 1] == '*') {
 					// Note: this is a wildcard provisioning profile, which means we need to use a substring match
 					id = id.TrimEnd ('*');
 
@@ -642,8 +634,8 @@ namespace Xamarin.MacDev
 					int idx;
 
 					if (dictionary.TryGetValue (profile.Name, out idx)) {
-						if (profile.CreationDate > list[idx].CreationDate)
-							list[idx] = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
+						if (profile.CreationDate > list [idx].CreationDate)
+							list [idx] = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
 					} else {
 						var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
 						dictionary.Add (profile.Name, list.Count);
@@ -681,7 +673,7 @@ namespace Xamarin.MacDev
 
 			// iterate over the profiles in reverse order so that we load newer profiles first (optimization for the 'unique' case)
 			for (int i = index.ProvisioningProfiles.Count - 1; i >= 0; i--) {
-				var profile = index.ProvisioningProfiles[i];
+				var profile = index.ProvisioningProfiles [i];
 
 				if (!profile.FileName.EndsWith (extension, StringComparison.Ordinal)) {
 					failures?.Add ($"The profile '{profile.Name}' is not applicable because its FileName ({profile.FileName}) does not end with '{extension}'.");
@@ -710,7 +702,7 @@ namespace Xamarin.MacDev
 				if ((dot = id.IndexOf ('.')) != -1)
 					id = id.Substring (dot + 1);
 
-				if (id.Length > 0 && id[id.Length - 1] == '*') {
+				if (id.Length > 0 && id [id.Length - 1] == '*') {
 					// Note: this is a wildcard provisioning profile, which means we need to use a substring match
 					id = id.TrimEnd ('*');
 
@@ -734,8 +726,8 @@ namespace Xamarin.MacDev
 						int idx;
 
 						if (dictionary.TryGetValue (profile.Name, out idx)) {
-							if (profile.CreationDate > list[idx].CreationDate)
-								list[idx] = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
+							if (profile.CreationDate > list [idx].CreationDate)
+								list [idx] = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
 						} else {
 							var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
 							dictionary.Add (profile.Name, list.Count);

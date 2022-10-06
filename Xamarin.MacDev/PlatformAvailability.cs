@@ -1,4 +1,4 @@
-﻿//
+//
 // PlatformAvailability.cs
 //
 // Data structures for mapping Xamarin.iOS and Xamarin.Mac's
@@ -14,24 +14,21 @@
 //
 
 using System;
-using System.Linq;
-using System.Text;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
-namespace Xamarin.MacDev
-{
+namespace Xamarin.MacDev {
 	[Flags]
-	public enum PlatformArchitecture : byte
-	{
+	public enum PlatformArchitecture : byte {
 		None = 0x00,
 		Arch32 = 0x01,
 		Arch64 = 0x02,
 		All = 0xff
 	}
 
-	public enum PlatformName : byte
-	{
+	public enum PlatformName : byte {
 		None,
 		MacOSX,
 		iOS,
@@ -39,44 +36,42 @@ namespace Xamarin.MacDev
 		TvOS
 	}
 
-	public enum AvailabilityKind
-	{
+	public enum AvailabilityKind {
 		Introduced,
 		Deprecated,
 		Obsoleted,
 		Unavailable
 	}
 
-	public class Platform
-	{
+	public class Platform {
 		internal uint value;
 
 		public PlatformName Name { get; set; }
 
 		public PlatformArchitecture Architecture {
 			get {
-				var arch = (byte)(value >> 24);
+				var arch = (byte) (value >> 24);
 				if (arch == 0)
 					return PlatformArchitecture.All;
-				return (PlatformArchitecture)arch;
+				return (PlatformArchitecture) arch;
 			}
 
-			set { this.value = (this.value & 0x00ffffff) | (uint)(byte)value << 24; }
+			set { this.value = (this.value & 0x00ffffff) | (uint) (byte) value << 24; }
 		}
 
 		public byte Major {
-			get { return (byte)(value >> 16); }
-			set { this.value = (this.value & 0xff00ffff) | (uint)(byte)value << 16; }
+			get { return (byte) (value >> 16); }
+			set { this.value = (this.value & 0xff00ffff) | (uint) (byte) value << 16; }
 		}
 
 		public byte Minor {
-			get { return (byte)(value >> 8); }
-			set { this.value = (this.value & 0xffff00ff) | (uint)(byte)value << 8; }
+			get { return (byte) (value >> 8); }
+			set { this.value = (this.value & 0xffff00ff) | (uint) (byte) value << 8; }
 		}
 
 		public byte Subminor {
-			get { return (byte)value; }
-			set { this.value = (this.value & 0xffffff00) | (uint)(byte)value; }
+			get { return (byte) value; }
+			set { this.value = (this.value & 0xffffff00) | (uint) (byte) value; }
 		}
 
 		static string ToNiceName (PlatformName name)
@@ -189,8 +184,7 @@ namespace Xamarin.MacDev
 		}
 	}
 
-	public class PlatformSet : IEnumerable<Platform>
-	{
+	public class PlatformSet : IEnumerable<Platform> {
 		// Analysis disable once InconsistentNaming
 		public Platform iOS { get; private set; }
 		public Platform MacOSX { get; private set; }
@@ -223,8 +217,8 @@ namespace Xamarin.MacDev
 		public PlatformSet (ulong platformEncoding)
 		{
 			//This constructor is only useful in XAMCORE_2 or older, since it only supports iOS and OSX, keep it for backward compatibility
-			iOS = new Platform (PlatformName.iOS, (uint)platformEncoding);
-			MacOSX = new Platform (PlatformName.MacOSX, (uint)(platformEncoding >> 32));
+			iOS = new Platform (PlatformName.iOS, (uint) platformEncoding);
+			MacOSX = new Platform (PlatformName.MacOSX, (uint) (platformEncoding >> 32));
 			WatchOS = new Platform (PlatformName.WatchOS, PlatformArchitecture.None);
 			TvOS = new Platform (PlatformName.TvOS, PlatformArchitecture.None);
 		}
@@ -286,8 +280,7 @@ namespace Xamarin.MacDev
 		}
 	}
 
-	public class PlatformAvailability
-	{
+	public class PlatformAvailability {
 		public PlatformSet Introduced { get; set; }
 		public PlatformSet Deprecated { get; set; }
 		public PlatformSet Obsoleted { get; set; }

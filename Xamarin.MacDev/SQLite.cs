@@ -45,13 +45,11 @@ using Sqlite3DatabaseHandle = System.IntPtr;
 using Sqlite3Statement = System.IntPtr;
 #endif
 
-namespace Xamarin.MacDev.SQLite
-{
-	public class SQLiteException : Exception
-	{
+namespace Xamarin.MacDev.SQLite {
+	public class SQLiteException : Exception {
 		public SQLite3.Result Result { get; private set; }
 
-		protected SQLiteException (SQLite3.Result r,string message) : base(message)
+		protected SQLiteException (SQLite3.Result r, string message) : base (message)
 		{
 			Result = r;
 		}
@@ -73,22 +71,20 @@ namespace Xamarin.MacDev.SQLite
 		ProtectionNone = 0x00400000
 	}
 
-    [Flags]
-    public enum CreateFlags
-    {
-        None = 0,
-        ImplicitPK = 1,    // create a primary key for field called 'Id' (Orm.ImplicitPkName)
-        ImplicitIndex = 2, // create an index for fields ending in 'Id' (Orm.ImplicitIndexSuffix)
-        AllImplicit = 3,   // do both above
+	[Flags]
+	public enum CreateFlags {
+		None = 0,
+		ImplicitPK = 1,    // create a primary key for field called 'Id' (Orm.ImplicitPkName)
+		ImplicitIndex = 2, // create an index for fields ending in 'Id' (Orm.ImplicitIndexSuffix)
+		AllImplicit = 3,   // do both above
 
-        AutoIncPK = 4      // force PK field to be auto inc
-    }
+		AutoIncPK = 4      // force PK field to be auto inc
+	}
 
 	/// <summary>
 	/// Represents an open connection to a SQLite database.
 	/// </summary>
-	public partial class SQLiteConnection : IDisposable
-	{
+	public partial class SQLiteConnection : IDisposable {
 		private bool _open;
 		private TimeSpan _busyTimeout;
 		private Dictionary<string, TableMapping> _mappings = null;
@@ -100,7 +96,7 @@ namespace Xamarin.MacDev.SQLite
 		private Random _rand = new Random ();
 
 		public Sqlite3DatabaseHandle Handle { get; private set; }
-		internal static readonly Sqlite3DatabaseHandle NullHandle = default(Sqlite3DatabaseHandle);
+		internal static readonly Sqlite3DatabaseHandle NullHandle = default (Sqlite3DatabaseHandle);
 
 		public string DatabasePath { get; private set; }
 
@@ -169,10 +165,10 @@ namespace Xamarin.MacDev.SQLite
 			_open = true;
 
 			StoreDateTimeAsTicks = storeDateTimeAsTicks;
-			
+
 			BusyTimeout = TimeSpan.FromSeconds (0.1);
 		}
-		
+
 		static SQLiteConnection ()
 		{
 			if (_preserveDuringLinkMagic) {
@@ -181,23 +177,23 @@ namespace Xamarin.MacDev.SQLite
 			}
 		}
 
-        public void EnableLoadExtension(int onoff)
-        {
-            SQLite3.Result r = SQLite3.EnableLoadExtension(Handle, onoff);
+		public void EnableLoadExtension (int onoff)
+		{
+			SQLite3.Result r = SQLite3.EnableLoadExtension (Handle, onoff);
 			if (r != SQLite3.Result.OK) {
 				string msg = SQLite3.GetErrmsg (Handle);
 				throw SQLiteException.New (r, msg);
 			}
-        }
+		}
 
-		static byte[] GetNullTerminatedUtf8 (string s)
+		static byte [] GetNullTerminatedUtf8 (string s)
 		{
 			var utf8Length = System.Text.Encoding.UTF8.GetByteCount (s);
 			var bytes = new byte [utf8Length + 1];
-			utf8Length = System.Text.Encoding.UTF8.GetBytes(s, 0, s.Length, bytes, 0);
+			utf8Length = System.Text.Encoding.UTF8.GetBytes (s, 0, s.Length, bytes, 0);
 			return bytes;
 		}
-		
+
 		/// <summary>
 		/// Used to list some code that we want the MonoTouch linker
 		/// to see, but that we never want to actually execute.
@@ -213,7 +209,7 @@ namespace Xamarin.MacDev.SQLite
 			set {
 				_busyTimeout = value;
 				if (Handle != NullHandle) {
-					SQLite3.BusyTimeout (Handle, (int)_busyTimeout.TotalMilliseconds);
+					SQLite3.BusyTimeout (Handle, (int) _busyTimeout.TotalMilliseconds);
 				}
 			}
 		}
@@ -234,14 +230,14 @@ namespace Xamarin.MacDev.SQLite
 		/// <param name="type">
 		/// The type whose mapping to the database is returned.
 		/// </param>         
-        /// <param name="createFlags">
+		/// <param name="createFlags">
 		/// Optional flags allowing implicit PK and indexes based on naming conventions
 		/// </param>     
 		/// <returns>
 		/// The mapping represents the schema of the columns of the database and contains 
 		/// methods to set and get properties of objects.
 		/// </returns>
-        public TableMapping GetMapping(Type type, CreateFlags createFlags = CreateFlags.None)
+		public TableMapping GetMapping (Type type, CreateFlags createFlags = CreateFlags.None)
 		{
 			if (_mappings == null) {
 				_mappings = new Dictionary<string, TableMapping> ();
@@ -253,7 +249,7 @@ namespace Xamarin.MacDev.SQLite
 			}
 			return map;
 		}
-		
+
 		/// <summary>
 		/// Retrieves the mapping that is automatically generated for the given type.
 		/// </summary>
@@ -266,14 +262,12 @@ namespace Xamarin.MacDev.SQLite
 			return GetMapping (typeof (T));
 		}
 
-		private struct IndexedColumn
-		{
+		private struct IndexedColumn {
 			public int Order;
 			public string ColumnName;
 		}
 
-		private struct IndexInfo
-		{
+		private struct IndexInfo {
 			public string IndexName;
 			public string TableName;
 			public bool Unique;
@@ -283,15 +277,15 @@ namespace Xamarin.MacDev.SQLite
 		/// <summary>
 		/// Executes a "drop table" on the database.  This is non-recoverable.
 		/// </summary>
-		public int DropTable<T>()
+		public int DropTable<T> ()
 		{
 			var map = GetMapping (typeof (T));
 
-			var query = string.Format("drop table if exists \"{0}\"", map.TableName);
+			var query = string.Format ("drop table if exists \"{0}\"", map.TableName);
 
 			return Execute (query);
 		}
-		
+
 		/// <summary>
 		/// Executes a "create table if not exists" on the database. It also
 		/// creates any specified indexes on the columns of the table. It uses
@@ -301,9 +295,9 @@ namespace Xamarin.MacDev.SQLite
 		/// <returns>
 		/// The number of entries added to the database schema.
 		/// </returns>
-		public int CreateTable<T>(CreateFlags createFlags = CreateFlags.None)
+		public int CreateTable<T> (CreateFlags createFlags = CreateFlags.None)
 		{
-			return CreateTable(typeof (T), createFlags);
+			return CreateTable (typeof (T), createFlags);
 		}
 
 		/// <summary>
@@ -313,11 +307,11 @@ namespace Xamarin.MacDev.SQLite
 		/// later access this schema by calling GetMapping.
 		/// </summary>
 		/// <param name="ty">Type to reflect to a database table.</param>
-        /// <param name="createFlags">Optional flags allowing implicit PK and indexes based on naming conventions.</param>  
+		/// <param name="createFlags">Optional flags allowing implicit PK and indexes based on naming conventions.</param>  
 		/// <returns>
 		/// The number of entries added to the database schema.
 		/// </returns>
-        public int CreateTable(Type ty, CreateFlags createFlags = CreateFlags.None)
+		public int CreateTable (Type ty, CreateFlags createFlags = CreateFlags.None)
 		{
 			if (_tables == null) {
 				_tables = new Dictionary<string, TableMapping> ();
@@ -328,16 +322,16 @@ namespace Xamarin.MacDev.SQLite
 				_tables.Add (ty.FullName, map);
 			}
 			var query = "create table if not exists \"" + map.TableName + "\" (";
-			
+
 			var decls = map.Columns.Select (p => Orm.SqlDecl (p, StoreDateTimeAsTicks));
 			var decl = string.Join (", ", decls.ToArray ());
 			query += decl;
 			query += ")";
-			
+
 			var count = Execute (query);
-			
+
 			if (count == 0) { //Possible bug: This always seems to return 0?
-				// Table already exists, migrate it
+							  // Table already exists, migrate it
 				MigrateTable (map);
 			}
 
@@ -367,109 +361,104 @@ namespace Xamarin.MacDev.SQLite
 			}
 
 			foreach (var indexName in indexes.Keys) {
-				var index = indexes[indexName];
-				var columns = index.Columns.OrderBy(i => i.Order).Select(i => i.ColumnName).ToArray();
-                count += CreateIndex(indexName, index.TableName, columns, index.Unique);
+				var index = indexes [indexName];
+				var columns = index.Columns.OrderBy (i => i.Order).Select (i => i.ColumnName).ToArray ();
+				count += CreateIndex (indexName, index.TableName, columns, index.Unique);
 			}
-			
+
 			return count;
 		}
 
-        /// <summary>
-        /// Creates an index for the specified table and columns.
-        /// </summary>
-        /// <param name="indexName">Name of the index to create</param>
-        /// <param name="tableName">Name of the database table</param>
-        /// <param name="columnNames">An array of column names to index</param>
-        /// <param name="unique">Whether the index should be unique</param>
-        public int CreateIndex(string indexName, string tableName, string[] columnNames, bool unique = false)
-        {
-            const string sqlFormat = "create {2} index if not exists \"{3}\" ON \"{0}\"(\"{1}\")";
-            var sql = String.Format(sqlFormat, tableName, string.Join ("\", \"", columnNames), unique ? "UNIQUE" : "", indexName);
-            return Execute(sql);
-        }
-
-        /// <summary>
-        /// Creates an index for the specified table and column.
-        /// </summary>
-        /// <param name="indexName">Name of the index to create</param>
-        /// <param name="tableName">Name of the database table</param>
-        /// <param name="columnName">Name of the column to index</param>
-        /// <param name="unique">Whether the index should be unique</param>
-        public int CreateIndex(string indexName, string tableName, string columnName, bool unique = false)
-        {
-            return CreateIndex(indexName, tableName, new string[] { columnName }, unique);
-        }
-
-        /// <summary>
-        /// Creates an index for the specified table and column.
-        /// </summary>
-        /// <param name="tableName">Name of the database table</param>
-        /// <param name="columnName">Name of the column to index</param>
-        /// <param name="unique">Whether the index should be unique</param>
-        public int CreateIndex(string tableName, string columnName, bool unique = false)
-        {
-            return CreateIndex(tableName + "_" + columnName, tableName, columnName, unique);
-        }
-
-        /// <summary>
-        /// Creates an index for the specified table and columns.
-        /// </summary>
-        /// <param name="tableName">Name of the database table</param>
-        /// <param name="columnNames">An array of column names to index</param>
-        /// <param name="unique">Whether the index should be unique</param>
-        public int CreateIndex(string tableName, string[] columnNames, bool unique = false)
-        {
-            return CreateIndex(tableName + "_" + string.Join ("_", columnNames), tableName, columnNames, unique);
-        }
-
-        /// <summary>
-        /// Creates an index for the specified object property.
-        /// e.g. CreateIndex<Client>(c => c.Name);
-        /// </summary>
-        /// <typeparam name="T">Type to reflect to a database table.</typeparam>
-        /// <param name="property">Property to index</param>
-        /// <param name="unique">Whether the index should be unique</param>
-        public void CreateIndex<T>(Expression<Func<T, object>> property, bool unique = false)
-        {
-            MemberExpression mx;
-            if (property.Body.NodeType == ExpressionType.Convert)
-            {
-                mx = ((UnaryExpression)property.Body).Operand as MemberExpression;
-            }
-            else
-            {
-                mx= (property.Body as MemberExpression);
-            }
-            var propertyInfo = mx.Member as PropertyInfo;
-            if (propertyInfo == null)
-            {
-                throw new ArgumentException("The lambda expression 'property' should point to a valid Property");
-            }
-
-            var propName = propertyInfo.Name;
-
-            var map = GetMapping<T>();
-            var colName = map.FindColumnWithPropertyName(propName).Name;
-
-            CreateIndex(map.TableName, colName, unique);
-        }
-
-		public class ColumnInfo
+		/// <summary>
+		/// Creates an index for the specified table and columns.
+		/// </summary>
+		/// <param name="indexName">Name of the index to create</param>
+		/// <param name="tableName">Name of the database table</param>
+		/// <param name="columnNames">An array of column names to index</param>
+		/// <param name="unique">Whether the index should be unique</param>
+		public int CreateIndex (string indexName, string tableName, string [] columnNames, bool unique = false)
 		{
-//			public int cid { get; set; }
+			const string sqlFormat = "create {2} index if not exists \"{3}\" ON \"{0}\"(\"{1}\")";
+			var sql = String.Format (sqlFormat, tableName, string.Join ("\", \"", columnNames), unique ? "UNIQUE" : "", indexName);
+			return Execute (sql);
+		}
+
+		/// <summary>
+		/// Creates an index for the specified table and column.
+		/// </summary>
+		/// <param name="indexName">Name of the index to create</param>
+		/// <param name="tableName">Name of the database table</param>
+		/// <param name="columnName">Name of the column to index</param>
+		/// <param name="unique">Whether the index should be unique</param>
+		public int CreateIndex (string indexName, string tableName, string columnName, bool unique = false)
+		{
+			return CreateIndex (indexName, tableName, new string [] { columnName }, unique);
+		}
+
+		/// <summary>
+		/// Creates an index for the specified table and column.
+		/// </summary>
+		/// <param name="tableName">Name of the database table</param>
+		/// <param name="columnName">Name of the column to index</param>
+		/// <param name="unique">Whether the index should be unique</param>
+		public int CreateIndex (string tableName, string columnName, bool unique = false)
+		{
+			return CreateIndex (tableName + "_" + columnName, tableName, columnName, unique);
+		}
+
+		/// <summary>
+		/// Creates an index for the specified table and columns.
+		/// </summary>
+		/// <param name="tableName">Name of the database table</param>
+		/// <param name="columnNames">An array of column names to index</param>
+		/// <param name="unique">Whether the index should be unique</param>
+		public int CreateIndex (string tableName, string [] columnNames, bool unique = false)
+		{
+			return CreateIndex (tableName + "_" + string.Join ("_", columnNames), tableName, columnNames, unique);
+		}
+
+		/// <summary>
+		/// Creates an index for the specified object property.
+		/// e.g. CreateIndex<Client>(c => c.Name);
+		/// </summary>
+		/// <typeparam name="T">Type to reflect to a database table.</typeparam>
+		/// <param name="property">Property to index</param>
+		/// <param name="unique">Whether the index should be unique</param>
+		public void CreateIndex<T> (Expression<Func<T, object>> property, bool unique = false)
+		{
+			MemberExpression mx;
+			if (property.Body.NodeType == ExpressionType.Convert) {
+				mx = ((UnaryExpression) property.Body).Operand as MemberExpression;
+			} else {
+				mx = (property.Body as MemberExpression);
+			}
+			var propertyInfo = mx.Member as PropertyInfo;
+			if (propertyInfo == null) {
+				throw new ArgumentException ("The lambda expression 'property' should point to a valid Property");
+			}
+
+			var propName = propertyInfo.Name;
+
+			var map = GetMapping<T> ();
+			var colName = map.FindColumnWithPropertyName (propName).Name;
+
+			CreateIndex (map.TableName, colName, unique);
+		}
+
+		public class ColumnInfo {
+			//			public int cid { get; set; }
 
 			[Column ("name")]
 			public string Name { get; set; }
 
-//			[Column ("type")]
-//			public string ColumnType { get; set; }
+			//			[Column ("type")]
+			//			public string ColumnType { get; set; }
 
-//			public int notnull { get; set; }
+			//			public int notnull { get; set; }
 
-//			public string dflt_value { get; set; }
+			//			public string dflt_value { get; set; }
 
-//			public int pk { get; set; }
+			//			public int pk { get; set; }
 
 			public override string ToString ()
 			{
@@ -486,9 +475,9 @@ namespace Xamarin.MacDev.SQLite
 		void MigrateTable (TableMapping map)
 		{
 			var existingCols = GetTableInfo (map.TableName);
-			
+
 			var toBeAdded = new List<TableMapping.Column> ();
-			
+
 			foreach (var p in map.Columns) {
 				var found = false;
 				foreach (var c in existingCols) {
@@ -500,7 +489,7 @@ namespace Xamarin.MacDev.SQLite
 					toBeAdded.Add (p);
 				}
 			}
-			
+
 			foreach (var p in toBeAdded) {
 				var addCol = "alter table \"" + map.TableName + "\" add column " + Orm.SqlDecl (p, StoreDateTimeAsTicks);
 				Execute (addCol);
@@ -529,7 +518,7 @@ namespace Xamarin.MacDev.SQLite
 		/// <returns>
 		/// A <see cref="SQLiteCommand"/>
 		/// </returns>
-		public SQLiteCommand CreateCommand (string cmdText, params object[] ps)
+		public SQLiteCommand CreateCommand (string cmdText, params object [] ps)
 		{
 			if (!_open)
 				throw SQLiteException.New (SQLite3.Result.Error, "Cannot create commands from unopened database");
@@ -559,10 +548,10 @@ namespace Xamarin.MacDev.SQLite
 		/// <returns>
 		/// The number of rows modified in the database as a result of this execution.
 		/// </returns>
-		public int Execute (string query, params object[] args)
+		public int Execute (string query, params object [] args)
 		{
 			var cmd = CreateCommand (query, args);
-			
+
 			if (TimeExecution) {
 				if (_sw == null) {
 					_sw = new Stopwatch ();
@@ -572,20 +561,20 @@ namespace Xamarin.MacDev.SQLite
 			}
 
 			var r = cmd.ExecuteNonQuery ();
-			
+
 			if (TimeExecution) {
 				_sw.Stop ();
 				_elapsedMilliseconds += _sw.ElapsedMilliseconds;
 				Debug.WriteLine (string.Format ("Finished in {0} ms ({1:0.0} s total)", _sw.ElapsedMilliseconds, _elapsedMilliseconds / 1000.0));
 			}
-			
+
 			return r;
 		}
 
-		public T ExecuteScalar<T> (string query, params object[] args)
+		public T ExecuteScalar<T> (string query, params object [] args)
 		{
 			var cmd = CreateCommand (query, args);
-			
+
 			if (TimeExecution) {
 				if (_sw == null) {
 					_sw = new Stopwatch ();
@@ -593,15 +582,15 @@ namespace Xamarin.MacDev.SQLite
 				_sw.Reset ();
 				_sw.Start ();
 			}
-			
+
 			var r = cmd.ExecuteScalar<T> ();
-			
+
 			if (TimeExecution) {
 				_sw.Stop ();
 				_elapsedMilliseconds += _sw.ElapsedMilliseconds;
 				Debug.WriteLine (string.Format ("Finished in {0} ms ({1:0.0} s total)", _sw.ElapsedMilliseconds, _elapsedMilliseconds / 1000.0));
 			}
-			
+
 			return r;
 		}
 
@@ -620,7 +609,7 @@ namespace Xamarin.MacDev.SQLite
 		/// <returns>
 		/// An enumerable with one result for each row returned by the query.
 		/// </returns>
-		public List<T> Query<T> (string query, params object[] args) where T : new()
+		public List<T> Query<T> (string query, params object [] args) where T : new()
 		{
 			var cmd = CreateCommand (query, args);
 			return cmd.ExecuteQuery<T> ();
@@ -643,10 +632,10 @@ namespace Xamarin.MacDev.SQLite
 		/// The enumerator will call sqlite3_step on each call to MoveNext, so the database
 		/// connection must remain open for the lifetime of the enumerator.
 		/// </returns>
-		public IEnumerable<T> DeferredQuery<T>(string query, params object[] args) where T : new()
+		public IEnumerable<T> DeferredQuery<T> (string query, params object [] args) where T : new()
 		{
-			var cmd = CreateCommand(query, args);
-			return cmd.ExecuteDeferredQuery<T>();
+			var cmd = CreateCommand (query, args);
+			return cmd.ExecuteDeferredQuery<T> ();
 		}
 
 		/// <summary>
@@ -669,7 +658,7 @@ namespace Xamarin.MacDev.SQLite
 		/// <returns>
 		/// An enumerable with one result for each row returned by the query.
 		/// </returns>
-		public List<object> Query (TableMapping map, string query, params object[] args)
+		public List<object> Query (TableMapping map, string query, params object [] args)
 		{
 			var cmd = CreateCommand (query, args);
 			return cmd.ExecuteQuery<object> (map);
@@ -697,10 +686,10 @@ namespace Xamarin.MacDev.SQLite
 		/// The enumerator will call sqlite3_step on each call to MoveNext, so the database
 		/// connection must remain open for the lifetime of the enumerator.
 		/// </returns>
-		public IEnumerable<object> DeferredQuery(TableMapping map, string query, params object[] args)
+		public IEnumerable<object> DeferredQuery (TableMapping map, string query, params object [] args)
 		{
-			var cmd = CreateCommand(query, args);
-			return cmd.ExecuteDeferredQuery<object>(map);
+			var cmd = CreateCommand (query, args);
+			return cmd.ExecuteDeferredQuery<object> (map);
 		}
 
 		/// <summary>
@@ -729,25 +718,25 @@ namespace Xamarin.MacDev.SQLite
 		/// </returns>
 		public T Get<T> (object pk) where T : new()
 		{
-			var map = GetMapping (typeof(T));
+			var map = GetMapping (typeof (T));
 			return Query<T> (map.GetByPrimaryKeySql, pk).First ();
 		}
 
-        /// <summary>
-        /// Attempts to retrieve the first object that matches the predicate from the table
-        /// associated with the specified type. 
-        /// </summary>
-        /// <param name="predicate">
-        /// A predicate for which object to find.
-        /// </param>
-        /// <returns>
-        /// The object that matches the given predicate. Throws a not found exception
-        /// if the object is not found.
-        /// </returns>
-        public T Get<T> (Expression<Func<T, bool>> predicate) where T : new()
-        {
-            return Table<T> ().Where (predicate).First ();
-        }
+		/// <summary>
+		/// Attempts to retrieve the first object that matches the predicate from the table
+		/// associated with the specified type. 
+		/// </summary>
+		/// <param name="predicate">
+		/// A predicate for which object to find.
+		/// </param>
+		/// <returns>
+		/// The object that matches the given predicate. Throws a not found exception
+		/// if the object is not found.
+		/// </returns>
+		public T Get<T> (Expression<Func<T, bool>> predicate) where T : new()
+		{
+			return Table<T> ().Where (predicate).First ();
+		}
 
 		/// <summary>
 		/// Attempts to retrieve an object with the given primary key from the table
@@ -761,7 +750,7 @@ namespace Xamarin.MacDev.SQLite
 		/// The object with the given primary key or null
 		/// if the object is not found.
 		/// </returns>
-		public T Find<T> (object pk) where T : new ()
+		public T Find<T> (object pk) where T : new()
 		{
 			var map = GetMapping (typeof (T));
 			return Query<T> (map.GetByPrimaryKeySql, pk).FirstOrDefault ();
@@ -786,22 +775,22 @@ namespace Xamarin.MacDev.SQLite
 		{
 			return Query (map, map.GetByPrimaryKeySql, pk).FirstOrDefault ();
 		}
-		
+
 		/// <summary>
-        /// Attempts to retrieve the first object that matches the predicate from the table
-        /// associated with the specified type. 
-        /// </summary>
-        /// <param name="predicate">
-        /// A predicate for which object to find.
-        /// </param>
-        /// <returns>
-        /// The object that matches the given predicate or null
-        /// if the object is not found.
-        /// </returns>
-        public T Find<T> (Expression<Func<T, bool>> predicate) where T : new()
-        {
-            return Table<T> ().Where (predicate).FirstOrDefault ();
-        }
+		/// Attempts to retrieve the first object that matches the predicate from the table
+		/// associated with the specified type. 
+		/// </summary>
+		/// <param name="predicate">
+		/// A predicate for which object to find.
+		/// </param>
+		/// <returns>
+		/// The object that matches the given predicate or null
+		/// if the object is not found.
+		/// </returns>
+		public T Find<T> (Expression<Func<T, bool>> predicate) where T : new()
+		{
+			return Table<T> ().Where (predicate).FirstOrDefault ();
+		}
 
 		/// <summary>
 		/// Whether <see cref="BeginTransaction"/> has been called and the database is waiting for a <see cref="Commit"/>.
@@ -848,7 +837,7 @@ namespace Xamarin.MacDev.SQLite
 
 					throw;
 				}
-			} else { 
+			} else {
 				// Calling BeginTransaction on an already open transaction is invalid
 				throw new InvalidOperationException ("Cannot begin a transaction while already in a transaction.");
 			}
@@ -927,11 +916,11 @@ namespace Xamarin.MacDev.SQLite
 					}
 				} else {
 					DoSavePointExecute (savepoint, "rollback to ");
-				}   
+				}
 			} catch (SQLiteException) {
 				if (!noThrow)
 					throw;
-            
+
 			}
 			// No need to rollback if there are no transactions open.
 		}
@@ -963,9 +952,9 @@ namespace Xamarin.MacDev.SQLite
 #elif SILVERLIGHT
 						_transactionDepth = depth;
 #else
-                        Thread.VolatileWrite (ref _transactionDepth, depth);
+						Thread.VolatileWrite (ref _transactionDepth, depth);
 #endif
-                        Execute (cmd + savepoint);
+						Execute (cmd + savepoint);
 						return;
 					}
 				}
@@ -1019,7 +1008,7 @@ namespace Xamarin.MacDev.SQLite
 		public int InsertAll (System.Collections.IEnumerable objects)
 		{
 			var c = 0;
-			RunInTransaction(() => {
+			RunInTransaction (() => {
 				foreach (var r in objects) {
 					c += Insert (r);
 				}
@@ -1072,7 +1061,7 @@ namespace Xamarin.MacDev.SQLite
 			});
 			return c;
 		}
-		
+
 		/// <summary>
 		/// Inserts the given object and retrieves its
 		/// auto incremented primary key if it has one.
@@ -1150,7 +1139,7 @@ namespace Xamarin.MacDev.SQLite
 		{
 			return Insert (obj, "OR REPLACE", objType);
 		}
-		
+
 		/// <summary>
 		/// Inserts the given object and retrieves its
 		/// auto incremented primary key if it has one.
@@ -1172,29 +1161,29 @@ namespace Xamarin.MacDev.SQLite
 			return Insert (obj, extra, obj.GetType ());
 		}
 
-	    /// <summary>
-	    /// Inserts the given object and retrieves its
-	    /// auto incremented primary key if it has one.
-	    /// </summary>
-	    /// <param name="obj">
-	    /// The object to insert.
-	    /// </param>
-	    /// <param name="extra">
-	    /// Literal SQL code that gets placed into the command. INSERT {extra} INTO ...
-	    /// </param>
-	    /// <param name="objType">
-	    /// The type of object to insert.
-	    /// </param>
-	    /// <returns>
-	    /// The number of rows added to the table.
-	    /// </returns>
-	    public int Insert (object obj, string extra, Type objType)
+		/// <summary>
+		/// Inserts the given object and retrieves its
+		/// auto incremented primary key if it has one.
+		/// </summary>
+		/// <param name="obj">
+		/// The object to insert.
+		/// </param>
+		/// <param name="extra">
+		/// Literal SQL code that gets placed into the command. INSERT {extra} INTO ...
+		/// </param>
+		/// <param name="objType">
+		/// The type of object to insert.
+		/// </param>
+		/// <returns>
+		/// The number of rows added to the table.
+		/// </returns>
+		public int Insert (object obj, string extra, Type objType)
 		{
 			if (obj == null || objType == null) {
 				return 0;
 			}
-			
-            
+
+
 			var map = GetMapping (objType);
 
 #if NETFX_CORE
@@ -1219,34 +1208,33 @@ namespace Xamarin.MacDev.SQLite
                 }
             }
 #else
-            if (map.PK != null && map.PK.IsAutoGuid) {
-                var prop = objType.GetProperty(map.PK.PropertyName);
-                if (prop != null) {
-                    if (prop.GetValue(obj, null).Equals(Guid.Empty)) {
-                        prop.SetValue(obj, Guid.NewGuid(), null);
-                    }
-                }
-            }
+			if (map.PK != null && map.PK.IsAutoGuid) {
+				var prop = objType.GetProperty (map.PK.PropertyName);
+				if (prop != null) {
+					if (prop.GetValue (obj, null).Equals (Guid.Empty)) {
+						prop.SetValue (obj, Guid.NewGuid (), null);
+					}
+				}
+			}
 #endif
 
 
 			var replacing = string.Compare (extra, "OR REPLACE", StringComparison.OrdinalIgnoreCase) == 0;
-			
+
 			var cols = replacing ? map.InsertOrReplaceColumns : map.InsertColumns;
-			var vals = new object[cols.Length];
+			var vals = new object [cols.Length];
 			for (var i = 0; i < vals.Length; i++) {
 				vals [i] = cols [i].GetValue (obj);
 			}
-			
+
 			var insertCmd = map.GetInsertCommand (this, extra);
 			var count = insertCmd.ExecuteNonQuery (vals);
 
-            if (map.HasAutoIncPK)
-            {
+			if (map.HasAutoIncPK) {
 				var id = SQLite3.LastInsertRowid (Handle);
 				map.SetAutoIncPK (obj, id);
 			}
-			
+
 			return count;
 		}
 
@@ -1288,24 +1276,24 @@ namespace Xamarin.MacDev.SQLite
 			if (obj == null || objType == null) {
 				return 0;
 			}
-			
+
 			var map = GetMapping (objType);
-			
+
 			var pk = map.PK;
-			
+
 			if (pk == null) {
 				throw new NotSupportedException ("Cannot update " + map.TableName + ": it has no PK");
 			}
-			
+
 			var cols = from p in map.Columns
-				where p != pk
-				select p;
+					   where p != pk
+					   select p;
 			var vals = from c in cols
-				select c.GetValue (obj);
+					   select c.GetValue (obj);
 			var ps = new List<object> (vals);
 			ps.Add (pk.GetValue (obj));
 			var q = string.Format ("update \"{0}\" set {1} where {2} = ? ", map.TableName, string.Join (", ", (from c in cols
-				select "\"" + c.Name + "\" = ?").ToArray ()), pk.Name);
+																											   select "\"" + c.Name + "\" = ?").ToArray ()), pk.Name);
 			return Execute (q, ps.ToArray ());
 		}
 
@@ -1386,7 +1374,7 @@ namespace Xamarin.MacDev.SQLite
 		public int DeleteAll<T> ()
 		{
 			var map = GetMapping (typeof (T));
-			var query = string.Format("delete from \"{0}\"", map.TableName);
+			var query = string.Format ("delete from \"{0}\"", map.TableName);
 			return Execute (query);
 		}
 
@@ -1412,7 +1400,7 @@ namespace Xamarin.MacDev.SQLite
 				try {
 					if (_mappings != null) {
 						foreach (var sqlInsertCommand in _mappings.Values) {
-							sqlInsertCommand.Dispose();
+							sqlInsertCommand.Dispose ();
 						}
 					}
 					var r = SQLite3.Close (Handle);
@@ -1420,8 +1408,7 @@ namespace Xamarin.MacDev.SQLite
 						string msg = SQLite3.GetErrmsg (Handle);
 						throw SQLiteException.New (r, msg);
 					}
-				}
-				finally {
+				} finally {
 					Handle = NullHandle;
 					_open = false;
 				}
@@ -1432,8 +1419,7 @@ namespace Xamarin.MacDev.SQLite
 	/// <summary>
 	/// Represents a parsed connection string.
 	/// </summary>
-	class SQLiteConnectionString
-	{
+	class SQLiteConnectionString {
 		public string ConnectionString { get; private set; }
 		public string DatabasePath { get; private set; }
 		public bool StoreDateTimeAsTicks { get; private set; }
@@ -1455,9 +1441,8 @@ namespace Xamarin.MacDev.SQLite
 		}
 	}
 
-    [AttributeUsage (AttributeTargets.Class)]
-	public class TableAttribute : Attribute
-	{
+	[AttributeUsage (AttributeTargets.Class)]
+	public class TableAttribute : Attribute {
 		public string Name { get; set; }
 
 		public TableAttribute (string name)
@@ -1467,8 +1452,7 @@ namespace Xamarin.MacDev.SQLite
 	}
 
 	[AttributeUsage (AttributeTargets.Property)]
-	public class ColumnAttribute : Attribute
-	{
+	public class ColumnAttribute : Attribute {
 		public string Name { get; set; }
 
 		public ColumnAttribute (string name)
@@ -1478,27 +1462,24 @@ namespace Xamarin.MacDev.SQLite
 	}
 
 	[AttributeUsage (AttributeTargets.Property)]
-	public class PrimaryKeyAttribute : Attribute
-	{
+	public class PrimaryKeyAttribute : Attribute {
 	}
 
 	[AttributeUsage (AttributeTargets.Property)]
-	public class AutoIncrementAttribute : Attribute
-	{
+	public class AutoIncrementAttribute : Attribute {
 	}
 
 	[AttributeUsage (AttributeTargets.Property)]
-	public class IndexedAttribute : Attribute
-	{
+	public class IndexedAttribute : Attribute {
 		public string Name { get; set; }
 		public int Order { get; set; }
 		public virtual bool Unique { get; set; }
-		
-		public IndexedAttribute()
+
+		public IndexedAttribute ()
 		{
 		}
-		
-		public IndexedAttribute(string name, int order)
+
+		public IndexedAttribute (string name, int order)
 		{
 			Name = name;
 			Order = order;
@@ -1506,13 +1487,11 @@ namespace Xamarin.MacDev.SQLite
 	}
 
 	[AttributeUsage (AttributeTargets.Property)]
-	public class IgnoreAttribute : Attribute
-	{
+	public class IgnoreAttribute : Attribute {
 	}
 
 	[AttributeUsage (AttributeTargets.Property)]
-	public class UniqueAttribute : IndexedAttribute
-	{
+	public class UniqueAttribute : IndexedAttribute {
 		public override bool Unique {
 			get { return true; }
 			set { /* throw?  */ }
@@ -1520,8 +1499,7 @@ namespace Xamarin.MacDev.SQLite
 	}
 
 	[AttributeUsage (AttributeTargets.Property)]
-	public class MaxLengthAttribute : Attribute
-	{
+	public class MaxLengthAttribute : Attribute {
 		public int Value { get; private set; }
 
 		public MaxLengthAttribute (int length)
@@ -1531,8 +1509,7 @@ namespace Xamarin.MacDev.SQLite
 	}
 
 	[AttributeUsage (AttributeTargets.Property)]
-	public class CollationAttribute: Attribute
-	{
+	public class CollationAttribute : Attribute {
 		public string Value { get; private set; }
 
 		public CollationAttribute (string collation)
@@ -1541,23 +1518,22 @@ namespace Xamarin.MacDev.SQLite
 		}
 	}
 
-	public class TableMapping
-	{
+	public class TableMapping {
 		public Type MappedType { get; private set; }
 
 		public string TableName { get; private set; }
 
-		public Column[] Columns { get; private set; }
+		public Column [] Columns { get; private set; }
 
 		public Column PK { get; private set; }
 
 		public string GetByPrimaryKeySql { get; private set; }
 
 		Column _autoPk;
-		Column[] _insertColumns;
-		Column[] _insertOrReplaceColumns;
+		Column [] _insertColumns;
+		Column [] _insertOrReplaceColumns;
 
-        public TableMapping(Type type, CreateFlags createFlags = CreateFlags.None)
+		public TableMapping (Type type, CreateFlags createFlags = CreateFlags.None)
 		{
 			MappedType = type;
 
@@ -1565,7 +1541,7 @@ namespace Xamarin.MacDev.SQLite
 			var tableAttr = (TableAttribute)System.Reflection.CustomAttributeExtensions
                 .GetCustomAttribute(type.GetTypeInfo(), typeof(TableAttribute), true);
 #else
-			var tableAttr = (TableAttribute)type.GetCustomAttributes (typeof (TableAttribute), true).FirstOrDefault ();
+			var tableAttr = (TableAttribute) type.GetCustomAttributes (typeof (TableAttribute), true).FirstOrDefault ();
 #endif
 
 			TableName = tableAttr != null ? tableAttr.Name : MappedType.Name;
@@ -1580,7 +1556,7 @@ namespace Xamarin.MacDev.SQLite
 			var cols = new List<Column> ();
 			foreach (var p in props) {
 #if !NETFX_CORE
-				var ignore = p.GetCustomAttributes (typeof(IgnoreAttribute), true).Length > 0;
+				var ignore = p.GetCustomAttributes (typeof (IgnoreAttribute), true).Length > 0;
 #else
 				var ignore = p.GetCustomAttributes (typeof(IgnoreAttribute), true).Count() > 0;
 #endif
@@ -1597,13 +1573,12 @@ namespace Xamarin.MacDev.SQLite
 					PK = c;
 				}
 			}
-			
+
 			HasAutoIncPK = _autoPk != null;
 
 			if (PK != null) {
 				GetByPrimaryKeySql = string.Format ("select * from \"{0}\" where \"{1}\" = ?", TableName, PK.Name);
-			}
-			else {
+			} else {
 				// People should not be calling Get/Find without a PK
 				GetByPrimaryKeySql = string.Format ("select * from \"{0}\" limit 1", TableName);
 			}
@@ -1618,7 +1593,7 @@ namespace Xamarin.MacDev.SQLite
 			}
 		}
 
-		public Column[] InsertColumns {
+		public Column [] InsertColumns {
 			get {
 				if (_insertColumns == null) {
 					_insertColumns = Columns.Where (c => !c.IsAutoInc).ToArray ();
@@ -1627,7 +1602,7 @@ namespace Xamarin.MacDev.SQLite
 			}
 		}
 
-		public Column[] InsertOrReplaceColumns {
+		public Column [] InsertOrReplaceColumns {
 			get {
 				if (_insertOrReplaceColumns == null) {
 					_insertOrReplaceColumns = Columns.ToArray ();
@@ -1647,63 +1622,58 @@ namespace Xamarin.MacDev.SQLite
 			var exact = Columns.FirstOrDefault (c => c.Name == columnName);
 			return exact;
 		}
-		
+
 		PreparedSqlLiteInsertCommand _insertCommand;
 		string _insertCommandExtra;
 
-		public PreparedSqlLiteInsertCommand GetInsertCommand(SQLiteConnection conn, string extra)
+		public PreparedSqlLiteInsertCommand GetInsertCommand (SQLiteConnection conn, string extra)
 		{
 			if (_insertCommand == null) {
-				_insertCommand = CreateInsertCommand(conn, extra);
+				_insertCommand = CreateInsertCommand (conn, extra);
 				_insertCommandExtra = extra;
-			}
-			else if (_insertCommandExtra != extra) {
-				_insertCommand.Dispose();
-				_insertCommand = CreateInsertCommand(conn, extra);
+			} else if (_insertCommandExtra != extra) {
+				_insertCommand.Dispose ();
+				_insertCommand = CreateInsertCommand (conn, extra);
 				_insertCommandExtra = extra;
 			}
 			return _insertCommand;
 		}
-		
-		PreparedSqlLiteInsertCommand CreateInsertCommand(SQLiteConnection conn, string extra)
+
+		PreparedSqlLiteInsertCommand CreateInsertCommand (SQLiteConnection conn, string extra)
 		{
 			var cols = InsertColumns;
-		    string insertSql;
-            if (!cols.Any() && Columns.Count() == 1 && Columns[0].IsAutoInc)
-            {
-                insertSql = string.Format("insert {1} into \"{0}\" default values", TableName, extra);
-            }
-            else
-            {
+			string insertSql;
+			if (!cols.Any () && Columns.Count () == 1 && Columns [0].IsAutoInc) {
+				insertSql = string.Format ("insert {1} into \"{0}\" default values", TableName, extra);
+			} else {
 				var replacing = string.Compare (extra, "OR REPLACE", StringComparison.OrdinalIgnoreCase) == 0;
 
 				if (replacing) {
 					cols = InsertOrReplaceColumns;
 				}
 
-                insertSql = string.Format("insert {3} into \"{0}\"({1}) values ({2})", TableName,
-                                   string.Join(", ", (from c in cols
-                                                     select "\"" + c.Name + "\"").ToArray()),
-                                   string.Join(", ", (from c in cols
-                                                     select "?").ToArray()), extra);
-                
-            }
-			
-			var insertCommand = new PreparedSqlLiteInsertCommand(conn);
+				insertSql = string.Format ("insert {3} into \"{0}\"({1}) values ({2})", TableName,
+								   string.Join (", ", (from c in cols
+													   select "\"" + c.Name + "\"").ToArray ()),
+								   string.Join (", ", (from c in cols
+													   select "?").ToArray ()), extra);
+
+			}
+
+			var insertCommand = new PreparedSqlLiteInsertCommand (conn);
 			insertCommand.CommandText = insertSql;
 			return insertCommand;
 		}
-		
-		protected internal void Dispose()
+
+		protected internal void Dispose ()
 		{
 			if (_insertCommand != null) {
-				_insertCommand.Dispose();
+				_insertCommand.Dispose ();
 				_insertCommand = null;
 			}
 		}
 
-		public class Column
-		{
+		public class Column {
 			PropertyInfo _prop;
 
 			public string Name { get; private set; }
@@ -1714,8 +1684,8 @@ namespace Xamarin.MacDev.SQLite
 
 			public string Collation { get; private set; }
 
-            public bool IsAutoInc { get; private set; }
-            public bool IsAutoGuid { get; private set; }
+			public bool IsAutoInc { get; private set; }
+			public bool IsAutoGuid { get; private set; }
 
 			public bool IsPK { get; private set; }
 
@@ -1725,36 +1695,35 @@ namespace Xamarin.MacDev.SQLite
 
 			public int? MaxStringLength { get; private set; }
 
-            public Column(PropertyInfo prop, CreateFlags createFlags = CreateFlags.None)
-            {
-                var colAttr = (ColumnAttribute)prop.GetCustomAttributes(typeof(ColumnAttribute), true).FirstOrDefault();
+			public Column (PropertyInfo prop, CreateFlags createFlags = CreateFlags.None)
+			{
+				var colAttr = (ColumnAttribute) prop.GetCustomAttributes (typeof (ColumnAttribute), true).FirstOrDefault ();
 
-                _prop = prop;
-                Name = colAttr == null ? prop.Name : colAttr.Name;
-                //If this type is Nullable<T> then Nullable.GetUnderlyingType returns the T, otherwise it returns null, so get the actual type instead
-                ColumnType = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
-                Collation = Orm.Collation(prop);
+				_prop = prop;
+				Name = colAttr == null ? prop.Name : colAttr.Name;
+				//If this type is Nullable<T> then Nullable.GetUnderlyingType returns the T, otherwise it returns null, so get the actual type instead
+				ColumnType = Nullable.GetUnderlyingType (prop.PropertyType) ?? prop.PropertyType;
+				Collation = Orm.Collation (prop);
 
-                IsPK = Orm.IsPK(prop) ||
+				IsPK = Orm.IsPK (prop) ||
 					(((createFlags & CreateFlags.ImplicitPK) == CreateFlags.ImplicitPK) &&
 					 	string.Compare (prop.Name, Orm.ImplicitPkName, StringComparison.OrdinalIgnoreCase) == 0);
 
-                var isAuto = Orm.IsAutoInc(prop) || (IsPK && ((createFlags & CreateFlags.AutoIncPK) == CreateFlags.AutoIncPK));
-                IsAutoGuid = isAuto && ColumnType == typeof(Guid);
-                IsAutoInc = isAuto && !IsAutoGuid;
+				var isAuto = Orm.IsAutoInc (prop) || (IsPK && ((createFlags & CreateFlags.AutoIncPK) == CreateFlags.AutoIncPK));
+				IsAutoGuid = isAuto && ColumnType == typeof (Guid);
+				IsAutoInc = isAuto && !IsAutoGuid;
 
-                Indices = Orm.GetIndices(prop);
-                if (!Indices.Any()
-                    && !IsPK
-                    && ((createFlags & CreateFlags.ImplicitIndex) == CreateFlags.ImplicitIndex)
-                    && Name.EndsWith (Orm.ImplicitIndexSuffix, StringComparison.OrdinalIgnoreCase)
-                    )
-                {
-                    Indices = new IndexedAttribute[] { new IndexedAttribute() };
-                }
-                IsNullable = !IsPK;
-                MaxStringLength = Orm.MaxStringLength(prop);
-            }
+				Indices = Orm.GetIndices (prop);
+				if (!Indices.Any ()
+					&& !IsPK
+					&& ((createFlags & CreateFlags.ImplicitIndex) == CreateFlags.ImplicitIndex)
+					&& Name.EndsWith (Orm.ImplicitIndexSuffix, StringComparison.OrdinalIgnoreCase)
+					) {
+					Indices = new IndexedAttribute [] { new IndexedAttribute () };
+				}
+				IsNullable = !IsPK;
+				MaxStringLength = Orm.MaxStringLength (prop);
+			}
 
 			public void SetValue (object obj, object val)
 			{
@@ -1768,16 +1737,15 @@ namespace Xamarin.MacDev.SQLite
 		}
 	}
 
-	public static class Orm
-	{
-        public const int DefaultMaxStringLength = 140;
-        public const string ImplicitPkName = "Id";
-        public const string ImplicitIndexSuffix = "Id";
+	public static class Orm {
+		public const int DefaultMaxStringLength = 140;
+		public const string ImplicitPkName = "Id";
+		public const string ImplicitIndexSuffix = "Id";
 
 		public static string SqlDecl (TableMapping.Column p, bool storeDateTimeAsTicks)
 		{
 			string decl = "\"" + p.Name + "\" " + SqlType (p, storeDateTimeAsTicks);
-			
+
 			if (p.IsPK) {
 				decl += " PRIMARY KEY";
 			}
@@ -1790,27 +1758,27 @@ namespace Xamarin.MacDev.SQLite
 			if (!string.IsNullOrEmpty (p.Collation)) {
 				decl += " COLLATE" + p.Collation;
 			}
-			
+
 			return decl;
 		}
 
 		public static string SqlType (TableMapping.Column p, bool storeDateTimeAsTicks)
 		{
 			var clrType = p.ColumnType;
-			if (clrType == typeof(Boolean) || clrType == typeof(Byte) || clrType == typeof(UInt16) || clrType == typeof(SByte) || clrType == typeof(Int16) || clrType == typeof(Int32)) {
+			if (clrType == typeof (Boolean) || clrType == typeof (Byte) || clrType == typeof (UInt16) || clrType == typeof (SByte) || clrType == typeof (Int16) || clrType == typeof (Int32)) {
 				return "INTEGER";
-			} else if (clrType == typeof(UInt32) || clrType == typeof(Int64)) {
+			} else if (clrType == typeof (UInt32) || clrType == typeof (Int64)) {
 				return "BIGINT";
-			} else if (clrType == typeof(Single) || clrType == typeof(Double) || clrType == typeof(Decimal)) {
+			} else if (clrType == typeof (Single) || clrType == typeof (Double) || clrType == typeof (Decimal)) {
 				return "FLOAT";
-			} else if (clrType == typeof(String)) {
+			} else if (clrType == typeof (String)) {
 				int? len = p.MaxStringLength;
 
 				if (len.HasValue)
 					return "VARCHAR(" + len.Value + ")";
 
 				return "VARCHAR";
-			} else if (clrType == typeof(DateTime)) {
+			} else if (clrType == typeof (DateTime)) {
 				return storeDateTimeAsTicks ? "BIGINT" : "DATETIME";
 #if !NETFX_CORE
 			} else if (clrType.IsEnum) {
@@ -1818,18 +1786,18 @@ namespace Xamarin.MacDev.SQLite
 			} else if (clrType.GetTypeInfo().IsEnum) {
 #endif
 				return "INTEGER";
-			} else if (clrType == typeof(byte[])) {
+			} else if (clrType == typeof (byte [])) {
 				return "BLOB";
-            } else if (clrType == typeof(Guid)) {
-                return "VARCHAR(36)";
-            } else {
+			} else if (clrType == typeof (Guid)) {
+				return "VARCHAR(36)";
+			} else {
 				throw new NotSupportedException ("Don't know about " + clrType);
 			}
 		}
 
 		public static bool IsPK (MemberInfo p)
 		{
-			var attrs = p.GetCustomAttributes (typeof(PrimaryKeyAttribute), true);
+			var attrs = p.GetCustomAttributes (typeof (PrimaryKeyAttribute), true);
 #if !NETFX_CORE
 			return attrs.Length > 0;
 #else
@@ -1839,10 +1807,10 @@ namespace Xamarin.MacDev.SQLite
 
 		public static string Collation (MemberInfo p)
 		{
-			var attrs = p.GetCustomAttributes (typeof(CollationAttribute), true);
+			var attrs = p.GetCustomAttributes (typeof (CollationAttribute), true);
 #if !NETFX_CORE
 			if (attrs.Length > 0) {
-				return ((CollationAttribute)attrs [0]).Value;
+				return ((CollationAttribute) attrs [0]).Value;
 #else
 			if (attrs.Count() > 0) {
                 return ((CollationAttribute)attrs.First()).Value;
@@ -1854,7 +1822,7 @@ namespace Xamarin.MacDev.SQLite
 
 		public static bool IsAutoInc (MemberInfo p)
 		{
-			var attrs = p.GetCustomAttributes (typeof(AutoIncrementAttribute), true);
+			var attrs = p.GetCustomAttributes (typeof (AutoIncrementAttribute), true);
 #if !NETFX_CORE
 			return attrs.Length > 0;
 #else
@@ -1862,18 +1830,18 @@ namespace Xamarin.MacDev.SQLite
 #endif
 		}
 
-		public static IEnumerable<IndexedAttribute> GetIndices(MemberInfo p)
+		public static IEnumerable<IndexedAttribute> GetIndices (MemberInfo p)
 		{
-			var attrs = p.GetCustomAttributes(typeof(IndexedAttribute), true);
-			return attrs.Cast<IndexedAttribute>();
+			var attrs = p.GetCustomAttributes (typeof (IndexedAttribute), true);
+			return attrs.Cast<IndexedAttribute> ();
 		}
-		
-		public static int? MaxStringLength(PropertyInfo p)
+
+		public static int? MaxStringLength (PropertyInfo p)
 		{
-			var attrs = p.GetCustomAttributes (typeof(MaxLengthAttribute), true);
+			var attrs = p.GetCustomAttributes (typeof (MaxLengthAttribute), true);
 #if !NETFX_CORE
 			if (attrs.Length > 0)
-				return ((MaxLengthAttribute)attrs [0]).Value;
+				return ((MaxLengthAttribute) attrs [0]).Value;
 #else
 			if (attrs.Count() > 0)
 				return ((MaxLengthAttribute)attrs.First()).Value;
@@ -1883,8 +1851,7 @@ namespace Xamarin.MacDev.SQLite
 		}
 	}
 
-	public partial class SQLiteCommand
-	{
+	public partial class SQLiteCommand {
 		SQLiteConnection _conn;
 		private List<Binding> _bindings;
 
@@ -1902,7 +1869,7 @@ namespace Xamarin.MacDev.SQLite
 			if (_conn.Trace) {
 				Debug.WriteLine ("Executing: " + this);
 			}
-			
+
 			var r = SQLite3.Result.OK;
 			var stmt = Prepare ();
 			r = SQLite3.Step (stmt);
@@ -1920,17 +1887,17 @@ namespace Xamarin.MacDev.SQLite
 
 		public IEnumerable<T> ExecuteDeferredQuery<T> ()
 		{
-			return ExecuteDeferredQuery<T>(_conn.GetMapping(typeof(T)));
+			return ExecuteDeferredQuery<T> (_conn.GetMapping (typeof (T)));
 		}
 
 		public List<T> ExecuteQuery<T> ()
 		{
-			return ExecuteDeferredQuery<T>(_conn.GetMapping(typeof(T))).ToList();
+			return ExecuteDeferredQuery<T> (_conn.GetMapping (typeof (T))).ToList ();
 		}
 
 		public List<T> ExecuteQuery<T> (TableMapping map)
 		{
-			return ExecuteDeferredQuery<T>(map).ToList();
+			return ExecuteDeferredQuery<T> (map).ToList ();
 		}
 
 		/// <summary>
@@ -1957,31 +1924,28 @@ namespace Xamarin.MacDev.SQLite
 			}
 
 			var stmt = Prepare ();
-			try
-			{
-				var cols = new TableMapping.Column[SQLite3.ColumnCount (stmt)];
+			try {
+				var cols = new TableMapping.Column [SQLite3.ColumnCount (stmt)];
 
 				for (int i = 0; i < cols.Length; i++) {
 					var name = SQLite3.ColumnName16 (stmt, i);
 					cols [i] = map.FindColumn (name);
 				}
-			
+
 				while (SQLite3.Step (stmt) == SQLite3.Result.Row) {
-					var obj = Activator.CreateInstance(map.MappedType);
+					var obj = Activator.CreateInstance (map.MappedType);
 					for (int i = 0; i < cols.Length; i++) {
 						if (cols [i] == null)
 							continue;
 						var colType = SQLite3.ColumnType (stmt, i);
 						var val = ReadCol (stmt, i, colType, cols [i].ColumnType);
 						cols [i].SetValue (obj, val);
- 					}
+					}
 					OnInstanceCreated (obj);
-					yield return (T)obj;
+					yield return (T) obj;
 				}
-			}
-			finally
-			{
-				SQLite3.Finalize(stmt);
+			} finally {
+				SQLite3.Finalize (stmt);
 			}
 		}
 
@@ -1990,30 +1954,24 @@ namespace Xamarin.MacDev.SQLite
 			if (_conn.Trace) {
 				Debug.WriteLine ("Executing Query: " + this);
 			}
-			
-			T val = default(T);
-			
+
+			T val = default (T);
+
 			var stmt = Prepare ();
 
-            try
-            {
-                var r = SQLite3.Step (stmt);
-                if (r == SQLite3.Result.Row) {
-                    var colType = SQLite3.ColumnType (stmt, 0);
-                    val = (T)ReadCol (stmt, 0, colType, typeof(T));
-                }
-                else if (r == SQLite3.Result.Done) {
-                }
-                else
-                {
-                    throw SQLiteException.New (r, SQLite3.GetErrmsg (_conn.Handle));
-                }
-            }
-            finally
-            {
-                Finalize (stmt);
-            }
-			
+			try {
+				var r = SQLite3.Step (stmt);
+				if (r == SQLite3.Result.Row) {
+					var colType = SQLite3.ColumnType (stmt, 0);
+					val = (T) ReadCol (stmt, 0, colType, typeof (T));
+				} else if (r == SQLite3.Result.Done) {
+				} else {
+					throw SQLiteException.New (r, SQLite3.GetErrmsg (_conn.Handle));
+				}
+			} finally {
+				Finalize (stmt);
+			}
+
 			return val;
 		}
 
@@ -2032,7 +1990,7 @@ namespace Xamarin.MacDev.SQLite
 
 		public override string ToString ()
 		{
-			var parts = new string[1 + _bindings.Count];
+			var parts = new string [1 + _bindings.Count];
 			parts [0] = CommandText;
 			var i = 1;
 			foreach (var b in _bindings) {
@@ -2042,7 +2000,7 @@ namespace Xamarin.MacDev.SQLite
 			return string.Join (Environment.NewLine, parts);
 		}
 
-		Sqlite3Statement Prepare()
+		Sqlite3Statement Prepare ()
 		{
 			var stmt = SQLite3.Prepare2 (_conn.Handle, CommandText);
 			BindAll (stmt);
@@ -2063,7 +2021,7 @@ namespace Xamarin.MacDev.SQLite
 				} else {
 					b.Index = nextIdx++;
 				}
-				
+
 				BindParameter (stmt, b.Index, b.Value, _conn.StoreDateTimeAsTicks);
 			}
 		}
@@ -2076,42 +2034,40 @@ namespace Xamarin.MacDev.SQLite
 				SQLite3.BindNull (stmt, index);
 			} else {
 				if (value is Int32) {
-					SQLite3.BindInt (stmt, index, (int)value);
+					SQLite3.BindInt (stmt, index, (int) value);
 				} else if (value is String) {
-					SQLite3.BindText (stmt, index, (string)value, -1, NegativePointer);
+					SQLite3.BindText (stmt, index, (string) value, -1, NegativePointer);
 				} else if (value is Byte || value is UInt16 || value is SByte || value is Int16) {
 					SQLite3.BindInt (stmt, index, Convert.ToInt32 (value));
 				} else if (value is Boolean) {
-					SQLite3.BindInt (stmt, index, (bool)value ? 1 : 0);
+					SQLite3.BindInt (stmt, index, (bool) value ? 1 : 0);
 				} else if (value is UInt32 || value is Int64) {
 					SQLite3.BindInt64 (stmt, index, Convert.ToInt64 (value));
 				} else if (value is Single || value is Double || value is Decimal) {
 					SQLite3.BindDouble (stmt, index, Convert.ToDouble (value));
 				} else if (value is DateTime) {
 					if (storeDateTimeAsTicks) {
-						SQLite3.BindInt64 (stmt, index, ((DateTime)value).Ticks);
-					}
-					else {
-						SQLite3.BindText (stmt, index, ((DateTime)value).ToString ("yyyy-MM-dd HH:mm:ss"), -1, NegativePointer);
+						SQLite3.BindInt64 (stmt, index, ((DateTime) value).Ticks);
+					} else {
+						SQLite3.BindText (stmt, index, ((DateTime) value).ToString ("yyyy-MM-dd HH:mm:ss"), -1, NegativePointer);
 					}
 #if !NETFX_CORE
-				} else if (value.GetType().IsEnum) {
+				} else if (value.GetType ().IsEnum) {
 #else
 				} else if (value.GetType().GetTypeInfo().IsEnum) {
 #endif
 					SQLite3.BindInt (stmt, index, Convert.ToInt32 (value));
-                } else if (value is byte[]){
-                    SQLite3.BindBlob(stmt, index, (byte[]) value, ((byte[]) value).Length, NegativePointer);
-                } else if (value is Guid) {
-                    SQLite3.BindText(stmt, index, ((Guid)value).ToString(), 72, NegativePointer);
-                } else {
-                    throw new NotSupportedException("Cannot store type: " + value.GetType());
-                }
+				} else if (value is byte []) {
+					SQLite3.BindBlob (stmt, index, (byte []) value, ((byte []) value).Length, NegativePointer);
+				} else if (value is Guid) {
+					SQLite3.BindText (stmt, index, ((Guid) value).ToString (), 72, NegativePointer);
+				} else {
+					throw new NotSupportedException ("Cannot store type: " + value.GetType ());
+				}
 			}
 		}
 
-		class Binding
-		{
+		class Binding {
 			public string Name { get; set; }
 
 			public object Value { get; set; }
@@ -2124,21 +2080,20 @@ namespace Xamarin.MacDev.SQLite
 			if (type == SQLite3.ColType.Null) {
 				return null;
 			} else {
-				if (clrType == typeof(String)) {
+				if (clrType == typeof (String)) {
 					return SQLite3.ColumnString (stmt, index);
-				} else if (clrType == typeof(Int32)) {
-					return (int)SQLite3.ColumnInt (stmt, index);
-				} else if (clrType == typeof(Boolean)) {
+				} else if (clrType == typeof (Int32)) {
+					return (int) SQLite3.ColumnInt (stmt, index);
+				} else if (clrType == typeof (Boolean)) {
 					return SQLite3.ColumnInt (stmt, index) == 1;
-				} else if (clrType == typeof(double)) {
+				} else if (clrType == typeof (double)) {
 					return SQLite3.ColumnDouble (stmt, index);
-				} else if (clrType == typeof(float)) {
-					return (float)SQLite3.ColumnDouble (stmt, index);
-				} else if (clrType == typeof(DateTime)) {
+				} else if (clrType == typeof (float)) {
+					return (float) SQLite3.ColumnDouble (stmt, index);
+				} else if (clrType == typeof (DateTime)) {
 					if (_conn.StoreDateTimeAsTicks) {
 						return new DateTime (SQLite3.ColumnInt64 (stmt, index));
-					}
-					else {
+					} else {
 						var text = SQLite3.ColumnString (stmt, index);
 						return DateTime.Parse (text);
 					}
@@ -2148,26 +2103,26 @@ namespace Xamarin.MacDev.SQLite
 				} else if (clrType.GetTypeInfo().IsEnum) {
 #endif
 					return SQLite3.ColumnInt (stmt, index);
-				} else if (clrType == typeof(Int64)) {
+				} else if (clrType == typeof (Int64)) {
 					return SQLite3.ColumnInt64 (stmt, index);
-				} else if (clrType == typeof(UInt32)) {
-					return (uint)SQLite3.ColumnInt64 (stmt, index);
-				} else if (clrType == typeof(decimal)) {
-					return (decimal)SQLite3.ColumnDouble (stmt, index);
-				} else if (clrType == typeof(Byte)) {
-					return (byte)SQLite3.ColumnInt (stmt, index);
-				} else if (clrType == typeof(UInt16)) {
-					return (ushort)SQLite3.ColumnInt (stmt, index);
-				} else if (clrType == typeof(Int16)) {
-					return (short)SQLite3.ColumnInt (stmt, index);
-				} else if (clrType == typeof(sbyte)) {
-					return (sbyte)SQLite3.ColumnInt (stmt, index);
-				} else if (clrType == typeof(byte[])) {
+				} else if (clrType == typeof (UInt32)) {
+					return (uint) SQLite3.ColumnInt64 (stmt, index);
+				} else if (clrType == typeof (decimal)) {
+					return (decimal) SQLite3.ColumnDouble (stmt, index);
+				} else if (clrType == typeof (Byte)) {
+					return (byte) SQLite3.ColumnInt (stmt, index);
+				} else if (clrType == typeof (UInt16)) {
+					return (ushort) SQLite3.ColumnInt (stmt, index);
+				} else if (clrType == typeof (Int16)) {
+					return (short) SQLite3.ColumnInt (stmt, index);
+				} else if (clrType == typeof (sbyte)) {
+					return (sbyte) SQLite3.ColumnInt (stmt, index);
+				} else if (clrType == typeof (byte [])) {
 					return SQLite3.ColumnByteArray (stmt, index);
-				} else if (clrType == typeof(Guid)) {
-                  var text = SQLite3.ColumnString(stmt, index);
-                  return new Guid(text);
-                } else{
+				} else if (clrType == typeof (Guid)) {
+					var text = SQLite3.ColumnString (stmt, index);
+					return new Guid (text);
+				} else {
 					throw new NotSupportedException ("Don't know how to read " + clrType);
 				}
 			}
@@ -2177,8 +2132,7 @@ namespace Xamarin.MacDev.SQLite
 	/// <summary>
 	/// Since the insert never changed, we only need to prepare once.
 	/// </summary>
-	public class PreparedSqlLiteInsertCommand : IDisposable
-	{
+	public class PreparedSqlLiteInsertCommand : IDisposable {
 		public bool Initialized { get; set; }
 
 		protected SQLiteConnection Connection { get; set; }
@@ -2186,14 +2140,14 @@ namespace Xamarin.MacDev.SQLite
 		public string CommandText { get; set; }
 
 		protected Sqlite3Statement Statement { get; set; }
-		internal static readonly Sqlite3Statement NullStatement = default(Sqlite3Statement);
+		internal static readonly Sqlite3Statement NullStatement = default (Sqlite3Statement);
 
 		internal PreparedSqlLiteInsertCommand (SQLiteConnection conn)
 		{
 			Connection = conn;
 		}
 
-		public int ExecuteNonQuery (object[] source)
+		public int ExecuteNonQuery (object [] source)
 		{
 			if (Connection.Trace) {
 				Debug.WriteLine ("Executing: " + CommandText);
@@ -2258,17 +2212,14 @@ namespace Xamarin.MacDev.SQLite
 		}
 	}
 
-	public abstract class BaseTableQuery
-	{
-		protected class Ordering
-		{
+	public abstract class BaseTableQuery {
+		protected class Ordering {
 			public string ColumnName { get; set; }
 			public bool Ascending { get; set; }
 		}
 	}
 
-	public class TableQuery<T> : BaseTableQuery, IEnumerable<T>
-	{
+	public class TableQuery<T> : BaseTableQuery, IEnumerable<T> {
 		public SQLiteConnection Connection { get; private set; }
 
 		public TableMapping Table { get; private set; }
@@ -2283,7 +2234,7 @@ namespace Xamarin.MacDev.SQLite
 		BaseTableQuery _joinOuter;
 		Expression _joinOuterKeySelector;
 		Expression _joinSelector;
-				
+
 		Expression _selector;
 
 		TableQuery (SQLiteConnection conn, TableMapping table)
@@ -2295,7 +2246,7 @@ namespace Xamarin.MacDev.SQLite
 		public TableQuery (SQLiteConnection conn)
 		{
 			Connection = conn;
-			Table = Connection.GetMapping (typeof(T));
+			Table = Connection.GetMapping (typeof (T));
 		}
 
 		public TableQuery<U> Clone<U> ()
@@ -2320,7 +2271,7 @@ namespace Xamarin.MacDev.SQLite
 		public TableQuery<T> Where (Expression<Func<T, bool>> predExpr)
 		{
 			if (predExpr.NodeType == ExpressionType.Lambda) {
-				var lambda = (LambdaExpression)predExpr;
+				var lambda = (LambdaExpression) predExpr;
 				var pred = lambda.Body;
 				var q = Clone<T> ();
 				q.AddWhere (pred);
@@ -2370,25 +2321,24 @@ namespace Xamarin.MacDev.SQLite
 		private TableQuery<T> AddOrderBy<U> (Expression<Func<T, U>> orderExpr, bool asc)
 		{
 			if (orderExpr.NodeType == ExpressionType.Lambda) {
-				var lambda = (LambdaExpression)orderExpr;
-				
+				var lambda = (LambdaExpression) orderExpr;
+
 				MemberExpression mem = null;
-				
+
 				var unary = lambda.Body as UnaryExpression;
 				if (unary != null && unary.NodeType == ExpressionType.Convert) {
 					mem = unary.Operand as MemberExpression;
-				}
-				else {
+				} else {
 					mem = lambda.Body as MemberExpression;
 				}
-				
+
 				if (mem != null && (mem.Expression.NodeType == ExpressionType.Parameter)) {
 					var q = Clone<T> ();
 					if (q._orderBys == null) {
 						q._orderBys = new List<Ordering> ();
 					}
 					q._orderBys.Add (new Ordering {
-						ColumnName = Table.FindColumnWithPropertyName(mem.Member.Name).Name,
+						ColumnName = Table.FindColumnWithPropertyName (mem.Member.Name).Name,
 						Ascending = asc
 					});
 					return q;
@@ -2408,7 +2358,7 @@ namespace Xamarin.MacDev.SQLite
 				_where = Expression.AndAlso (_where, pred);
 			}
 		}
-				
+
 		public TableQuery<TResult> Join<TInner, TKey, TResult> (
 			TableQuery<TInner> inner,
 			Expression<Func<T, TKey>> outerKeySelector,
@@ -2424,7 +2374,7 @@ namespace Xamarin.MacDev.SQLite
 			};
 			return q;
 		}
-				
+
 		public TableQuery<TResult> Select<TResult> (Expression<Func<T, TResult>> selector)
 		{
 			var q = Clone<TResult> ();
@@ -2436,8 +2386,7 @@ namespace Xamarin.MacDev.SQLite
 		{
 			if (_joinInner != null && _joinOuter != null) {
 				throw new NotSupportedException ("Joins are not supported.");
-			}
-			else {
+			} else {
 				var cmdText = "select " + selectionList + " from \"" + Table.TableName + "\"";
 				var args = new List<object> ();
 				if (_where != null) {
@@ -2461,8 +2410,7 @@ namespace Xamarin.MacDev.SQLite
 			}
 		}
 
-		class CompileResult
-		{
+		class CompileResult {
 			public string CommandText { get; set; }
 
 			public object Value { get; set; }
@@ -2473,70 +2421,64 @@ namespace Xamarin.MacDev.SQLite
 			if (expr == null) {
 				throw new NotSupportedException ("Expression is NULL");
 			} else if (expr is BinaryExpression) {
-				var bin = (BinaryExpression)expr;
-				
+				var bin = (BinaryExpression) expr;
+
 				var leftr = CompileExpr (bin.Left, queryArgs);
 				var rightr = CompileExpr (bin.Right, queryArgs);
 
 				//If either side is a parameter and is null, then handle the other side specially (for "is null"/"is not null")
 				string text;
 				if (leftr.CommandText == "?" && leftr.Value == null)
-					text = CompileNullBinaryExpression(bin, rightr);
+					text = CompileNullBinaryExpression (bin, rightr);
 				else if (rightr.CommandText == "?" && rightr.Value == null)
-					text = CompileNullBinaryExpression(bin, leftr);
+					text = CompileNullBinaryExpression (bin, leftr);
 				else
-					text = "(" + leftr.CommandText + " " + GetSqlName(bin) + " " + rightr.CommandText + ")";
+					text = "(" + leftr.CommandText + " " + GetSqlName (bin) + " " + rightr.CommandText + ")";
 				return new CompileResult { CommandText = text };
 			} else if (expr.NodeType == ExpressionType.Call) {
-				
-				var call = (MethodCallExpression)expr;
-				var args = new CompileResult[call.Arguments.Count];
+
+				var call = (MethodCallExpression) expr;
+				var args = new CompileResult [call.Arguments.Count];
 				var obj = call.Object != null ? CompileExpr (call.Object, queryArgs) : null;
-				
+
 				for (var i = 0; i < args.Length; i++) {
 					args [i] = CompileExpr (call.Arguments [i], queryArgs);
 				}
-				
+
 				var sqlCall = "";
-				
+
 				if (call.Method.Name == "Like" && args.Length == 2) {
 					sqlCall = "(" + args [0].CommandText + " like " + args [1].CommandText + ")";
-				}
-				else if (call.Method.Name == "Contains" && args.Length == 2) {
+				} else if (call.Method.Name == "Contains" && args.Length == 2) {
 					sqlCall = "(" + args [1].CommandText + " in " + args [0].CommandText + ")";
-				}
-				else if (call.Method.Name == "Contains" && args.Length == 1) {
-					if (call.Object != null && call.Object.Type == typeof(string)) {
+				} else if (call.Method.Name == "Contains" && args.Length == 1) {
+					if (call.Object != null && call.Object.Type == typeof (string)) {
 						sqlCall = "(" + obj.CommandText + " like ('%' || " + args [0].CommandText + " || '%'))";
-					}
-					else {
+					} else {
 						sqlCall = "(" + args [0].CommandText + " in " + obj.CommandText + ")";
 					}
-				}
-				else if (call.Method.Name == "StartsWith" && args.Length == 1) {
+				} else if (call.Method.Name == "StartsWith" && args.Length == 1) {
 					sqlCall = "(" + obj.CommandText + " like (" + args [0].CommandText + " || '%'))";
-				}
-				else if (call.Method.Name == "EndsWith" && args.Length == 1) {
+				} else if (call.Method.Name == "EndsWith" && args.Length == 1) {
 					sqlCall = "(" + obj.CommandText + " like ('%' || " + args [0].CommandText + "))";
-				}
-				else if (call.Method.Name == "Equals" && args.Length == 1) {
-					sqlCall = "(" + obj.CommandText + " = (" + args[0].CommandText + "))";
+				} else if (call.Method.Name == "Equals" && args.Length == 1) {
+					sqlCall = "(" + obj.CommandText + " = (" + args [0].CommandText + "))";
 				} else if (call.Method.Name == "ToLower") {
-					sqlCall = "(lower(" + obj.CommandText + "))"; 
+					sqlCall = "(lower(" + obj.CommandText + "))";
 				} else {
 					sqlCall = call.Method.Name.ToLower () + "(" + string.Join (",", args.Select (a => a.CommandText).ToArray ()) + ")";
 				}
 				return new CompileResult { CommandText = sqlCall };
-				
+
 			} else if (expr.NodeType == ExpressionType.Constant) {
-				var c = (ConstantExpression)expr;
+				var c = (ConstantExpression) expr;
 				queryArgs.Add (c.Value);
 				return new CompileResult {
 					CommandText = "?",
 					Value = c.Value
 				};
 			} else if (expr.NodeType == ExpressionType.Convert) {
-				var u = (UnaryExpression)expr;
+				var u = (UnaryExpression) expr;
 				var ty = u.Type;
 				var valr = CompileExpr (u.Operand, queryArgs);
 				return new CompileResult {
@@ -2544,9 +2486,9 @@ namespace Xamarin.MacDev.SQLite
 					Value = valr.Value != null ? ConvertTo (valr.Value, ty) : null
 				};
 			} else if (expr.NodeType == ExpressionType.MemberAccess) {
-				var mem = (MemberExpression)expr;
-				
-				if (mem.Expression!=null && mem.Expression.NodeType == ExpressionType.Parameter) {
+				var mem = (MemberExpression) expr;
+
+				if (mem.Expression != null && mem.Expression.NodeType == ExpressionType.Parameter) {
 					//
 					// This is a column of our table, output just the column name
 					// Need to translate it if that column name is mapped
@@ -2565,18 +2507,18 @@ namespace Xamarin.MacDev.SQLite
 						}
 						obj = r.Value;
 					}
-					
+
 					//
 					// Get the member value
 					//
 					object val = null;
-					
+
 #if !NETFX_CORE
 					if (mem.Member.MemberType == MemberTypes.Property) {
 #else
 					if (mem.Member is PropertyInfo) {
 #endif
-						var m = (PropertyInfo)mem.Member;
+						var m = (PropertyInfo) mem.Member;
 						val = m.GetValue (obj, null);
 #if !NETFX_CORE
 					} else if (mem.Member.MemberType == MemberTypes.Field) {
@@ -2586,7 +2528,7 @@ namespace Xamarin.MacDev.SQLite
 #if SILVERLIGHT
 						val = Expression.Lambda (expr).Compile ().DynamicInvoke ();
 #else
-						var m = (FieldInfo)mem.Member;
+						var m = (FieldInfo) mem.Member;
 						val = m.GetValue (obj);
 #endif
 					} else {
@@ -2596,27 +2538,26 @@ namespace Xamarin.MacDev.SQLite
 						throw new NotSupportedException ("MemberExpr: " + mem.Member.DeclaringType);
 #endif
 					}
-					
+
 					//
 					// Work special magic for enumerables
 					//
 					if (val != null && val is System.Collections.IEnumerable && !(val is string)) {
-						var sb = new System.Text.StringBuilder();
-						sb.Append("(");
+						var sb = new System.Text.StringBuilder ();
+						sb.Append ("(");
 						var head = "";
-						foreach (var a in (System.Collections.IEnumerable)val) {
-							queryArgs.Add(a);
-							sb.Append(head);
-							sb.Append("?");
+						foreach (var a in (System.Collections.IEnumerable) val) {
+							queryArgs.Add (a);
+							sb.Append (head);
+							sb.Append ("?");
 							head = ",";
 						}
-						sb.Append(")");
+						sb.Append (")");
 						return new CompileResult {
-							CommandText = sb.ToString(),
+							CommandText = sb.ToString (),
 							Value = val
 						};
-					}
-					else {
+					} else {
 						queryArgs.Add (val);
 						return new CompileResult {
 							CommandText = "?",
@@ -2630,10 +2571,10 @@ namespace Xamarin.MacDev.SQLite
 
 		static object ConvertTo (object obj, Type t)
 		{
-			Type nut = Nullable.GetUnderlyingType(t);
-			
+			Type nut = Nullable.GetUnderlyingType (t);
+
 			if (nut != null) {
-				if (obj == null) return null;				
+				if (obj == null) return null;
 				return Convert.ChangeType (obj, nut);
 			} else {
 				return Convert.ChangeType (obj, t);
@@ -2644,21 +2585,22 @@ namespace Xamarin.MacDev.SQLite
 		/// Compiles a BinaryExpression where one of the parameters is null.
 		/// </summary>
 		/// <param name="parameter">The non-null parameter</param>
-		private string CompileNullBinaryExpression(BinaryExpression expression, CompileResult parameter)
+		private string CompileNullBinaryExpression (BinaryExpression expression, CompileResult parameter)
 		{
 			if (expression.NodeType == ExpressionType.Equal)
 				return "(" + parameter.CommandText + " is ?)";
 			else if (expression.NodeType == ExpressionType.NotEqual)
 				return "(" + parameter.CommandText + " is not ?)";
 			else
-				throw new NotSupportedException("Cannot compile Null-BinaryExpression with type " + expression.NodeType.ToString());
+				throw new NotSupportedException ("Cannot compile Null-BinaryExpression with type " + expression.NodeType.ToString ());
 		}
 
 		string GetSqlName (Expression expr)
 		{
 			var n = expr.NodeType;
 			if (n == ExpressionType.GreaterThan)
-				return ">"; else if (n == ExpressionType.GreaterThanOrEqual) {
+				return ">";
+			else if (n == ExpressionType.GreaterThanOrEqual) {
 				return ">=";
 			} else if (n == ExpressionType.LessThan) {
 				return "<";
@@ -2680,10 +2622,10 @@ namespace Xamarin.MacDev.SQLite
 				throw new NotSupportedException ("Cannot get SQL for: " + n);
 			}
 		}
-		
+
 		public int Count ()
 		{
-			return GenerateCommand("count(*)").ExecuteScalar<int> ();			
+			return GenerateCommand ("count(*)").ExecuteScalar<int> ();
 		}
 
 		public int Count (Expression<Func<T, bool>> predExpr)
@@ -2694,9 +2636,9 @@ namespace Xamarin.MacDev.SQLite
 		public IEnumerator<T> GetEnumerator ()
 		{
 			if (!_deferred)
-				return GenerateCommand("*").ExecuteQuery<T>().GetEnumerator();
+				return GenerateCommand ("*").ExecuteQuery<T> ().GetEnumerator ();
 
-			return GenerateCommand("*").ExecuteDeferredQuery<T>().GetEnumerator();
+			return GenerateCommand ("*").ExecuteDeferredQuery<T> ().GetEnumerator ();
 		}
 
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator ()
@@ -2707,20 +2649,18 @@ namespace Xamarin.MacDev.SQLite
 		public T First ()
 		{
 			var query = Take (1);
-			return query.ToList<T>().First ();
+			return query.ToList<T> ().First ();
 		}
 
 		public T FirstOrDefault ()
 		{
 			var query = Take (1);
-			return query.ToList<T>().FirstOrDefault ();
+			return query.ToList<T> ().FirstOrDefault ();
 		}
-    }
+	}
 
-	public static class SQLite3
-	{
-		public enum Result : int
-		{
+	public static class SQLite3 {
+		public enum Result : int {
 			OK = 0,
 			Error = 1,
 			Internal = 2,
@@ -2752,46 +2692,45 @@ namespace Xamarin.MacDev.SQLite
 			Done = 101
 		}
 
-		public enum ConfigOption : int
-		{
+		public enum ConfigOption : int {
 			SingleThread = 1,
 			MultiThread = 2,
 			Serialized = 3
 		}
 
 #if !USE_CSHARP_SQLITE && !USE_WP8_NATIVE_SQLITE
-		[DllImport("sqlite3", EntryPoint = "sqlite3_open", CallingConvention=CallingConvention.Cdecl)]
-		public static extern Result Open ([MarshalAs(UnmanagedType.LPStr)] string filename, out IntPtr db);
+		[DllImport ("sqlite3", EntryPoint = "sqlite3_open", CallingConvention = CallingConvention.Cdecl)]
+		public static extern Result Open ([MarshalAs (UnmanagedType.LPStr)] string filename, out IntPtr db);
 
-		[DllImport("sqlite3", EntryPoint = "sqlite3_open_v2", CallingConvention=CallingConvention.Cdecl)]
-		public static extern Result Open ([MarshalAs(UnmanagedType.LPStr)] string filename, out IntPtr db, int flags, IntPtr zvfs);
-		
-		[DllImport("sqlite3", EntryPoint = "sqlite3_open_v2", CallingConvention = CallingConvention.Cdecl)]
-		public static extern Result Open(byte[] filename, out IntPtr db, int flags, IntPtr zvfs);
+		[DllImport ("sqlite3", EntryPoint = "sqlite3_open_v2", CallingConvention = CallingConvention.Cdecl)]
+		public static extern Result Open ([MarshalAs (UnmanagedType.LPStr)] string filename, out IntPtr db, int flags, IntPtr zvfs);
 
-		[DllImport("sqlite3", EntryPoint = "sqlite3_open16", CallingConvention = CallingConvention.Cdecl)]
-		public static extern Result Open16([MarshalAs(UnmanagedType.LPWStr)] string filename, out IntPtr db);
+		[DllImport ("sqlite3", EntryPoint = "sqlite3_open_v2", CallingConvention = CallingConvention.Cdecl)]
+		public static extern Result Open (byte [] filename, out IntPtr db, int flags, IntPtr zvfs);
 
-		[DllImport("sqlite3", EntryPoint = "sqlite3_enable_load_extension", CallingConvention=CallingConvention.Cdecl)]
+		[DllImport ("sqlite3", EntryPoint = "sqlite3_open16", CallingConvention = CallingConvention.Cdecl)]
+		public static extern Result Open16 ([MarshalAs (UnmanagedType.LPWStr)] string filename, out IntPtr db);
+
+		[DllImport ("sqlite3", EntryPoint = "sqlite3_enable_load_extension", CallingConvention = CallingConvention.Cdecl)]
 		public static extern Result EnableLoadExtension (IntPtr db, int onoff);
 
-		[DllImport("sqlite3", EntryPoint = "sqlite3_close", CallingConvention=CallingConvention.Cdecl)]
+		[DllImport ("sqlite3", EntryPoint = "sqlite3_close", CallingConvention = CallingConvention.Cdecl)]
 		public static extern Result Close (IntPtr db);
 
-		[DllImport("sqlite3", EntryPoint = "sqlite3_config", CallingConvention=CallingConvention.Cdecl)]
+		[DllImport ("sqlite3", EntryPoint = "sqlite3_config", CallingConvention = CallingConvention.Cdecl)]
 		public static extern Result Config (ConfigOption option);
 
-		[DllImport("sqlite3", EntryPoint = "sqlite3_win32_set_directory", CallingConvention=CallingConvention.Cdecl, CharSet=CharSet.Unicode)]
+		[DllImport ("sqlite3", EntryPoint = "sqlite3_win32_set_directory", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
 		public static extern int SetDirectory (uint directoryType, string directoryPath);
 
-		[DllImport("sqlite3", EntryPoint = "sqlite3_busy_timeout", CallingConvention=CallingConvention.Cdecl)]
+		[DllImport ("sqlite3", EntryPoint = "sqlite3_busy_timeout", CallingConvention = CallingConvention.Cdecl)]
 		public static extern Result BusyTimeout (IntPtr db, int milliseconds);
 
-		[DllImport("sqlite3", EntryPoint = "sqlite3_changes", CallingConvention=CallingConvention.Cdecl)]
+		[DllImport ("sqlite3", EntryPoint = "sqlite3_changes", CallingConvention = CallingConvention.Cdecl)]
 		public static extern int Changes (IntPtr db);
 
-		[DllImport("sqlite3", EntryPoint = "sqlite3_prepare_v2", CallingConvention=CallingConvention.Cdecl)]
-		public static extern Result Prepare2 (IntPtr db, [MarshalAs(UnmanagedType.LPStr)] string sql, int numBytes, out IntPtr stmt, IntPtr pzTail);
+		[DllImport ("sqlite3", EntryPoint = "sqlite3_prepare_v2", CallingConvention = CallingConvention.Cdecl)]
+		public static extern Result Prepare2 (IntPtr db, [MarshalAs (UnmanagedType.LPStr)] string sql, int numBytes, out IntPtr stmt, IntPtr pzTail);
 
 		public static IntPtr Prepare2 (IntPtr db, string query)
 		{
@@ -2803,19 +2742,19 @@ namespace Xamarin.MacDev.SQLite
 			return stmt;
 		}
 
-		[DllImport("sqlite3", EntryPoint = "sqlite3_step", CallingConvention=CallingConvention.Cdecl)]
+		[DllImport ("sqlite3", EntryPoint = "sqlite3_step", CallingConvention = CallingConvention.Cdecl)]
 		public static extern Result Step (IntPtr stmt);
 
-		[DllImport("sqlite3", EntryPoint = "sqlite3_reset", CallingConvention=CallingConvention.Cdecl)]
+		[DllImport ("sqlite3", EntryPoint = "sqlite3_reset", CallingConvention = CallingConvention.Cdecl)]
 		public static extern Result Reset (IntPtr stmt);
 
-		[DllImport("sqlite3", EntryPoint = "sqlite3_finalize", CallingConvention=CallingConvention.Cdecl)]
+		[DllImport ("sqlite3", EntryPoint = "sqlite3_finalize", CallingConvention = CallingConvention.Cdecl)]
 		public static extern Result Finalize (IntPtr stmt);
 
-		[DllImport("sqlite3", EntryPoint = "sqlite3_last_insert_rowid", CallingConvention=CallingConvention.Cdecl)]
+		[DllImport ("sqlite3", EntryPoint = "sqlite3_last_insert_rowid", CallingConvention = CallingConvention.Cdecl)]
 		public static extern long LastInsertRowid (IntPtr db);
 
-		[DllImport("sqlite3", EntryPoint = "sqlite3_errmsg16", CallingConvention=CallingConvention.Cdecl)]
+		[DllImport ("sqlite3", EntryPoint = "sqlite3_errmsg16", CallingConvention = CallingConvention.Cdecl)]
 		public static extern IntPtr Errmsg (IntPtr db);
 
 		public static string GetErrmsg (IntPtr db)
@@ -2823,62 +2762,62 @@ namespace Xamarin.MacDev.SQLite
 			return Marshal.PtrToStringUni (Errmsg (db));
 		}
 
-		[DllImport("sqlite3", EntryPoint = "sqlite3_bind_parameter_index", CallingConvention=CallingConvention.Cdecl)]
-		public static extern int BindParameterIndex (IntPtr stmt, [MarshalAs(UnmanagedType.LPStr)] string name);
+		[DllImport ("sqlite3", EntryPoint = "sqlite3_bind_parameter_index", CallingConvention = CallingConvention.Cdecl)]
+		public static extern int BindParameterIndex (IntPtr stmt, [MarshalAs (UnmanagedType.LPStr)] string name);
 
-		[DllImport("sqlite3", EntryPoint = "sqlite3_bind_null", CallingConvention=CallingConvention.Cdecl)]
+		[DllImport ("sqlite3", EntryPoint = "sqlite3_bind_null", CallingConvention = CallingConvention.Cdecl)]
 		public static extern int BindNull (IntPtr stmt, int index);
 
-		[DllImport("sqlite3", EntryPoint = "sqlite3_bind_int", CallingConvention=CallingConvention.Cdecl)]
+		[DllImport ("sqlite3", EntryPoint = "sqlite3_bind_int", CallingConvention = CallingConvention.Cdecl)]
 		public static extern int BindInt (IntPtr stmt, int index, int val);
 
-		[DllImport("sqlite3", EntryPoint = "sqlite3_bind_int64", CallingConvention=CallingConvention.Cdecl)]
+		[DllImport ("sqlite3", EntryPoint = "sqlite3_bind_int64", CallingConvention = CallingConvention.Cdecl)]
 		public static extern int BindInt64 (IntPtr stmt, int index, long val);
 
-		[DllImport("sqlite3", EntryPoint = "sqlite3_bind_double", CallingConvention=CallingConvention.Cdecl)]
+		[DllImport ("sqlite3", EntryPoint = "sqlite3_bind_double", CallingConvention = CallingConvention.Cdecl)]
 		public static extern int BindDouble (IntPtr stmt, int index, double val);
 
-		[DllImport("sqlite3", EntryPoint = "sqlite3_bind_text16", CallingConvention=CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
-		public static extern int BindText (IntPtr stmt, int index, [MarshalAs(UnmanagedType.LPWStr)] string val, int n, IntPtr free);
+		[DllImport ("sqlite3", EntryPoint = "sqlite3_bind_text16", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+		public static extern int BindText (IntPtr stmt, int index, [MarshalAs (UnmanagedType.LPWStr)] string val, int n, IntPtr free);
 
-		[DllImport("sqlite3", EntryPoint = "sqlite3_bind_blob", CallingConvention=CallingConvention.Cdecl)]
-		public static extern int BindBlob (IntPtr stmt, int index, byte[] val, int n, IntPtr free);
+		[DllImport ("sqlite3", EntryPoint = "sqlite3_bind_blob", CallingConvention = CallingConvention.Cdecl)]
+		public static extern int BindBlob (IntPtr stmt, int index, byte [] val, int n, IntPtr free);
 
-		[DllImport("sqlite3", EntryPoint = "sqlite3_column_count", CallingConvention=CallingConvention.Cdecl)]
+		[DllImport ("sqlite3", EntryPoint = "sqlite3_column_count", CallingConvention = CallingConvention.Cdecl)]
 		public static extern int ColumnCount (IntPtr stmt);
 
-		[DllImport("sqlite3", EntryPoint = "sqlite3_column_name", CallingConvention=CallingConvention.Cdecl)]
+		[DllImport ("sqlite3", EntryPoint = "sqlite3_column_name", CallingConvention = CallingConvention.Cdecl)]
 		public static extern IntPtr ColumnName (IntPtr stmt, int index);
 
-		[DllImport("sqlite3", EntryPoint = "sqlite3_column_name16", CallingConvention=CallingConvention.Cdecl)]
+		[DllImport ("sqlite3", EntryPoint = "sqlite3_column_name16", CallingConvention = CallingConvention.Cdecl)]
 		static extern IntPtr ColumnName16Internal (IntPtr stmt, int index);
-		public static string ColumnName16(IntPtr stmt, int index)
+		public static string ColumnName16 (IntPtr stmt, int index)
 		{
-			return Marshal.PtrToStringUni(ColumnName16Internal(stmt, index));
+			return Marshal.PtrToStringUni (ColumnName16Internal (stmt, index));
 		}
 
-		[DllImport("sqlite3", EntryPoint = "sqlite3_column_type", CallingConvention=CallingConvention.Cdecl)]
+		[DllImport ("sqlite3", EntryPoint = "sqlite3_column_type", CallingConvention = CallingConvention.Cdecl)]
 		public static extern ColType ColumnType (IntPtr stmt, int index);
 
-		[DllImport("sqlite3", EntryPoint = "sqlite3_column_int", CallingConvention=CallingConvention.Cdecl)]
+		[DllImport ("sqlite3", EntryPoint = "sqlite3_column_int", CallingConvention = CallingConvention.Cdecl)]
 		public static extern int ColumnInt (IntPtr stmt, int index);
 
-		[DllImport("sqlite3", EntryPoint = "sqlite3_column_int64", CallingConvention=CallingConvention.Cdecl)]
+		[DllImport ("sqlite3", EntryPoint = "sqlite3_column_int64", CallingConvention = CallingConvention.Cdecl)]
 		public static extern long ColumnInt64 (IntPtr stmt, int index);
 
-		[DllImport("sqlite3", EntryPoint = "sqlite3_column_double", CallingConvention=CallingConvention.Cdecl)]
+		[DllImport ("sqlite3", EntryPoint = "sqlite3_column_double", CallingConvention = CallingConvention.Cdecl)]
 		public static extern double ColumnDouble (IntPtr stmt, int index);
 
-		[DllImport("sqlite3", EntryPoint = "sqlite3_column_text", CallingConvention=CallingConvention.Cdecl)]
+		[DllImport ("sqlite3", EntryPoint = "sqlite3_column_text", CallingConvention = CallingConvention.Cdecl)]
 		public static extern IntPtr ColumnText (IntPtr stmt, int index);
 
-		[DllImport("sqlite3", EntryPoint = "sqlite3_column_text16", CallingConvention=CallingConvention.Cdecl)]
+		[DllImport ("sqlite3", EntryPoint = "sqlite3_column_text16", CallingConvention = CallingConvention.Cdecl)]
 		public static extern IntPtr ColumnText16 (IntPtr stmt, int index);
 
-		[DllImport("sqlite3", EntryPoint = "sqlite3_column_blob", CallingConvention=CallingConvention.Cdecl)]
+		[DllImport ("sqlite3", EntryPoint = "sqlite3_column_blob", CallingConvention = CallingConvention.Cdecl)]
 		public static extern IntPtr ColumnBlob (IntPtr stmt, int index);
 
-		[DllImport("sqlite3", EntryPoint = "sqlite3_column_bytes", CallingConvention=CallingConvention.Cdecl)]
+		[DllImport ("sqlite3", EntryPoint = "sqlite3_column_bytes", CallingConvention = CallingConvention.Cdecl)]
 		public static extern int ColumnBytes (IntPtr stmt, int index);
 
 		public static string ColumnString (IntPtr stmt, int index)
@@ -2886,10 +2825,10 @@ namespace Xamarin.MacDev.SQLite
 			return Marshal.PtrToStringUni (SQLite3.ColumnText16 (stmt, index));
 		}
 
-		public static byte[] ColumnByteArray (IntPtr stmt, int index)
+		public static byte [] ColumnByteArray (IntPtr stmt, int index)
 		{
 			int length = ColumnBytes (stmt, index);
-			var result = new byte[length];
+			var result = new byte [length];
 			if (length > 0)
 				Marshal.Copy (ColumnBlob (stmt, index), result, 0, length);
 			return result;
@@ -3074,8 +3013,7 @@ namespace Xamarin.MacDev.SQLite
 		}
 #endif
 
-		public enum ColType : int
-		{
+		public enum ColType : int {
 			Integer = 1,
 			Float = 2,
 			Text = 3,

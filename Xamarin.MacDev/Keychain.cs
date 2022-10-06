@@ -26,17 +26,15 @@
 // THE SOFTWARE.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 
-namespace Xamarin.MacDev
-{
-	public class Keychain
-	{
+namespace Xamarin.MacDev {
+	public class Keychain {
 		const string CoreFoundationLib = "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation";
 		const string SecurityLib = "/System/Library/Frameworks/Security.framework/Security";
 		//const string SystemLib = "/usr/lib/libSystem.dylib";
@@ -87,7 +85,7 @@ namespace Xamarin.MacDev
 			this.keychain = keychain;
 		}
 
-		[DllImport (CoreFoundationLib, EntryPoint="CFRelease")]
+		[DllImport (CoreFoundationLib, EntryPoint = "CFRelease")]
 		static extern void CFReleaseInternal (IntPtr cfRef);
 
 		static void CFRelease (IntPtr cfRef)
@@ -151,8 +149,8 @@ namespace Xamarin.MacDev
 		#region Managing Keychains
 
 		[DllImport (SecurityLib)]
-		static extern OSStatus SecKeychainCreate (string pathName, uint passwordLength, byte[] password,
-		                                          bool promptUser,  IntPtr initialAccess, ref IntPtr keychain);
+		static extern OSStatus SecKeychainCreate (string pathName, uint passwordLength, byte [] password,
+												  bool promptUser, IntPtr initialAccess, ref IntPtr keychain);
 
 		[DllImport (SecurityLib)]
 		static extern OSStatus SecKeychainOpen (string pathName, ref IntPtr keychain);
@@ -195,31 +193,31 @@ namespace Xamarin.MacDev
 		#region Storing and Retrieving Passwords
 
 		[DllImport (SecurityLib)]
-		static extern OSStatus SecKeychainAddInternetPassword (IntPtr keychain, uint serverNameLength, byte[] serverName, uint securityDomainLength,
-		                                                       byte[] securityDomain, uint accountNameLength, byte[] accountName, uint pathLength,
-		                                                       byte[] path, ushort port, SecProtocolType protocol, SecAuthenticationType authType,
-		                                                       uint passwordLength, byte[] passwordData, ref IntPtr itemRef);
+		static extern OSStatus SecKeychainAddInternetPassword (IntPtr keychain, uint serverNameLength, byte [] serverName, uint securityDomainLength,
+															   byte [] securityDomain, uint accountNameLength, byte [] accountName, uint pathLength,
+															   byte [] path, ushort port, SecProtocolType protocol, SecAuthenticationType authType,
+															   uint passwordLength, byte [] passwordData, ref IntPtr itemRef);
 		[DllImport (SecurityLib)]
-		static extern OSStatus SecKeychainFindInternetPassword (IntPtr keychain, uint serverNameLength, byte[] serverName, uint securityDomainLength,
-		                                                        byte[] securityDomain, uint accountNameLength, byte[] accountName, uint pathLength,
-		                                                        byte[] path, ushort port, SecProtocolType protocol, SecAuthenticationType authType,
-		                                                        out uint passwordLength, out IntPtr passwordData, ref IntPtr itemRef);
+		static extern OSStatus SecKeychainFindInternetPassword (IntPtr keychain, uint serverNameLength, byte [] serverName, uint securityDomainLength,
+																byte [] securityDomain, uint accountNameLength, byte [] accountName, uint pathLength,
+																byte [] path, ushort port, SecProtocolType protocol, SecAuthenticationType authType,
+																out uint passwordLength, out IntPtr passwordData, ref IntPtr itemRef);
 
 		[DllImport (SecurityLib)]
-		static extern OSStatus SecKeychainAddGenericPassword (IntPtr keychain, uint serviceNameLength, byte[] serviceName,
-		                                                      uint accountNameLength, byte[] accountName, uint passwordLength,
-		                                                      byte[] passwordData, ref IntPtr itemRef);
+		static extern OSStatus SecKeychainAddGenericPassword (IntPtr keychain, uint serviceNameLength, byte [] serviceName,
+															  uint accountNameLength, byte [] accountName, uint passwordLength,
+															  byte [] passwordData, ref IntPtr itemRef);
 		[DllImport (SecurityLib)]
-		static extern OSStatus SecKeychainFindGenericPassword (IntPtr keychain, uint serviceNameLength, byte[] serviceName,
-		                                                       uint accountNameLength, byte[] accountName, out uint passwordLength,
-		                                                       out IntPtr passwordData, ref IntPtr itemRef);
+		static extern OSStatus SecKeychainFindGenericPassword (IntPtr keychain, uint serviceNameLength, byte [] serviceName,
+															   uint accountNameLength, byte [] accountName, out uint passwordLength,
+															   out IntPtr passwordData, ref IntPtr itemRef);
 
 		#endregion
 
 		#region Searching for Keychain Items
 
 		[DllImport (SecurityLib)]
-		static extern unsafe OSStatus SecKeychainSearchCreateFromAttributes (IntPtr keychainOrArray, SecItemClass itemClass, SecKeychainAttributeList *attrList, out IntPtr searchRef);
+		static extern unsafe OSStatus SecKeychainSearchCreateFromAttributes (IntPtr keychainOrArray, SecItemClass itemClass, SecKeychainAttributeList* attrList, out IntPtr searchRef);
 
 		[DllImport (SecurityLib)]
 		static extern OSStatus SecKeychainSearchCopyNext (IntPtr searchRef, out IntPtr itemRef);
@@ -229,8 +227,7 @@ namespace Xamarin.MacDev
 		#region Creating and Deleting Keychain Items
 
 		[StructLayout (LayoutKind.Sequential)]
-		struct SecKeychainAttributeList
-		{
+		struct SecKeychainAttributeList {
 			public int Count;
 			public IntPtr Attrs;
 
@@ -242,8 +239,7 @@ namespace Xamarin.MacDev
 		}
 
 		[StructLayout (LayoutKind.Sequential)]
-		struct SecKeychainAttribute
-		{
+		struct SecKeychainAttribute {
 			public SecItemAttr Tag;
 			public uint Length;
 			public IntPtr Data;
@@ -257,9 +253,9 @@ namespace Xamarin.MacDev
 		}
 
 		[DllImport (SecurityLib)]
-		static extern unsafe OSStatus SecKeychainItemCreateFromContent (SecItemClass itemClass, SecKeychainAttributeList *attrList,
-		                                                                uint passwordLength, byte[] password, IntPtr keychain,
-		                                                                IntPtr initialAccess, ref IntPtr itemRef);
+		static extern unsafe OSStatus SecKeychainItemCreateFromContent (SecItemClass itemClass, SecKeychainAttributeList* attrList,
+																		uint passwordLength, byte [] password, IntPtr keychain,
+																		IntPtr initialAccess, ref IntPtr itemRef);
 
 		[DllImport (SecurityLib)]
 		static extern OSStatus SecKeychainItemDelete (IntPtr itemRef);
@@ -269,8 +265,7 @@ namespace Xamarin.MacDev
 		#region Managing Keychain Items
 
 		[StructLayout (LayoutKind.Sequential)]
-		unsafe struct SecKeychainAttributeInfo
-		{
+		unsafe struct SecKeychainAttributeInfo {
 			public uint Count;
 			public int* Tag;
 			public int* Format;
@@ -278,10 +273,10 @@ namespace Xamarin.MacDev
 
 		[DllImport (SecurityLib)]
 		static extern unsafe OSStatus SecKeychainItemCopyAttributesAndData (IntPtr itemRef, SecKeychainAttributeInfo* info, ref SecItemClass itemClass,
-		                                                                    SecKeychainAttributeList** attrList, ref uint length, ref IntPtr outData);
+																			SecKeychainAttributeList** attrList, ref uint length, ref IntPtr outData);
 
 		[DllImport (SecurityLib)]
-		static extern unsafe OSStatus SecKeychainItemModifyAttributesAndData (IntPtr itemRef, SecKeychainAttributeList *attrList, uint length, byte [] data);
+		static extern unsafe OSStatus SecKeychainItemModifyAttributesAndData (IntPtr itemRef, SecKeychainAttributeList* attrList, uint length, byte [] data);
 
 		[DllImport (SecurityLib)]
 		static extern OSStatus SecKeychainItemCopyContent (IntPtr itemRef, ref SecItemClass itemClass, IntPtr attrList, ref uint length, ref IntPtr data);
@@ -313,9 +308,9 @@ namespace Xamarin.MacDev
 		extern static void CFDataGetBytes (IntPtr data, CFRange range, IntPtr buffer);
 
 		[DllImport (CoreFoundationLib)]
-		extern static IntPtr CFDataCreate (IntPtr allocator, byte[] buffer, IntPtr length);
+		extern static IntPtr CFDataCreate (IntPtr allocator, byte [] buffer, IntPtr length);
 
-		static byte[] CFDataGetBytes (IntPtr data)
+		static byte [] CFDataGetBytes (IntPtr data)
 		{
 			if (data == IntPtr.Zero)
 				return null;
@@ -324,9 +319,9 @@ namespace Xamarin.MacDev
 			if (len < 1 || len > int.MaxValue)
 				return null;
 
-			byte[] buffer = new byte [(int) len];
+			byte [] buffer = new byte [(int) len];
 			unsafe {
-				fixed (byte *bufptr = buffer) {
+				fixed (byte* bufptr = buffer) {
 					CFDataGetBytes (data, new CFRange (IntPtr.Zero, (IntPtr) len), (IntPtr) bufptr);
 				}
 			}
@@ -337,35 +332,35 @@ namespace Xamarin.MacDev
 		#endregion
 
 		#region CFString
-		
-		[DllImport (CoreFoundationLib, CharSet=CharSet.Unicode)]
+
+		[DllImport (CoreFoundationLib, CharSet = CharSet.Unicode)]
 		extern static IntPtr CFStringGetLength (IntPtr handle);
 
-		[DllImport (CoreFoundationLib, CharSet=CharSet.Unicode)]
+		[DllImport (CoreFoundationLib, CharSet = CharSet.Unicode)]
 		extern static IntPtr CFStringGetCharactersPtr (IntPtr handle);
-		
-		[DllImport (CoreFoundationLib, CharSet=CharSet.Unicode)]
+
+		[DllImport (CoreFoundationLib, CharSet = CharSet.Unicode)]
 		extern static IntPtr CFStringGetCharacters (IntPtr handle, CFRange range, IntPtr buffer);
-		
+
 		static string CFStringGetString (IntPtr handle)
 		{
 			if (handle == IntPtr.Zero)
 				return null;
 
-			int length = (int)CFStringGetLength (handle);
+			int length = (int) CFStringGetLength (handle);
 			var unicode = CFStringGetCharactersPtr (handle);
 			IntPtr buffer = IntPtr.Zero;
 			string str;
 
-			if (unicode == IntPtr.Zero){
-				var range = new CFRange (IntPtr.Zero, (IntPtr)length);
+			if (unicode == IntPtr.Zero) {
+				var range = new CFRange (IntPtr.Zero, (IntPtr) length);
 				buffer = Marshal.AllocCoTaskMem (length * 2);
 				CFStringGetCharacters (handle, range, buffer);
 				unicode = buffer;
 			}
 
 			unsafe {
-				str = new string ((char *) unicode, 0, length);
+				str = new string ((char*) unicode, 0, length);
 			}
 
 			if (buffer != IntPtr.Zero)
@@ -373,27 +368,27 @@ namespace Xamarin.MacDev
 
 			return str;
 		}
-		
+
 		#endregion
 
 		#region CFMutableDictionary
 
-//		struct CFDictionaryKeyCallBacks {
-//			CFIndex version;
-//			CFDictionaryRetainCallBack retain;
-//			CFDictionaryReleaseCallBack release;
-//			CFDictionaryCopyDescriptionCallBack copyDescription;
-//			CFDictionaryEqualCallBack equal;
-//			CFDictionaryHashCallBack hash;
-//		};
-//
-//		struct CFDictionaryValueCallBacks {
-//			CFIndex version;
-//			CFDictionaryRetainCallBack retain;
-//			CFDictionaryReleaseCallBack release;
-//			CFDictionaryCopyDescriptionCallBack copyDescription;
-//			CFDictionaryEqualCallBack equal;
-//		};
+		//		struct CFDictionaryKeyCallBacks {
+		//			CFIndex version;
+		//			CFDictionaryRetainCallBack retain;
+		//			CFDictionaryReleaseCallBack release;
+		//			CFDictionaryCopyDescriptionCallBack copyDescription;
+		//			CFDictionaryEqualCallBack equal;
+		//			CFDictionaryHashCallBack hash;
+		//		};
+		//
+		//		struct CFDictionaryValueCallBacks {
+		//			CFIndex version;
+		//			CFDictionaryRetainCallBack retain;
+		//			CFDictionaryReleaseCallBack release;
+		//			CFDictionaryCopyDescriptionCallBack copyDescription;
+		//			CFDictionaryEqualCallBack equal;
+		//		};
 
 		// use kCFTypeDictionaryKeyCallBacks and kCFTypeDictionaryValueCallBacks
 
@@ -431,7 +426,7 @@ namespace Xamarin.MacDev
 			}
 
 			uint bufferLength = 1024;
-			var pathBuffer = Marshal.AllocHGlobal ((int)bufferLength);
+			var pathBuffer = Marshal.AllocHGlobal ((int) bufferLength);
 			var status = SecKeychainGetPath (keychainPtr, out bufferLength, pathBuffer);
 
 			if (status != OSStatus.Ok)
@@ -451,7 +446,7 @@ namespace Xamarin.MacDev
 			status = SecIdentitySearchCreate (keychain, CssmKeyUse.Sign, out searchRef);
 			if (status != OSStatus.Ok)
 				throw new Exception ("Could not enumerate signing identities from the keychain. Error:\n" + GetError (status));
-			
+
 			var identities = new List<AppleCodeSigningIdentity> ();
 
 			while ((status = SecIdentitySearchCopyNext (searchRef, out itemRef)) == OSStatus.Ok) {
@@ -488,20 +483,20 @@ namespace Xamarin.MacDev
 
 			if (status != OSStatus.ItemNotFound)
 				LoggingService.LogWarning ("Unexpected error retrieving identities from keychain:\n" + GetError (status));
-			
+
 			CFRelease (searchRef);
 
 			return identities.ToList ();
 		}
-		
-		public IEnumerable<X509Certificate2> FindNamedSigningCertificates (Func<string,bool> nameCheck)
+
+		public IEnumerable<X509Certificate2> FindNamedSigningCertificates (Func<string, bool> nameCheck)
 		{
 			return GetAllSigningCertificates ().Where (x => {
 				var y = GetCertificateCommonName (x);
 				return !string.IsNullOrEmpty (y) && nameCheck (y);
 			});
 		}
-		
+
 		public IList<X509Certificate2> GetAllSigningCertificates ()
 		{
 			IntPtr searchRef, itemRef, certRef;
@@ -510,7 +505,7 @@ namespace Xamarin.MacDev
 			status = SecIdentitySearchCreate (keychain, CssmKeyUse.Sign, out searchRef);
 			if (status != OSStatus.Ok)
 				throw new Exception ("Could not enumerate signing certificates from the keychain. Error:\n" + GetError (status));
-			
+
 			var certs = new HashSet<X509Certificate2> ();
 
 			while ((status = SecIdentitySearchCopyNext (searchRef, out itemRef)) == OSStatus.Ok) {
@@ -534,15 +529,15 @@ namespace Xamarin.MacDev
 
 			if (status != OSStatus.ItemNotFound)
 				LoggingService.LogWarning ("Unexpected error code retrieving signing certificates from keychain:\n" + GetError (status));
-			
+
 			CFRelease (searchRef);
 
 			return certs.ToList ();
 		}
 
-		public void AddCertificate (byte[] rawData)
+		public void AddCertificate (byte [] rawData)
 		{
-			var data = CFDataCreate (IntPtr.Zero, rawData, (IntPtr)rawData.Length);
+			var data = CFDataCreate (IntPtr.Zero, rawData, (IntPtr) rawData.Length);
 			var cert = SecCertificateCreateWithData (IntPtr.Zero, data);
 			CFRelease (data);
 
@@ -561,10 +556,10 @@ namespace Xamarin.MacDev
 		public unsafe bool ContainsCertificate (X509Certificate2 certificate)
 		{
 			// Note: we don't have to use an alias attribute, it's just that it might be faster to use it (fewer certificates we have to compare raw data for)
-			byte[] alias = Encoding.UTF8.GetBytes (GetCertificateCommonName (certificate));
+			byte [] alias = Encoding.UTF8.GetBytes (GetCertificateCommonName (certificate));
 			IntPtr searchRef, itemRef;
 			bool found = false;
-			byte[] certData;
+			byte [] certData;
 			OSStatus status;
 
 			fixed (byte* aliasPtr = alias) {
@@ -572,7 +567,7 @@ namespace Xamarin.MacDev
 				int n = 0;
 
 				if (alias != null)
-					attrs[n++] = new SecKeychainAttribute (SecItemAttr.Alias, (uint) alias.Length, (IntPtr) aliasPtr);
+					attrs [n++] = new SecKeychainAttribute (SecItemAttr.Alias, (uint) alias.Length, (IntPtr) aliasPtr);
 
 				SecKeychainAttributeList attrList = new SecKeychainAttributeList (n, (IntPtr) attrs);
 
@@ -593,13 +588,13 @@ namespace Xamarin.MacDev
 					status = SecKeychainItemCopyContent (itemRef, ref itemClass, IntPtr.Zero, ref length, ref data);
 					if (status == OSStatus.Ok) {
 						if (certData.Length == (int) length) {
-							byte[] rawData = new byte[(int) length];
+							byte [] rawData = new byte [(int) length];
 
 							Marshal.Copy (data, rawData, 0, (int) length);
 
 							found = true;
 							for (int i = 0; i < rawData.Length; i++) {
-								if (rawData[i] != certData[i]) {
+								if (rawData [i] != certData [i]) {
 									found = false;
 									break;
 								}
@@ -618,70 +613,70 @@ namespace Xamarin.MacDev
 			return found;
 		}
 
-//		public static unsafe CertificateStatus ValidateCertificate (X509Certificate2 certificate)
-//		{
-//			CertificateStatus certStatus = CertificateStatus.Unknown;
-//			byte[] alias = Encoding.UTF8.GetBytes (certificate.GetNameInfo (X509NameType.EmailName, false));
-//			IntPtr searchRef, itemRef;
-//			bool found = false;
-//			byte[] certData;
-//			OSStatus status;
-//
-//			fixed (byte* aliasPtr = alias) {
-//				SecKeychainAttribute* attrs = stackalloc SecKeychainAttribute [1];
-//				int n = 0;
-//
-//				if (alias != null)
-//					attrs[n++] = new SecKeychainAttribute (SecItemAttr.Alias, (uint) alias.Length, (IntPtr) aliasPtr);
-//
-//				SecKeychainAttributeList attrList = new SecKeychainAttributeList (n, (IntPtr) attrs);
-//
-//				status = SecKeychainSearchCreateFromAttributes (CurrentKeychain, SecItemClass.Certificate, &attrList, out searchRef);
-//				if (status != OSStatus.Ok)
-//					throw new Exception ("Could not enumerate certificates from the keychain. Error:\n" + GetError (status));
-//
-//				// we use certData to cache certificate.RawData (to avoid unneccessary re-allocation)
-//				certData = certificate.RawData;
-//
-//				while (!found && (status = SecKeychainSearchCopyNext (searchRef, out itemRef)) == OSStatus.Ok) {
-//					SecItemClass itemClass = 0;
-//					IntPtr data = IntPtr.Zero;
-//					uint length = 0;
-//
-//					status = SecKeychainItemCopyContent (itemRef, ref itemClass, IntPtr.Zero, ref length, ref data);
-//					if (status == OSStatus.Ok) {
-//						if (certData.Length == (int) length) {
-//							byte[] rawData = new byte[(int) length];
-//
-//							Marshal.Copy (data, rawData, 0, (int) length);
-//
-//							found = true;
-//							for (int i = 0; i < rawData.Length; i++) {
-//								if (rawData[i] != certData[i]) {
-//									found = false;
-//									break;
-//								}
-//							}
-//						}
-//
-//						SecKeychainItemFreeContent (IntPtr.Zero, data);
-//					}
-//
-//					CFRelease (itemRef);
-//				}
-//
-//				CFRelease (searchRef);
-//			}
-//
-//			return found;
-//		}
-//
-//		public static string ValidateCertificate (X509Certificate2 certificate)
-//		{
-//			// https://developer.apple.com/library/mac/documentation/Security/Conceptual/CertKeyTrustProgGuide/03tasks/tasks.html#//apple_ref/doc/uid/TP40001358-CH205-SW1
-//
-//		}
-		
+		//		public static unsafe CertificateStatus ValidateCertificate (X509Certificate2 certificate)
+		//		{
+		//			CertificateStatus certStatus = CertificateStatus.Unknown;
+		//			byte[] alias = Encoding.UTF8.GetBytes (certificate.GetNameInfo (X509NameType.EmailName, false));
+		//			IntPtr searchRef, itemRef;
+		//			bool found = false;
+		//			byte[] certData;
+		//			OSStatus status;
+		//
+		//			fixed (byte* aliasPtr = alias) {
+		//				SecKeychainAttribute* attrs = stackalloc SecKeychainAttribute [1];
+		//				int n = 0;
+		//
+		//				if (alias != null)
+		//					attrs[n++] = new SecKeychainAttribute (SecItemAttr.Alias, (uint) alias.Length, (IntPtr) aliasPtr);
+		//
+		//				SecKeychainAttributeList attrList = new SecKeychainAttributeList (n, (IntPtr) attrs);
+		//
+		//				status = SecKeychainSearchCreateFromAttributes (CurrentKeychain, SecItemClass.Certificate, &attrList, out searchRef);
+		//				if (status != OSStatus.Ok)
+		//					throw new Exception ("Could not enumerate certificates from the keychain. Error:\n" + GetError (status));
+		//
+		//				// we use certData to cache certificate.RawData (to avoid unneccessary re-allocation)
+		//				certData = certificate.RawData;
+		//
+		//				while (!found && (status = SecKeychainSearchCopyNext (searchRef, out itemRef)) == OSStatus.Ok) {
+		//					SecItemClass itemClass = 0;
+		//					IntPtr data = IntPtr.Zero;
+		//					uint length = 0;
+		//
+		//					status = SecKeychainItemCopyContent (itemRef, ref itemClass, IntPtr.Zero, ref length, ref data);
+		//					if (status == OSStatus.Ok) {
+		//						if (certData.Length == (int) length) {
+		//							byte[] rawData = new byte[(int) length];
+		//
+		//							Marshal.Copy (data, rawData, 0, (int) length);
+		//
+		//							found = true;
+		//							for (int i = 0; i < rawData.Length; i++) {
+		//								if (rawData[i] != certData[i]) {
+		//									found = false;
+		//									break;
+		//								}
+		//							}
+		//						}
+		//
+		//						SecKeychainItemFreeContent (IntPtr.Zero, data);
+		//					}
+		//
+		//					CFRelease (itemRef);
+		//				}
+		//
+		//				CFRelease (searchRef);
+		//			}
+		//
+		//			return found;
+		//		}
+		//
+		//		public static string ValidateCertificate (X509Certificate2 certificate)
+		//		{
+		//			// https://developer.apple.com/library/mac/documentation/Security/Conceptual/CertKeyTrustProgGuide/03tasks/tasks.html#//apple_ref/doc/uid/TP40001358-CH205-SW1
+		//
+		//		}
+
 		public static string GetCertificateCommonName (X509Certificate2 cert)
 		{
 			return cert.GetNameInfo (X509NameType.SimpleName, false);
@@ -693,10 +688,10 @@ namespace Xamarin.MacDev
 				return SecAuthenticationType.Any;
 
 			string auth = "default";
-			foreach (var pair in query.Substring (1).Split (new char[] { '&' })) {
-				var kvp = pair.ToLowerInvariant ().Split (new char[] { '=' });
-				if (kvp[0] == "auth" && kvp.Length == 2) {
-					auth = kvp[1];
+			foreach (var pair in query.Substring (1).Split (new char [] { '&' })) {
+				var kvp = pair.ToLowerInvariant ().Split (new char [] { '=' });
+				if (kvp [0] == "auth" && kvp.Length == 2) {
+					auth = kvp [1];
 					break;
 				}
 			}
@@ -754,14 +749,14 @@ namespace Xamarin.MacDev
 			}
 		}
 
-		static unsafe OSStatus ReplaceInternetPassword (IntPtr item, byte[] desc, byte[] passwd)
+		static unsafe OSStatus ReplaceInternetPassword (IntPtr item, byte [] desc, byte [] passwd)
 		{
 			fixed (byte* descPtr = desc) {
 				SecKeychainAttribute* attrs = stackalloc SecKeychainAttribute [1];
 				int n = 0;
 
 				if (desc != null)
-					attrs[n++] = new SecKeychainAttribute (SecItemAttr.Description, (uint) desc.Length, (IntPtr) descPtr);
+					attrs [n++] = new SecKeychainAttribute (SecItemAttr.Description, (uint) desc.Length, (IntPtr) descPtr);
 
 				SecKeychainAttributeList attrList = new SecKeychainAttributeList (n, (IntPtr) attrs);
 
@@ -769,7 +764,7 @@ namespace Xamarin.MacDev
 			}
 		}
 
-		unsafe OSStatus AddInternetPassword (byte[] label, byte[] desc, SecAuthenticationType auth, byte[] user, byte[] passwd, SecProtocolType protocol, byte[] host, int port, byte[] path)
+		unsafe OSStatus AddInternetPassword (byte [] label, byte [] desc, SecAuthenticationType auth, byte [] user, byte [] passwd, SecProtocolType protocol, byte [] host, int port, byte [] path)
 		{
 			// Note: the following code does more-or-less the same as:
 			//SecKeychainAddInternetPassword (CurrentKeychain, (uint) host.Length, host, 0, null,
@@ -783,15 +778,15 @@ namespace Xamarin.MacDev
 				int* portPtr = &port;
 				int n = 0;
 
-				attrs[n++] = new SecKeychainAttribute (SecItemAttr.Label,    (uint) label.Length, (IntPtr) labelPtr);
+				attrs [n++] = new SecKeychainAttribute (SecItemAttr.Label, (uint) label.Length, (IntPtr) labelPtr);
 				if (desc != null)
-					attrs[n++] = new SecKeychainAttribute (SecItemAttr.Description, (uint) desc.Length, (IntPtr) descPtr);
-				attrs[n++] = new SecKeychainAttribute (SecItemAttr.Account,  (uint) user.Length,  (IntPtr) userPtr);
-				attrs[n++] = new SecKeychainAttribute (SecItemAttr.Protocol, (uint) 4,            (IntPtr) protoPtr);
-				attrs[n++] = new SecKeychainAttribute (SecItemAttr.AuthType, (uint) 4,            (IntPtr) authPtr);
-				attrs[n++] = new SecKeychainAttribute (SecItemAttr.Server,   (uint) host.Length,  (IntPtr) hostPtr);
-				attrs[n++] = new SecKeychainAttribute (SecItemAttr.Port,     (uint) 4,            (IntPtr) portPtr);
-				attrs[n++] = new SecKeychainAttribute (SecItemAttr.Path,     (uint) path.Length,  (IntPtr) pathPtr);
+					attrs [n++] = new SecKeychainAttribute (SecItemAttr.Description, (uint) desc.Length, (IntPtr) descPtr);
+				attrs [n++] = new SecKeychainAttribute (SecItemAttr.Account, (uint) user.Length, (IntPtr) userPtr);
+				attrs [n++] = new SecKeychainAttribute (SecItemAttr.Protocol, (uint) 4, (IntPtr) protoPtr);
+				attrs [n++] = new SecKeychainAttribute (SecItemAttr.AuthType, (uint) 4, (IntPtr) authPtr);
+				attrs [n++] = new SecKeychainAttribute (SecItemAttr.Server, (uint) host.Length, (IntPtr) hostPtr);
+				attrs [n++] = new SecKeychainAttribute (SecItemAttr.Port, (uint) 4, (IntPtr) portPtr);
+				attrs [n++] = new SecKeychainAttribute (SecItemAttr.Path, (uint) path.Length, (IntPtr) pathPtr);
 
 				SecKeychainAttributeList attrList = new SecKeychainAttributeList (n, (IntPtr) attrs);
 
@@ -805,25 +800,25 @@ namespace Xamarin.MacDev
 
 		public unsafe void AddInternetPassword (Uri uri, string username, string password)
 		{
-			byte[] path = Encoding.UTF8.GetBytes (string.Join (string.Empty, uri.Segments).Substring (1)); // don't include the leading '/'
-			byte[] passwd = Encoding.UTF8.GetBytes (password);
-			byte[] host = Encoding.UTF8.GetBytes (uri.Host);
-			byte[] user = Encoding.UTF8.GetBytes (username);
+			byte [] path = Encoding.UTF8.GetBytes (string.Join (string.Empty, uri.Segments).Substring (1)); // don't include the leading '/'
+			byte [] passwd = Encoding.UTF8.GetBytes (password);
+			byte [] host = Encoding.UTF8.GetBytes (uri.Host);
+			byte [] user = Encoding.UTF8.GetBytes (username);
 			var auth = GetSecAuthenticationType (uri.Query);
 			var protocol = GetSecProtocolType (uri.Scheme);
 			IntPtr passwordData = IntPtr.Zero;
 			IntPtr item = IntPtr.Zero;
 			uint passwordLength = 0;
 			int port = uri.Port;
-			byte[] desc = null;
+			byte [] desc = null;
 
 			if (auth == SecAuthenticationType.HTMLForm)
 				desc = WebFormPassword;
 
 			// See if there is already a password there for this uri
 			var result = SecKeychainFindInternetPassword (keychain, (uint) host.Length, host, 0, null,
-			                                              (uint) user.Length, user, (uint) path.Length, path, (ushort) port, 
-			                                              protocol, auth, out passwordLength, out passwordData, ref item);
+														  (uint) user.Length, user, (uint) path.Length, path, (ushort) port,
+														  protocol, auth, out passwordLength, out passwordData, ref item);
 
 			if (result == OSStatus.Ok) {
 				// If there is, replace it with the new one
@@ -839,29 +834,29 @@ namespace Xamarin.MacDev
 				throw new Exception ("Could not add internet password to keychain: " + GetError (result));
 		}
 
-		static readonly byte[] WebFormPassword = Encoding.UTF8.GetBytes ("Web form password");
+		static readonly byte [] WebFormPassword = Encoding.UTF8.GetBytes ("Web form password");
 
 		public unsafe void AddInternetPassword (Uri uri, string password)
 		{
-			byte[] path = Encoding.UTF8.GetBytes (string.Join (string.Empty, uri.Segments).Substring (1)); // don't include the leading '/'
-			byte[] user = Encoding.UTF8.GetBytes (Uri.UnescapeDataString (uri.UserInfo));
-			byte[] passwd = Encoding.UTF8.GetBytes (password);
-			byte[] host = Encoding.UTF8.GetBytes (uri.Host);
+			byte [] path = Encoding.UTF8.GetBytes (string.Join (string.Empty, uri.Segments).Substring (1)); // don't include the leading '/'
+			byte [] user = Encoding.UTF8.GetBytes (Uri.UnescapeDataString (uri.UserInfo));
+			byte [] passwd = Encoding.UTF8.GetBytes (password);
+			byte [] host = Encoding.UTF8.GetBytes (uri.Host);
 			var auth = GetSecAuthenticationType (uri.Query);
 			var protocol = GetSecProtocolType (uri.Scheme);
 			IntPtr passwordData = IntPtr.Zero;
 			IntPtr item = IntPtr.Zero;
 			uint passwordLength = 0;
 			int port = uri.Port;
-			byte[] desc = null;
+			byte [] desc = null;
 
 			if (auth == SecAuthenticationType.HTMLForm)
 				desc = WebFormPassword;
 
 			// See if there is already a password there for this uri
 			var result = SecKeychainFindInternetPassword (keychain, (uint) host.Length, host, 0, null,
-			                                              (uint) user.Length, user, (uint) path.Length, path, (ushort) port,
-			                                              protocol, auth, out passwordLength, out passwordData, ref item);
+														  (uint) user.Length, user, (uint) path.Length, path, (ushort) port,
+														  protocol, auth, out passwordLength, out passwordData, ref item);
 
 			if (result == OSStatus.Ok) {
 				// If there is, replace it with the new one
@@ -880,8 +875,8 @@ namespace Xamarin.MacDev
 
 		static unsafe string GetUsernameFromKeychainItemRef (IntPtr itemRef)
 		{
-			int[] formatConstants = { (int) CssmDbAttributeFormat.String };
-			int[] attributeTags = { (int) SecItemAttr.Account };
+			int [] formatConstants = { (int) CssmDbAttributeFormat.String };
+			int [] attributeTags = { (int) SecItemAttr.Account };
 
 			fixed (int* tags = attributeTags, formats = formatConstants) {
 				var attributeInfo = new SecKeychainAttributeInfo {
@@ -913,8 +908,8 @@ namespace Xamarin.MacDev
 
 		public unsafe Tuple<string, string> FindInternetUserNameAndPassword (Uri uri)
 		{
-			byte[] path = Encoding.UTF8.GetBytes (string.Join (string.Empty, uri.Segments).Substring (1)); // don't include the leading '/'
-			byte[] host = Encoding.UTF8.GetBytes (uri.Host);
+			byte [] path = Encoding.UTF8.GetBytes (string.Join (string.Empty, uri.Segments).Substring (1)); // don't include the leading '/'
+			byte [] host = Encoding.UTF8.GetBytes (uri.Host);
 			var auth = GetSecAuthenticationType (uri.Query);
 			var protocol = GetSecProtocolType (uri.Scheme);
 			IntPtr passwordData = IntPtr.Zero;
@@ -922,8 +917,8 @@ namespace Xamarin.MacDev
 			uint passwordLength = 0;
 
 			var result = SecKeychainFindInternetPassword (keychain, (uint) host.Length, host, 0, null,
-			                                              0, null, (uint) path.Length, path, (ushort) uri.Port,
-			                                              protocol, auth, out passwordLength, out passwordData, ref item);
+														  0, null, (uint) path.Length, path, (ushort) uri.Port,
+														  protocol, auth, out passwordLength, out passwordData, ref item);
 
 			if (result != OSStatus.Ok)
 				return null;
@@ -935,35 +930,35 @@ namespace Xamarin.MacDev
 
 		public unsafe Tuple<string, string> FindInternetPassword (string serverName = "", string securityDomain = "", string accountName = "", string path = "", ushort port = 0)
 		{
-			byte[] serverNameBytes = string.IsNullOrEmpty (serverName) ? null : Encoding.UTF8.GetBytes (serverName);
-			byte[] securityDomainBytes = string.IsNullOrEmpty (securityDomain) ? null : Encoding.UTF8.GetBytes (securityDomain);
-			byte[] accountNameBytes = string.IsNullOrEmpty (accountName) ? null : Encoding.UTF8.GetBytes (accountName);
-			byte[] pathBytes = string.IsNullOrEmpty (path) ? null : Encoding.UTF8.GetBytes (path);
+			byte [] serverNameBytes = string.IsNullOrEmpty (serverName) ? null : Encoding.UTF8.GetBytes (serverName);
+			byte [] securityDomainBytes = string.IsNullOrEmpty (securityDomain) ? null : Encoding.UTF8.GetBytes (securityDomain);
+			byte [] accountNameBytes = string.IsNullOrEmpty (accountName) ? null : Encoding.UTF8.GetBytes (accountName);
+			byte [] pathBytes = string.IsNullOrEmpty (path) ? null : Encoding.UTF8.GetBytes (path);
 
 			IntPtr passwordData = IntPtr.Zero;
 			IntPtr item = IntPtr.Zero;
 			uint passwordLength = 0;
 
 			var result = SecKeychainFindInternetPassword (keychain,
-			                                              serverNameBytes == null ? 0 : (uint)serverNameBytes.Length, serverNameBytes,
-			                                              securityDomainBytes == null ? 0 : (uint)securityDomainBytes.Length, securityDomainBytes,
-			                                              accountNameBytes == null ? 0 : (uint)accountNameBytes.Length, accountNameBytes,
-			                                              pathBytes == null ? 0 : (uint)pathBytes.Length, pathBytes, port,
-			                                              SecProtocolType.Any, SecAuthenticationType.Any, out passwordLength, out passwordData, ref item);
+														  serverNameBytes == null ? 0 : (uint) serverNameBytes.Length, serverNameBytes,
+														  securityDomainBytes == null ? 0 : (uint) securityDomainBytes.Length, securityDomainBytes,
+														  accountNameBytes == null ? 0 : (uint) accountNameBytes.Length, accountNameBytes,
+														  pathBytes == null ? 0 : (uint) pathBytes.Length, pathBytes, port,
+														  SecProtocolType.Any, SecAuthenticationType.Any, out passwordLength, out passwordData, ref item);
 
 			if (result != OSStatus.Ok)
 				return null;
 
-			var username = GetUsernameFromKeychainItemRef(item);
+			var username = GetUsernameFromKeychainItemRef (item);
 
-			return Tuple.Create(username, Marshal.PtrToStringAuto(passwordData, (int)passwordLength));
+			return Tuple.Create (username, Marshal.PtrToStringAuto (passwordData, (int) passwordLength));
 		}
 
 		public string FindInternetPassword (Uri uri)
 		{
-			byte[] path = Encoding.UTF8.GetBytes (string.Join (string.Empty, uri.Segments).Substring (1)); // don't include the leading '/'
-			byte[] user = Encoding.UTF8.GetBytes (Uri.UnescapeDataString (uri.UserInfo));
-			byte[] host = Encoding.UTF8.GetBytes (uri.Host);
+			byte [] path = Encoding.UTF8.GetBytes (string.Join (string.Empty, uri.Segments).Substring (1)); // don't include the leading '/'
+			byte [] user = Encoding.UTF8.GetBytes (Uri.UnescapeDataString (uri.UserInfo));
+			byte [] host = Encoding.UTF8.GetBytes (uri.Host);
 			var auth = GetSecAuthenticationType (uri.Query);
 			var protocol = GetSecProtocolType (uri.Scheme);
 			IntPtr passwordData = IntPtr.Zero;
@@ -972,14 +967,14 @@ namespace Xamarin.MacDev
 
 			// Look for an internet password for the given protocol and auth mechanism
 			var result = SecKeychainFindInternetPassword (keychain, (uint) host.Length, host, 0, null,
-			                                              (uint) user.Length, user, (uint) path.Length, path, (ushort) uri.Port,
-			                                              protocol, auth, out passwordLength, out passwordData, ref item);
+														  (uint) user.Length, user, (uint) path.Length, path, (ushort) uri.Port,
+														  protocol, auth, out passwordLength, out passwordData, ref item);
 
 			// Fall back to looking for a password for SecProtocolType.Any && SecAuthenticationType.Any
 			if (result == OSStatus.ItemNotFound && protocol != SecProtocolType.Any)
 				result = SecKeychainFindInternetPassword (keychain, (uint) host.Length, host, 0, null,
-				                                          (uint) user.Length, user, (uint) path.Length, path, (ushort) uri.Port,
-				                                          0, auth, out passwordLength, out passwordData, ref item);
+														  (uint) user.Length, user, (uint) path.Length, path, (ushort) uri.Port,
+														  0, auth, out passwordLength, out passwordData, ref item);
 
 			CFRelease (item);
 
@@ -990,184 +985,174 @@ namespace Xamarin.MacDev
 		}
 	}
 
-	enum SecItemClass : uint
-	{
-		InternetPassword     = 1768842612, // 'inet'
-		GenericPassword      = 1734700656, // 'genp'
-		AppleSharePassword   = 1634953328, // 'ashp'
-		Certificate          = 0x80000000 + 0x1000,
-		PublicKey            = 0x0000000A + 5,
-		PrivateKey           = 0x0000000A + 6,
-		SymmetricKey         = 0x0000000A + 7
+	enum SecItemClass : uint {
+		InternetPassword = 1768842612, // 'inet'
+		GenericPassword = 1734700656, // 'genp'
+		AppleSharePassword = 1634953328, // 'ashp'
+		Certificate = 0x80000000 + 0x1000,
+		PublicKey = 0x0000000A + 5,
+		PrivateKey = 0x0000000A + 6,
+		SymmetricKey = 0x0000000A + 7
 	}
 
-	enum SecItemAttr : int
-	{
-		CreationDate         = 1667522932,
-		ModDate              = 1835295092,
-		Description          = 1684370275,
-		Comment              = 1768123764,
-		Creator              = 1668445298,
-		Type                 = 1954115685,
-		ScriptCode           = 1935897200,
-		Label                = 1818321516,
-		Invisible            = 1768846953,
-		Negative             = 1852139361,
-		CustomIcon           = 1668641641,
-		Account              = 1633903476,
-		Service              = 1937138533,
-		Generic              = 1734700641,
-		SecurityDomain       = 1935961454,
-		Server               = 1936881266,
-		AuthType             = 1635023216,
-		Port                 = 1886351988,
-		Path                 = 1885434984,
-		Volume               = 1986817381,
-		Address              = 1633969266,
-		Signature            = 1936943463,
-		Protocol             = 1886675820,
-		CertificateType      = 1668577648,
-		CertificateEncoding  = 1667591779,
-		CrlType              = 1668445296,
-		CrlEncoding          = 1668443747,
-		Alias                = 1634494835,
+	enum SecItemAttr : int {
+		CreationDate = 1667522932,
+		ModDate = 1835295092,
+		Description = 1684370275,
+		Comment = 1768123764,
+		Creator = 1668445298,
+		Type = 1954115685,
+		ScriptCode = 1935897200,
+		Label = 1818321516,
+		Invisible = 1768846953,
+		Negative = 1852139361,
+		CustomIcon = 1668641641,
+		Account = 1633903476,
+		Service = 1937138533,
+		Generic = 1734700641,
+		SecurityDomain = 1935961454,
+		Server = 1936881266,
+		AuthType = 1635023216,
+		Port = 1886351988,
+		Path = 1885434984,
+		Volume = 1986817381,
+		Address = 1633969266,
+		Signature = 1936943463,
+		Protocol = 1886675820,
+		CertificateType = 1668577648,
+		CertificateEncoding = 1667591779,
+		CrlType = 1668445296,
+		CrlEncoding = 1668443747,
+		Alias = 1634494835,
 	}
 
-	enum OSStatus
-	{
-		Ok                   = 0,
-		AuthFailed           = -25293,
-		NoSuchKeychain       = -25294,
-		DuplicateKeychain    = -25296,
-		DuplicateItem        = -25299,
-		ItemNotFound         = -25300,
-		NoDefaultKeychain    = -25307,
-		DecodeError          = -26275,
+	enum OSStatus {
+		Ok = 0,
+		AuthFailed = -25293,
+		NoSuchKeychain = -25294,
+		DuplicateKeychain = -25296,
+		DuplicateItem = -25299,
+		ItemNotFound = -25300,
+		NoDefaultKeychain = -25307,
+		DecodeError = -26275,
 	}
 
-	enum SecKeyAttribute
-	{
-		KeyClass             = 0,
-		PrintName            = 1,
-		Alias                = 2,
-		Permanent            = 3,
-		Private              = 4,
-		Modifiable           = 5,
-		Label                = 6,
-		ApplicationTag       = 7,
-		KeyCreator           = 8,
-		KeyType              = 9,
-		KeySizeInBits        = 10,
-		EffectiveKeySize     = 11,
-		StartDate            = 12,
-		EndDate              = 13,
-		Sensitive            = 14,
-		AlwaysSensitive      = 15,
-		Extractable          = 16,
-		NeverExtractable     = 17,
-		Encrypt              = 18,
-		Decrypt              = 19,
-		Derive               = 20,
-		Sign                 = 21,
-		Verify               = 22,
-		SignRecover          = 23,
-		VerifyRecover        = 24,
-		Wrap                 = 25,
-		Unwrap               = 26,
+	enum SecKeyAttribute {
+		KeyClass = 0,
+		PrintName = 1,
+		Alias = 2,
+		Permanent = 3,
+		Private = 4,
+		Modifiable = 5,
+		Label = 6,
+		ApplicationTag = 7,
+		KeyCreator = 8,
+		KeyType = 9,
+		KeySizeInBits = 10,
+		EffectiveKeySize = 11,
+		StartDate = 12,
+		EndDate = 13,
+		Sensitive = 14,
+		AlwaysSensitive = 15,
+		Extractable = 16,
+		NeverExtractable = 17,
+		Encrypt = 18,
+		Decrypt = 19,
+		Derive = 20,
+		Sign = 21,
+		Verify = 22,
+		SignRecover = 23,
+		VerifyRecover = 24,
+		Wrap = 25,
+		Unwrap = 26,
 	}
 
-	enum SecAuthenticationType : int
-	{
-		NTLM                 = 1835824238,
-		MSN                  = 1634628461,
-		DPA                  = 1633775716,
-		RPA                  = 1633775730,
-		HTTPBasic            = 1886680168,
-		HTTPDigest           = 1685353576,
-		HTMLForm             = 1836216166,
-		Default              = 1953261156,
-		Any                  = 0
+	enum SecAuthenticationType : int {
+		NTLM = 1835824238,
+		MSN = 1634628461,
+		DPA = 1633775716,
+		RPA = 1633775730,
+		HTTPBasic = 1886680168,
+		HTTPDigest = 1685353576,
+		HTMLForm = 1836216166,
+		Default = 1953261156,
+		Any = 0
 	}
 
-	enum SecProtocolType : int
-	{
-		FTP                  = 1718906912,
-		FTPAccount           = 1718906977,
-		HTTP                 = 1752462448,
-		IRC                  = 1769104160,
-		NNTP                 = 1852732528,
-		POP3                 = 1886351411,
-		SMTP                 = 1936553072,
-		SOCKS                = 1936685088,
-		IMAP                 = 1768776048,
-		LDAP                 = 1818517872,
-		AppleTalk            = 1635019883,
-		AFP                  = 1634103328,
-		Telnet               = 1952803950,
-		SSH                  = 1936943136,
-		FTPS                 = 1718906995,
-		HTTPProxy            = 1752461432,
-		HTTPSProxy           = 1752462200,
-		FTPProxy             = 1718907000,
-		CIFS                 = 1667851891,
-		SMB                  = 1936548384,
-		RTSP                 = 1920234352,
-		RTSPProxy            = 1920234360,
-		DAAP                 = 1684103536,
-		EPPC                 = 1701867619,
-		IPP                  = 1768976416,
-		NNTPS                = 1853124723,
-		LDAPS                = 1818521715,
-		TelnetS              = 1952803955,
-		IMAPS                = 1768779891,
-		IRCS                 = 1769104243,
-		POP3S                = 1886351475,
-		CVSpserver           = 1668707184,
-		SVN                  = 1937141280,
-		Any                  = 0
+	enum SecProtocolType : int {
+		FTP = 1718906912,
+		FTPAccount = 1718906977,
+		HTTP = 1752462448,
+		IRC = 1769104160,
+		NNTP = 1852732528,
+		POP3 = 1886351411,
+		SMTP = 1936553072,
+		SOCKS = 1936685088,
+		IMAP = 1768776048,
+		LDAP = 1818517872,
+		AppleTalk = 1635019883,
+		AFP = 1634103328,
+		Telnet = 1952803950,
+		SSH = 1936943136,
+		FTPS = 1718906995,
+		HTTPProxy = 1752461432,
+		HTTPSProxy = 1752462200,
+		FTPProxy = 1718907000,
+		CIFS = 1667851891,
+		SMB = 1936548384,
+		RTSP = 1920234352,
+		RTSPProxy = 1920234360,
+		DAAP = 1684103536,
+		EPPC = 1701867619,
+		IPP = 1768976416,
+		NNTPS = 1853124723,
+		LDAPS = 1818521715,
+		TelnetS = 1952803955,
+		IMAPS = 1768779891,
+		IRCS = 1769104243,
+		POP3S = 1886351475,
+		CVSpserver = 1668707184,
+		SVN = 1937141280,
+		Any = 0
 	}
 
 	[Flags]
-	enum CssmKeyUse : uint
-	{
-		Encrypt              = 0x00000001,
-		Decrypt              = 0x00000002,
-		Sign                 = 0x00000004,
-		Verify               = 0x00000008,
-		SignRecover          = 0x00000010,
-		VerifyRecover        = 0x00000020,
-		Wrap                 = 0x00000040,
-		Unwrap               = 0x00000080,
-		Derive               = 0x00000100,
-		Any                  = 0x80000000,
+	enum CssmKeyUse : uint {
+		Encrypt = 0x00000001,
+		Decrypt = 0x00000002,
+		Sign = 0x00000004,
+		Verify = 0x00000008,
+		SignRecover = 0x00000010,
+		VerifyRecover = 0x00000020,
+		Wrap = 0x00000040,
+		Unwrap = 0x00000080,
+		Derive = 0x00000100,
+		Any = 0x80000000,
 	}
 
 	[Flags]
-	enum CssmTPAppleCertStatus : uint
-	{
-		Expired              = 0x00000001,
-		NotValidYet          = 0x00000002,
-		IsInInputCerts       = 0x00000004,
-		IsInAnchors          = 0x00000008,
-		IsRoot               = 0x00000010,
-		IsFromNet            = 0x00000020
+	enum CssmTPAppleCertStatus : uint {
+		Expired = 0x00000001,
+		NotValidYet = 0x00000002,
+		IsInInputCerts = 0x00000004,
+		IsInAnchors = 0x00000008,
+		IsRoot = 0x00000010,
+		IsFromNet = 0x00000020
 	}
 
-	enum CssmDbAttributeFormat : int
-	{
-		String               = 0,
-		Int32                = 1,
-		UInt32               = 2,
-		BigNum               = 3,
-		Real                 = 4,
-		DateTime             = 5,
-		Blob                 = 6,
-		MultiUInt32          = 7,
-		Complex              = 8
+	enum CssmDbAttributeFormat : int {
+		String = 0,
+		Int32 = 1,
+		UInt32 = 2,
+		BigNum = 3,
+		Real = 4,
+		DateTime = 5,
+		Blob = 6,
+		MultiUInt32 = 7,
+		Complex = 8
 	}
 
-	enum CertificateStatus
-	{
+	enum CertificateStatus {
 		Valid,
 		Expired,
 		RootExpired,

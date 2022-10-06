@@ -1,4 +1,4 @@
-﻿//
+//
 // TestMobileProvisionIndex.cs
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
@@ -24,103 +24,99 @@
 // THE SOFTWARE.
 
 using System;
-using System.IO;
-using System.Text;
 using System.Collections.Generic;
-
-using NUnit.Framework;
-
-using Xamarin.MacDev;
+using System.IO;
 using System.Runtime.InteropServices.ComTypes;
+using System.Text;
+using NUnit.Framework;
+using Xamarin.MacDev;
 
-namespace UnitTests
-{
-    [TestFixture]
-    public class PListObjectTests
-    {
-        static readonly KeyValuePair<string, long>[] IntegerKeyValuePairs = new KeyValuePair<string, long>[] {
-            new KeyValuePair<string, long> ("Negative1", -1),
-            new KeyValuePair<string, long> ("SByteMaxValueMinusOne", sbyte.MaxValue - 1),
-            new KeyValuePair<string, long> ("SByteMaxValue", sbyte.MaxValue),
-            new KeyValuePair<string, long> ("ByteMaxValueMinusOne", byte.MaxValue - 1),
-            new KeyValuePair<string, long> ("ByteMaxValue", byte.MaxValue),
-            new KeyValuePair<string, long> ("ShortMaxValueMinusOne", short.MaxValue - 1),
-            new KeyValuePair<string, long> ("ShortMaxValue", short.MaxValue),
-            new KeyValuePair<string, long> ("UShortMaxValueMinusOne", ushort.MaxValue - 1),
-            new KeyValuePair<string, long> ("UShortMaxValue", ushort.MaxValue),
-            new KeyValuePair<string, long> ("IntMaxValueMinusOne", int.MaxValue - 1),
-            new KeyValuePair<string, long> ("IntMaxValue", int.MaxValue),
-            new KeyValuePair<string, long> ("IntMaxValuePlusOne", ((long) int.MaxValue) + 1),
-            new KeyValuePair<string, long> ("UIntMaxValue", uint.MaxValue),
-            new KeyValuePair<string, long> ("UIntMaxValuePlusOne", ((long) uint.MaxValue) + 1),
-            new KeyValuePair<string, long> ("LongMaxValue", long.MaxValue),
+namespace UnitTests {
+	[TestFixture]
+	public class PListObjectTests {
+		static readonly KeyValuePair<string, long> [] IntegerKeyValuePairs = new KeyValuePair<string, long> [] {
+			new KeyValuePair<string, long> ("Negative1", -1),
+			new KeyValuePair<string, long> ("SByteMaxValueMinusOne", sbyte.MaxValue - 1),
+			new KeyValuePair<string, long> ("SByteMaxValue", sbyte.MaxValue),
+			new KeyValuePair<string, long> ("ByteMaxValueMinusOne", byte.MaxValue - 1),
+			new KeyValuePair<string, long> ("ByteMaxValue", byte.MaxValue),
+			new KeyValuePair<string, long> ("ShortMaxValueMinusOne", short.MaxValue - 1),
+			new KeyValuePair<string, long> ("ShortMaxValue", short.MaxValue),
+			new KeyValuePair<string, long> ("UShortMaxValueMinusOne", ushort.MaxValue - 1),
+			new KeyValuePair<string, long> ("UShortMaxValue", ushort.MaxValue),
+			new KeyValuePair<string, long> ("IntMaxValueMinusOne", int.MaxValue - 1),
+			new KeyValuePair<string, long> ("IntMaxValue", int.MaxValue),
+			new KeyValuePair<string, long> ("IntMaxValuePlusOne", ((long) int.MaxValue) + 1),
+			new KeyValuePair<string, long> ("UIntMaxValue", uint.MaxValue),
+			new KeyValuePair<string, long> ("UIntMaxValuePlusOne", ((long) uint.MaxValue) + 1),
+			new KeyValuePair<string, long> ("LongMaxValue", long.MaxValue),
 
             // FIXME: Apple supports up to ulong.MaxValue
             // new KeyValuePair<string, long> ("ULongMaxValue", ulong.MaxValue),
         };
 
-        [TestCase ("xml-integers.plist")]
-        [TestCase ("binary-integers.plist")]
-        public void TestIntegerDeserialization (string fileName)
-        {
-            PDictionary plist;
+		[TestCase ("xml-integers.plist")]
+		[TestCase ("binary-integers.plist")]
+		public void TestIntegerDeserialization (string fileName)
+		{
+			PDictionary plist;
 
-            using (var stream = GetType ().Assembly.GetManifestResourceStream ($"UnitTests.TestData.PropertyLists.{fileName}"))
-                plist = (PDictionary) PObject.FromStream (stream);
+			using (var stream = GetType ().Assembly.GetManifestResourceStream ($"UnitTests.TestData.PropertyLists.{fileName}"))
+				plist = (PDictionary) PObject.FromStream (stream);
 
-            Assert.AreEqual (IntegerKeyValuePairs.Length, plist.Count);
+			Assert.AreEqual (IntegerKeyValuePairs.Length, plist.Count);
 
-            foreach (var kvp in IntegerKeyValuePairs) {
-                Assert.IsTrue (plist.TryGetValue (kvp.Key, out PObject value));
-                Assert.IsInstanceOf<PNumber> (value);
-                var integer = (PNumber) value;
-                Assert.AreEqual (kvp.Value, integer.Value);
-            }
-        }
+			foreach (var kvp in IntegerKeyValuePairs) {
+				Assert.IsTrue (plist.TryGetValue (kvp.Key, out PObject value));
+				Assert.IsInstanceOf<PNumber> (value);
+				var integer = (PNumber) value;
+				Assert.AreEqual (kvp.Value, integer.Value);
+			}
+		}
 
-        [Test]
-        public void TestIntegerXmlSerialization ()
-        {
-            var plist = new PDictionary ();
+		[Test]
+		public void TestIntegerXmlSerialization ()
+		{
+			var plist = new PDictionary ();
 
-            foreach (var kvp in IntegerKeyValuePairs)
-                plist.Add (kvp.Key, new PNumber (kvp.Value));
+			foreach (var kvp in IntegerKeyValuePairs)
+				plist.Add (kvp.Key, new PNumber (kvp.Value));
 
-            var output = plist.ToXml ();
-            string expected;
+			var output = plist.ToXml ();
+			string expected;
 
-            using (var stream = GetType ().Assembly.GetManifestResourceStream ("UnitTests.TestData.PropertyLists.xml-integers.plist")) {
-                var buffer = new byte[stream.Length];
-                stream.Read (buffer, 0, buffer.Length);
+			using (var stream = GetType ().Assembly.GetManifestResourceStream ("UnitTests.TestData.PropertyLists.xml-integers.plist")) {
+				var buffer = new byte [stream.Length];
+				stream.Read (buffer, 0, buffer.Length);
 
-                expected = Encoding.UTF8.GetString(buffer);
-            }
+				expected = Encoding.UTF8.GetString (buffer);
+			}
 
-            Assert.AreEqual (expected, output);
-        }
+			Assert.AreEqual (expected, output);
+		}
 
-        [Test]
-        public void TestIntegerBinarySerialization ()
-        {
-            var plist = new PDictionary ();
+		[Test]
+		public void TestIntegerBinarySerialization ()
+		{
+			var plist = new PDictionary ();
 
-            foreach (var kvp in IntegerKeyValuePairs)
-                plist.Add (kvp.Key, new PNumber (kvp.Value));
+			foreach (var kvp in IntegerKeyValuePairs)
+				plist.Add (kvp.Key, new PNumber (kvp.Value));
 
-            var output = plist.ToByteArray (PropertyListFormat.Binary);
+			var output = plist.ToByteArray (PropertyListFormat.Binary);
 
-            plist = (PDictionary) PObject.FromByteArray (output, 0, output.Length, out var isBinary);
+			plist = (PDictionary) PObject.FromByteArray (output, 0, output.Length, out var isBinary);
 
-            Assert.IsTrue (isBinary);
-            Assert.AreEqual (IntegerKeyValuePairs.Length, plist.Count);
+			Assert.IsTrue (isBinary);
+			Assert.AreEqual (IntegerKeyValuePairs.Length, plist.Count);
 
-            foreach (var kvp in IntegerKeyValuePairs) {
-                Assert.IsTrue (plist.TryGetValue (kvp.Key, out PObject value));
-                Assert.IsInstanceOf<PNumber> (value);
-                var integer = (PNumber) value;
-                Assert.AreEqual (kvp.Value, integer.Value);
-            }
-        }
-    }
+			foreach (var kvp in IntegerKeyValuePairs) {
+				Assert.IsTrue (plist.TryGetValue (kvp.Key, out PObject value));
+				Assert.IsInstanceOf<PNumber> (value);
+				var integer = (PNumber) value;
+				Assert.AreEqual (kvp.Value, integer.Value);
+			}
+		}
+	}
 }
 

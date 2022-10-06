@@ -8,14 +8,12 @@
 // Copyright 2012-2014 Xamarin Inc.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Collections.Generic;
 
-namespace Xamarin.MacDev
-{
-	public sealed class XamMacSdk : IMonoMacSdk
-	{
+namespace Xamarin.MacDev {
+	public sealed class XamMacSdk : IMonoMacSdk {
 		static readonly AppleSdkVersion [] MacOSXSdkVersions = {
 			AppleSdkVersion.V10_7,
 			AppleSdkVersion.V10_8,
@@ -60,7 +58,7 @@ namespace Xamarin.MacDev
 			var array = new PArray ();
 
 			for (int i = 0; i < versions.Count; i++)
-				array.Add (new PString (versions[i].ToString ()));
+				array.Add (new PString (versions [i].ToString ()));
 
 			return array;
 		}

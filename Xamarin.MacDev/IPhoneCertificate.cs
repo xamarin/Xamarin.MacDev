@@ -1,4 +1,4 @@
-﻿//
+//
 // IPhoneCertificate.cs
 //
 // Author: Jeffrey Stedfast <jeff@xamarin.com>
@@ -9,12 +9,10 @@
 using System;
 using System.Security.Cryptography.X509Certificates;
 
-namespace Xamarin.MacDev
-{
-	public static class IPhoneCertificate
-	{
-		public static readonly string[] DevelopmentPrefixes = { "iPhone Developer", "iOS Development", "Apple Development" };
-		public static readonly string[] DistributionPrefixes = { "iPhone Distribution", "iOS Distribution", "Apple Distribution" };
+namespace Xamarin.MacDev {
+	public static class IPhoneCertificate {
+		public static readonly string [] DevelopmentPrefixes = { "iPhone Developer", "iOS Development", "Apple Development" };
+		public static readonly string [] DistributionPrefixes = { "iPhone Distribution", "iOS Distribution", "Apple Distribution" };
 
 		public static bool IsDevelopment (string name)
 		{
