@@ -19,7 +19,7 @@ namespace Xamarin.MacDev {
 			return v.Count > 0 ? v [v.Count - 1] : @this.GetUseDefault ();
 		}
 
-		public static bool TryParse (string s, out int[] result)
+		public static bool TryParse (string s, out int [] result)
 		{
 			if (s == null) {
 				result = null;
@@ -60,7 +60,7 @@ namespace Xamarin.MacDev {
 			return rv;
 		}
 
-		public static T Parse<T> (string s) where T: IAppleSdkVersion, new()
+		public static T Parse<T> (string s) where T : IAppleSdkVersion, new()
 		{
 			var vstr = s.Split ('.');
 			var vint = new int [vstr.Length];

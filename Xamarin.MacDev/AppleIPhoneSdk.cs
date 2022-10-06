@@ -26,10 +26,8 @@
 
 using System.Collections.Generic;
 
-namespace Xamarin.MacDev
-{
-	public class AppleIPhoneSdk : AppleSdk
-	{
+namespace Xamarin.MacDev {
+	public class AppleIPhoneSdk : AppleSdk {
 		protected override string SimulatorPlatformName {
 			get {
 				return "iPhoneSimulator";
@@ -50,16 +48,14 @@ namespace Xamarin.MacDev
 		}
 	}
 
-	public class AppleDTSettings
-	{
+	public class AppleDTSettings {
 		public string DTXcodeBuild { get; set; }
 		public string DTPlatformVersion { get; set; }
 		public string DTPlatformBuild { get; set; }
 		public string BuildMachineOSBuild { get; set; }
 	}
 
-	public class AppleDTSdkSettings
-	{
+	public class AppleDTSdkSettings {
 		public string CanonicalName { get; set; }
 		public string AlternateSDK { get; set; }
 		public string DTCompiler { get; set; }

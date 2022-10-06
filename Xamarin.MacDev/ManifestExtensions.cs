@@ -26,20 +26,18 @@
 using System;
 using System.Linq;
 
-namespace Xamarin.MacDev
-{
-	public static class ManifestExtensions
-	{
+namespace Xamarin.MacDev {
+	public static class ManifestExtensions {
 		#region CoreFoundation Manifest Keys
 
-		public static PArray GetUTExportedTypeDeclaration(this PDictionary dict)
+		public static PArray GetUTExportedTypeDeclaration (this PDictionary dict)
 		{
-			return dict.Get<PArray>(ManifestKeys.UTExportedTypeDeclaration);
+			return dict.Get<PArray> (ManifestKeys.UTExportedTypeDeclaration);
 		}
 
-		public static PArray GetUTImportedTypeDeclaration(this PDictionary dict)
+		public static PArray GetUTImportedTypeDeclaration (this PDictionary dict)
 		{
-			return dict.Get<PArray>(ManifestKeys.UTImportedTypeDeclaration);
+			return dict.Get<PArray> (ManifestKeys.UTImportedTypeDeclaration);
 		}
 
 		public static string GetCFBundleDisplayName (this PDictionary dict)
@@ -53,7 +51,7 @@ namespace Xamarin.MacDev
 			if (string.IsNullOrEmpty (value))
 				dict.Remove (ManifestKeys.CFBundleDisplayName);
 			else
-				dict[ManifestKeys.CFBundleDisplayName] = value;
+				dict [ManifestKeys.CFBundleDisplayName] = value;
 		}
 
 		public static string GetCFBundleName (this PDictionary dict)
@@ -67,7 +65,7 @@ namespace Xamarin.MacDev
 			if (string.IsNullOrEmpty (value))
 				dict.Remove (ManifestKeys.CFBundleName);
 			else
-				dict[ManifestKeys.CFBundleName] = value;
+				dict [ManifestKeys.CFBundleName] = value;
 		}
 
 		public static string GetCFBundleExecutable (this PDictionary dict)
@@ -81,7 +79,7 @@ namespace Xamarin.MacDev
 			if (string.IsNullOrEmpty (value))
 				dict.Remove (ManifestKeys.CFBundleExecutable);
 			else
-				dict[ManifestKeys.CFBundleExecutable] = value;
+				dict [ManifestKeys.CFBundleExecutable] = value;
 		}
 
 		public static string GetCFBundleIconFile (this PDictionary dict)
@@ -95,7 +93,7 @@ namespace Xamarin.MacDev
 			if (string.IsNullOrEmpty (value))
 				dict.Remove (ManifestKeys.CFBundleIconFile);
 			else
-				dict[ManifestKeys.CFBundleIconFile] = value;
+				dict [ManifestKeys.CFBundleIconFile] = value;
 		}
 
 		public static PArray GetCFBundleIconFiles (this PDictionary dict)
@@ -108,7 +106,7 @@ namespace Xamarin.MacDev
 			if (array == null)
 				dict.Remove (ManifestKeys.CFBundleIconFiles);
 			else
-				dict[ManifestKeys.CFBundleIconFiles] = array;
+				dict [ManifestKeys.CFBundleIconFiles] = array;
 		}
 
 		public static PDictionary GetCFBundleIcons (this PDictionary dict)
@@ -121,7 +119,7 @@ namespace Xamarin.MacDev
 			if (icons == null)
 				dict.Remove (ManifestKeys.CFBundleIcons);
 			else
-				dict[ManifestKeys.CFBundleIcons] = icons;
+				dict [ManifestKeys.CFBundleIcons] = icons;
 		}
 
 		public static string GetCFBundleIdentifier (this PDictionary dict)
@@ -135,7 +133,7 @@ namespace Xamarin.MacDev
 			if (string.IsNullOrEmpty (value))
 				dict.Remove (ManifestKeys.CFBundleIdentifier);
 			else
-				dict[ManifestKeys.CFBundleIdentifier] = value;
+				dict [ManifestKeys.CFBundleIdentifier] = value;
 		}
 
 		public static string GetCFBundleShortVersionString (this PDictionary dict)
@@ -149,7 +147,7 @@ namespace Xamarin.MacDev
 			if (string.IsNullOrEmpty (value))
 				dict.Remove (ManifestKeys.CFBundleShortVersionString);
 			else
-				dict[ManifestKeys.CFBundleShortVersionString] = value;
+				dict [ManifestKeys.CFBundleShortVersionString] = value;
 		}
 
 		public static string GetCFBundleVersion (this PDictionary dict)
@@ -163,7 +161,7 @@ namespace Xamarin.MacDev
 			if (string.IsNullOrEmpty (value))
 				dict.Remove (ManifestKeys.CFBundleVersion);
 			else
-				dict[ManifestKeys.CFBundleVersion] = value;
+				dict [ManifestKeys.CFBundleVersion] = value;
 		}
 
 		public static string GetNSMainNibFile (this PDictionary dict)
@@ -177,7 +175,7 @@ namespace Xamarin.MacDev
 			if (string.IsNullOrEmpty (value))
 				dict.Remove (ManifestKeys.NSMainNibFile);
 			else
-				dict[ManifestKeys.NSMainNibFile] = value;
+				dict [ManifestKeys.NSMainNibFile] = value;
 		}
 
 		#endregion
@@ -195,7 +193,7 @@ namespace Xamarin.MacDev
 			if (string.IsNullOrEmpty (value))
 				dict.Remove (ManifestKeys.MinimumOSVersion);
 			else
-				dict[ManifestKeys.MinimumOSVersion] = value;
+				dict [ManifestKeys.MinimumOSVersion] = value;
 		}
 
 		public static void SetUIDeviceFamily (this PDictionary dict, IPhoneDeviceType deviceTypes)
@@ -209,9 +207,9 @@ namespace Xamarin.MacDev
 			foreach (var family in deviceTypes.ToDeviceFamily ())
 				arr.Add (new PNumber ((int) family));
 
-			dict[ManifestKeys.UIDeviceFamily] = arr;
+			dict [ManifestKeys.UIDeviceFamily] = arr;
 		}
-		
+
 		public static IPhoneDeviceType GetUIDeviceFamily (this PDictionary dict)
 		{
 			return GetUIDeviceFamily (dict, ManifestKeys.UIDeviceFamily);
@@ -291,19 +289,19 @@ namespace Xamarin.MacDev
 		public static string GetUILaunchImageFile (this PDictionary dict)
 		{
 			var str = dict.Get<PString> (ManifestKeys.UILaunchImageFile);
-			return str == null? null : str.Value;
+			return str == null ? null : str.Value;
 		}
 
 		public static string GetUILaunchImageFileIPad (this PDictionary dict)
 		{
 			var str = dict.Get<PString> (ManifestKeys.UILaunchImageFileIPad);
-			return str == null? null : str.Value;
+			return str == null ? null : str.Value;
 		}
 
 		public static string GetUILaunchImageFileIPhone (this PDictionary dict)
 		{
 			var str = dict.Get<PString> (ManifestKeys.UILaunchImageFileIPhone);
-			return str == null? null : str.Value;
+			return str == null ? null : str.Value;
 		}
 
 		public static PString GetUIMainStoryboardFile (this PDictionary dict, bool ipad)
@@ -399,7 +397,7 @@ namespace Xamarin.MacDev
 			if ((orientations & IPhoneOrientation.LandscapeRight) != 0)
 				arr.Add (IPhoneOrientationStrings.Right);
 
-			dict[key] = arr;
+			dict [key] = arr;
 		}
 
 		public static bool IsValidPair (this IPhoneOrientation val)
@@ -524,7 +522,7 @@ namespace Xamarin.MacDev
 			if (string.IsNullOrEmpty (value))
 				extAtt.Remove (ManifestKeys.WKAppBundleIdentifier);
 			else
-				extAtt[ManifestKeys.WKAppBundleIdentifier] = value;
+				extAtt [ManifestKeys.WKAppBundleIdentifier] = value;
 		}
 
 		public static string GetWKCompanionAppBundleIdentifier (this PDictionary dict)
@@ -538,7 +536,7 @@ namespace Xamarin.MacDev
 			if (string.IsNullOrEmpty (value))
 				dict.Remove (ManifestKeys.WKCompanionAppBundleIdentifier);
 			else
-				dict[ManifestKeys.WKCompanionAppBundleIdentifier] = value;
+				dict [ManifestKeys.WKCompanionAppBundleIdentifier] = value;
 		}
 
 		public static string GetCLKComplicationPrincipalClass (this PDictionary dict)
@@ -633,7 +631,7 @@ namespace Xamarin.MacDev
 			if (string.IsNullOrEmpty (value))
 				dict.Remove (ManifestKeys.LSMinimumSystemVersion);
 			else
-				dict[ManifestKeys.LSMinimumSystemVersion] = value;
+				dict [ManifestKeys.LSMinimumSystemVersion] = value;
 		}
 
 		#endregion
@@ -651,7 +649,7 @@ namespace Xamarin.MacDev
 			if (string.IsNullOrEmpty (vpath))
 				dict.Remove (ManifestKeys.XSAppIconAssets);
 			else
-				dict[ManifestKeys.XSAppIconAssets] = vpath;
+				dict [ManifestKeys.XSAppIconAssets] = vpath;
 		}
 
 		public static string GetLaunchImageAssets (this PDictionary dict)
@@ -665,7 +663,7 @@ namespace Xamarin.MacDev
 			if (string.IsNullOrEmpty (vpath))
 				dict.Remove (ManifestKeys.XSLaunchImageAssets);
 			else
-				dict[ManifestKeys.XSLaunchImageAssets] = vpath;
+				dict [ManifestKeys.XSLaunchImageAssets] = vpath;
 		}
 
 		public static string GetAccentColorAssets (this PDictionary dict)
@@ -679,7 +677,7 @@ namespace Xamarin.MacDev
 			if (string.IsNullOrEmpty (vpath))
 				dict.Remove (ManifestKeys.XSAccentColorAssets);
 			else
-				dict[ManifestKeys.XSAccentColorAssets] = vpath;
+				dict [ManifestKeys.XSAccentColorAssets] = vpath;
 		}
 
 		public static string GetAccentColorName (this PDictionary dict)
@@ -693,7 +691,7 @@ namespace Xamarin.MacDev
 			if (string.IsNullOrEmpty (value))
 				dict.Remove (ManifestKeys.NSAccentColorName);
 			else
-				dict[ManifestKeys.NSAccentColorName] = value;
+				dict [ManifestKeys.NSAccentColorName] = value;
 		}
 
 		#endregion
@@ -721,7 +719,7 @@ namespace Xamarin.MacDev
 		public static void SetBooleanOrRemove (this PDictionary dict, string key, bool value)
 		{
 			if (value)
-				dict[key] = new PBoolean (true);
+				dict [key] = new PBoolean (true);
 			else
 				dict.Remove (key);
 		}
@@ -730,14 +728,14 @@ namespace Xamarin.MacDev
 		{
 			var str = dict.Get<PString> (key);
 			if (str == null || string.IsNullOrEmpty (str.Value))
-				dict[key] = new PString (value);
+				dict [key] = new PString (value);
 		}
 
 		public static void SetIfNotPresent (this PDictionary dict, string key, bool value)
 		{
 			var b = dict.Get<PBoolean> (key);
 			if (b == null)
-				dict[key] = new PBoolean (value);
+				dict [key] = new PBoolean (value);
 		}
 
 		/// <summary>
@@ -752,7 +750,7 @@ namespace Xamarin.MacDev
 					dict.ChangeKey (altItem, key);
 					altItem.Value = value;
 				} else {
-					dict[key] = new PString (value);
+					dict [key] = new PString (value);
 				}
 			} else {
 				if (altItem != null)
@@ -762,8 +760,7 @@ namespace Xamarin.MacDev
 		}
 	}
 
-	public static class ManifestKeys
-	{
+	public static class ManifestKeys {
 		public const string BuildMachineOSBuild = "BuildMachineOSBuild";
 
 		public const string CFBundleDevelopmentRegion = "CFBundleDevelopmentRegion";
@@ -841,7 +838,7 @@ namespace Xamarin.MacDev
 		public const string XSLaunchImageAssets = "XSLaunchImageAssets";
 		public const string XSAccentColorAssets = "XSAccentColorAssets";
 		public const string NSAccentColorName = "NSAccentColorName";
-		
+
 		public const string MapKitDirections = "MKDirectionsApplicationSupportedModes";
 
 		public const string NSAppTransportSecurity = "NSAppTransportSecurity";
@@ -849,12 +846,11 @@ namespace Xamarin.MacDev
 		public const string NSAllowsArbitraryLoads = "NSAllowsArbitraryLoads";
 		public const string NSTemporaryExceptionAllowsInsecureHTTPLoads = "NSTemporaryExceptionAllowsInsecureHTTPLoads";
 
-		public const string UTExportedTypeDeclaration = nameof(UTExportedTypeDeclaration);
-		public const string UTImportedTypeDeclaration = nameof(UTImportedTypeDeclaration);
+		public const string UTExportedTypeDeclaration = nameof (UTExportedTypeDeclaration);
+		public const string UTImportedTypeDeclaration = nameof (UTImportedTypeDeclaration);
 	}
 
-	public static class WatchComplicationSupportedFamiliesStrings
-	{
+	public static class WatchComplicationSupportedFamiliesStrings {
 		public const string ModularSmall = "CLKComplicationFamilyModularSmall";
 		public const string ModularLarge = "CLKComplicationFamilyModularLarge";
 		public const string UtilitarianSmall = "CLKComplicationFamilyUtilitarianSmall";
@@ -869,44 +865,41 @@ namespace Xamarin.MacDev
 	}
 
 	[Flags]
-	public enum WatchComplicationSupportedFamilies
-	{
-		None                 = 0,
-		ModularSmall         = 1 << 0,  // CLKComplicationFamilyModularSmall
-		ModularLarge         = 1 << 1,  // CLKComplicationFamilyModularLarge
-		UtilitarianSmall     = 1 << 2,  // CLKComplicationFamilyUtilitarianSmall
-		UtilitarianLarge     = 1 << 3,  // CLKComplicationFamilyUtilitarianLarge
-		CircularSmall        = 1 << 4,  // CLKComplicationFamilyCircularSmall
+	public enum WatchComplicationSupportedFamilies {
+		None = 0,
+		ModularSmall = 1 << 0,  // CLKComplicationFamilyModularSmall
+		ModularLarge = 1 << 1,  // CLKComplicationFamilyModularLarge
+		UtilitarianSmall = 1 << 2,  // CLKComplicationFamilyUtilitarianSmall
+		UtilitarianLarge = 1 << 3,  // CLKComplicationFamilyUtilitarianLarge
+		CircularSmall = 1 << 4,  // CLKComplicationFamilyCircularSmall
 		UtilitarianSmallFlat = 1 << 5,  // CLKComplicationFamilyUtilitarianSmallFlat
-		ExtraLarge           = 1 << 6,  // CLKComplicationFamilyExtraLarge
-		GraphicCorner        = 1 << 7,  // CLKComplicationFamilyGraphicCorner
-		GraphicBezel         = 1 << 8,  // CLKComplicationFamilyGraphicBezel
-		GraphicCircular      = 1 << 9,  // CLKComplicationFamilyGraphicCircular
-		GraphicRectangular   = 1 << 10, // CLKComplicationFamilyGraphicRectangular
+		ExtraLarge = 1 << 6,  // CLKComplicationFamilyExtraLarge
+		GraphicCorner = 1 << 7,  // CLKComplicationFamilyGraphicCorner
+		GraphicBezel = 1 << 8,  // CLKComplicationFamilyGraphicBezel
+		GraphicCircular = 1 << 9,  // CLKComplicationFamilyGraphicCircular
+		GraphicRectangular = 1 << 10, // CLKComplicationFamilyGraphicRectangular
 	}
 
-	public static class IPhoneOrientationStrings
-	{
-		public const string Up    = "UIInterfaceOrientationPortrait";
-		public const string Down  = "UIInterfaceOrientationPortraitUpsideDown";
-		public const string Left  = "UIInterfaceOrientationLandscapeLeft";
+	public static class IPhoneOrientationStrings {
+		public const string Up = "UIInterfaceOrientationPortrait";
+		public const string Down = "UIInterfaceOrientationPortraitUpsideDown";
+		public const string Left = "UIInterfaceOrientationLandscapeLeft";
 		public const string Right = "UIInterfaceOrientationLandscapeRight";
 	}
 
 	[Flags]
 	public enum IPhoneOrientation {
-		None           = 0,
-		Portrait       = 1 << 0,  // UIInterfaceOrientationPortrait
-		UpsideDown     = 1 << 1,  // UIInterfaceOrientationPortraitUpsideDown
-		LandscapeLeft  = 1 << 2,  // UIInterfaceOrientationLandscapeLeft
+		None = 0,
+		Portrait = 1 << 0,  // UIInterfaceOrientationPortrait
+		UpsideDown = 1 << 1,  // UIInterfaceOrientationPortraitUpsideDown
+		LandscapeLeft = 1 << 2,  // UIInterfaceOrientationLandscapeLeft
 		LandscapeRight = 1 << 3,  // UIInterfaceOrientationLandscapeRight
 
-		PortraitMask   = Portrait | UpsideDown,
-		LandscapeMask  = LandscapeRight | LandscapeLeft,
+		PortraitMask = Portrait | UpsideDown,
+		LandscapeMask = LandscapeRight | LandscapeLeft,
 	}
 
-	public enum IOSExtensionPoint
-	{
+	public enum IOSExtensionPoint {
 		Unknown,
 		//com.apple.widget-extension
 		Widget,

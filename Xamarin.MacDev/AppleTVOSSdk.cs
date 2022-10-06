@@ -1,4 +1,4 @@
-﻿// 
+// 
 // AppleTVOSSdk.cs
 //  
 // Authors: Michael Hutchinson <mhutch@xamarin.com>
@@ -25,10 +25,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-namespace Xamarin.MacDev
-{
-	public class AppleTVOSSdk : AppleSdk
-	{
+namespace Xamarin.MacDev {
+	public class AppleTVOSSdk : AppleSdk {
 		protected override string SimulatorPlatformName {
 			get {
 				return "AppleTVSimulator";

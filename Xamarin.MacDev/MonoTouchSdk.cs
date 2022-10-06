@@ -25,14 +25,12 @@
 // THE SOFTWARE.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Collections.Generic;
 
-namespace Xamarin.MacDev
-{
-	public class MonoTouchSdk
-	{
+namespace Xamarin.MacDev {
+	public class MonoTouchSdk {
 		static readonly AppleSdkVersion [] iOSSdkVersions = {
 			AppleSdkVersion.V6_0,
 			AppleSdkVersion.V6_1,
@@ -64,7 +62,7 @@ namespace Xamarin.MacDev
 			AppleSdkVersion.V10_0
 		};
 
-		public static readonly string[] DefaultLocations;
+		public static readonly string [] DefaultLocations;
 
 		// Note: We require Xamarin.iOS 10.4 because it is the first version to bundle mlaunch. Prior to that Xamarin Studio would ship it but that is no longer the case.
 		// (We also need 10.4 for the Versions.plist, although we have a handy fallback if that file is missing)
@@ -89,7 +87,7 @@ namespace Xamarin.MacDev
 			SdkDir = sdkDir;
 			Init ();
 		}
-		
+
 		public string SdkDir { get; private set; }
 
 		public string BinDir {
@@ -115,7 +113,7 @@ namespace Xamarin.MacDev
 			var array = new PArray ();
 
 			for (int i = 0; i < versions.Count; i++)
-				array.Add (new PString (versions[i].ToString ()));
+				array.Add (new PString (versions [i].ToString ()));
 
 			return array;
 		}
@@ -179,7 +177,7 @@ namespace Xamarin.MacDev
 
 			return versions;
 		}
-		
+
 		void Init ()
 		{
 			string currentLocation = IsInstalled ? mtouchPath : null;
@@ -239,7 +237,7 @@ namespace Xamarin.MacDev
 			if (Changed != null && currentLocation != mtouchPath)
 				Changed (this, EventArgs.Empty);
 		}
-		
+
 		AppleSdkVersion ReadVersion ()
 		{
 			var versionFile = Path.Combine (SdkDir, "Version");
@@ -338,22 +336,21 @@ namespace Xamarin.MacDev
 				PArray array;
 
 				if (knownVersions.TryGetValue (key, out array)) {
-					versions.TryGetValue("MacCatalystVersionMap", out PDictionary macCatalystVersionMap);
+					versions.TryGetValue ("MacCatalystVersionMap", out PDictionary macCatalystVersionMap);
 
-					foreach (var knownVersion in array.OfType<PString>())
-					{
+					foreach (var knownVersion in array.OfType<PString> ()) {
 						string versionValue = knownVersion.Value;
 
 						// For MacCatalyst we need to convert the versions to supported versions using the map
 						if (platform == PlatformName.MacOSX) {
 							if (macCatalystVersionMap != null) {
-								if (macCatalystVersionMap.TryGetValue(knownVersion, out PString value))
+								if (macCatalystVersionMap.TryGetValue (knownVersion, out PString value))
 									versionValue = value.Value;
 							}
 						}
 
-						if (AppleSdkVersion.TryParse(versionValue, out var version))
-							list.Add(version);
+						if (AppleSdkVersion.TryParse (versionValue, out var version))
+							list.Add (version);
 					}
 				}
 			}
@@ -381,7 +378,7 @@ namespace Xamarin.MacDev
 
 			return AppleSdkVersion.V8_0;
 		}
-		
+
 		public void CheckCaches ()
 		{
 			if (IsInstalled) {
@@ -392,7 +389,7 @@ namespace Xamarin.MacDev
 				} catch (IOException) {
 				}
 			}
-			
+
 			Init ();
 		}
 

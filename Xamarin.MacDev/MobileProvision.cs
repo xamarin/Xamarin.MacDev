@@ -25,13 +25,12 @@
 // THE SOFTWARE.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 
-namespace Xamarin.MacDev
-{
+namespace Xamarin.MacDev {
 	public enum MobileProvisionPlatform {
 		MacOS,
 		iOS,
@@ -40,15 +39,14 @@ namespace Xamarin.MacDev
 
 	[Flags]
 	public enum MobileProvisionDistributionType {
-		Any         = 0,
+		Any = 0,
 		Development = 1 << 0,
-		AdHoc       = 1 << 1,
-		InHouse     = 1 << 2,
-		AppStore    = 1 << 3,
+		AdHoc = 1 << 1,
+		InHouse = 1 << 2,
+		AppStore = 1 << 3,
 	}
 
-	public class MobileProvision
-	{
+	public class MobileProvision {
 		public const string AutomaticAppStore = "Automatic:AppStore";
 		public const string AutomaticInHouse = "Automatic:InHouse";
 		public const string AutomaticAdHoc = "Automatic:AdHoc";
@@ -57,15 +55,12 @@ namespace Xamarin.MacDev
 		static MobileProvision ()
 		{
 			if (Environment.OSVersion.Platform == PlatformID.MacOSX
-				|| Environment.OSVersion.Platform == PlatformID.Unix)
-			{
-				string personal = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-				ProfileDirectory = Path.Combine(personal, "Library", "MobileDevice", "Provisioning Profiles");
-			}
-			else
-			{
-				ProfileDirectory = Path.Combine(
-					Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+				|| Environment.OSVersion.Platform == PlatformID.Unix) {
+				string personal = Environment.GetFolderPath (Environment.SpecialFolder.Personal);
+				ProfileDirectory = Path.Combine (personal, "Library", "MobileDevice", "Provisioning Profiles");
+			} else {
+				ProfileDirectory = Path.Combine (
+					Environment.GetFolderPath (Environment.SpecialFolder.LocalApplicationData),
 					"Xamarin",
 					"iOS",
 					"Provisioning",
@@ -119,12 +114,12 @@ namespace Xamarin.MacDev
 			if (m.Platforms == null) {
 				switch (Path.GetExtension (fileName).ToLowerInvariant ()) {
 				case ".provisionprofile":
-					m.Platforms = new MobileProvisionPlatform[1];
-					m.Platforms[0] = MobileProvisionPlatform.MacOS;
+					m.Platforms = new MobileProvisionPlatform [1];
+					m.Platforms [0] = MobileProvisionPlatform.MacOS;
 					break;
 				case ".mobileprovision":
-					m.Platforms = new MobileProvisionPlatform[1];
-					m.Platforms[0] = MobileProvisionPlatform.iOS;
+					m.Platforms = new MobileProvisionPlatform [1];
+					m.Platforms [0] = MobileProvisionPlatform.iOS;
 					break;
 				}
 			}
@@ -132,7 +127,7 @@ namespace Xamarin.MacDev
 			return m;
 		}
 
-		public static MobileProvision LoadFromData (byte[] data)
+		public static MobileProvision LoadFromData (byte [] data)
 		{
 			var m = new MobileProvision ();
 			m.Load (PDictionary.FromBinaryXml (data));
@@ -151,7 +146,7 @@ namespace Xamarin.MacDev
 		public static IList<MobileProvision> GetAllInstalledProvisions (MobileProvisionPlatform platform, bool includeExpired)
 		{
 			if (!Directory.Exists (ProfileDirectory))
-				return new MobileProvision[0];
+				return new MobileProvision [0];
 
 			var uuids = new Dictionary<string, MobileProvision> ();
 			var list = new List<MobileProvision> ();
@@ -173,18 +168,18 @@ namespace Xamarin.MacDev
 			foreach (var file in Directory.EnumerateFiles (ProfileDirectory, pattern)) {
 				try {
 					var data = File.ReadAllBytes (file);
-					
+
 					var m = new MobileProvision ();
 					m.Load (PDictionary.FromBinaryXml (data));
 					m.Data = data;
-					
+
 					if (includeExpired || m.ExpirationDate > now) {
 						if (uuids.ContainsKey (m.Uuid)) {
 							// we always want the most recently created/updated provision
-							if (m.CreationDate > uuids[m.Uuid].CreationDate) {
-								int index = list.IndexOf (uuids[m.Uuid]);
-								uuids[m.Uuid] = m;
-								list[index] = m;
+							if (m.CreationDate > uuids [m.Uuid].CreationDate) {
+								int index = list.IndexOf (uuids [m.Uuid]);
+								uuids [m.Uuid] = m;
+								list [index] = m;
 							}
 						} else {
 							uuids.Add (m.Uuid, m);
@@ -197,7 +192,7 @@ namespace Xamarin.MacDev
 			}
 
 			//newest first
-			list.Sort ((x,y) => y.CreationDate.CompareTo (x.CreationDate));
+			list.Sort ((x, y) => y.CreationDate.CompareTo (x.CreationDate));
 
 			return list;
 		}
@@ -244,7 +239,7 @@ namespace Xamarin.MacDev
 				TeamIdentifierPrefix = GetStrings (prefixes);
 
 			PDate creationDate;
-			if (doc.TryGetValue ("CreationDate", out creationDate) && creationDate!= null)
+			if (doc.TryGetValue ("CreationDate", out creationDate) && creationDate != null)
 				CreationDate = creationDate.Value;
 
 			PArray devCerts;
@@ -314,13 +309,13 @@ namespace Xamarin.MacDev
 		public PDictionary Entitlements { get; private set; }
 		public DateTime ExpirationDate { get; private set; }
 		public string Name { get; private set; }
-		public MobileProvisionPlatform[] Platforms { get; private set; }
+		public MobileProvisionPlatform [] Platforms { get; private set; }
 		public IList<string> ProvisionedDevices { get; private set; }
 		public bool? ProvisionsAllDevices { get; private set; }
 		public int TimeToLive { get; private set; }
 		public string Uuid { get; private set; }
 		public int Version { get; private set; }
-		public byte[] Data { get; private set; }
+		public byte [] Data { get; private set; }
 
 		public bool MatchesBundleIdentifier (string bundleIdentifier)
 		{
@@ -342,7 +337,7 @@ namespace Xamarin.MacDev
 			if ((dot = id.IndexOf ('.')) != -1)
 				id = id.Substring (dot + 1);
 
-			if (id.Length > 0 && id[id.Length - 1] == '*') {
+			if (id.Length > 0 && id [id.Length - 1] == '*') {
 				// Note: this is a wildcard provisioning profile, which means we need to use a substring match
 				id = id.TrimEnd ('*');
 
@@ -362,7 +357,7 @@ namespace Xamarin.MacDev
 				throw new ArgumentNullException (nameof (certificate));
 
 			for (int i = 0; i < DeveloperCertificates.Count; i++) {
-				if (DeveloperCertificates[i].Thumbprint == certificate.Thumbprint)
+				if (DeveloperCertificates [i].Thumbprint == certificate.Thumbprint)
 					return true;
 			}
 

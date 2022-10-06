@@ -1,4 +1,4 @@
-﻿//
+//
 // HttpMessageHandler.cs
 //
 // Author: Vincent Dondain <vincent.dondain@xamarin.com>
@@ -8,8 +8,7 @@
 
 using System;
 
-namespace Xamarin.MacDev
-{
+namespace Xamarin.MacDev {
 	[Flags]
 	public enum HttpMessageHandler {
 		HttpClientHandler,

@@ -1,4 +1,4 @@
-﻿// 
+// 
 // ProcessArgumentBuilder.cs
 //  
 // Author:
@@ -25,16 +25,14 @@
 // THE SOFTWARE.
 
 using System;
-using System.Text;
 using System.Collections.Generic;
+using System.Text;
 
-namespace Xamarin.MacDev
-{
+namespace Xamarin.MacDev {
 	/// <summary>
 	/// Builds a process argument string.
 	/// </summary>
-	class ProcessArgumentBuilder
-	{
+	class ProcessArgumentBuilder {
 		StringBuilder sb = new StringBuilder ();
 
 		public string ProcessPath {
@@ -67,7 +65,7 @@ namespace Xamarin.MacDev
 		/// <summary>
 		/// Adds multiple arguments without escaping or quoting.
 		/// </summary>
-		public void Add (params string[] args)
+		public void Add (params string [] args)
 		{
 			foreach (var a in args)
 				Add (a);
@@ -76,7 +74,7 @@ namespace Xamarin.MacDev
 		/// <summary>
 		/// Adds a formatted argument, quoting and escaping as necessary.
 		/// </summary>
-		public void AddQuotedFormat (string argumentFormat, params object[] values)
+		public void AddQuotedFormat (string argumentFormat, params object [] values)
 		{
 			AddQuoted (string.Format (argumentFormat, values));
 		}
@@ -104,7 +102,7 @@ namespace Xamarin.MacDev
 		/// <summary>
 		/// Adds multiple arguments, quoting and escaping each as necessary.
 		/// </summary>
-		public void AddQuoted (params string[] args)
+		public void AddQuoted (params string [] args)
 		{
 			foreach (var a in args)
 				AddQuoted (a);
@@ -130,7 +128,7 @@ namespace Xamarin.MacDev
 		static void AppendEscaped (StringBuilder sb, string escapeChars, string s)
 		{
 			for (int i = 0; i < s.Length; i++) {
-				char c = s[i];
+				char c = s [i];
 				if (escapeChars.IndexOf (c) > -1)
 					sb.Append ('\\');
 				sb.Append (c);
@@ -144,14 +142,14 @@ namespace Xamarin.MacDev
 			int i = startIndex;
 
 			builder.Clear ();
-			switch (buf[startIndex]) {
+			switch (buf [startIndex]) {
 			case '\'': qchar = '\''; i++; break;
 			case '"': qchar = '"'; i++; break;
 			default: qchar = '\0'; break;
 			}
 
 			while (i < buf.Length) {
-				c = buf[i];
+				c = buf [i];
 
 				if (c == qchar && !escaped) {
 					// unescaped qchar means we've reached the end of the argument
@@ -197,7 +195,7 @@ namespace Xamarin.MacDev
 			return builder.ToString ();
 		}
 
-		static bool TryParse (string commandline, out string[] argv, out Exception ex)
+		static bool TryParse (string commandline, out string [] argv, out Exception ex)
 		{
 			var builder = new StringBuilder ();
 			var args = new List<string> ();
@@ -206,10 +204,10 @@ namespace Xamarin.MacDev
 			char c;
 
 			while (i < commandline.Length) {
-				c = commandline[i];
+				c = commandline [i];
 				if (c != ' ' && c != '\t') {
 					if ((argument = GetArgument (builder, commandline, i, out j, out ex)) == null) {
-						argv =  null;
+						argv = null;
 						return false;
 					}
 
@@ -226,16 +224,16 @@ namespace Xamarin.MacDev
 			return true;
 		}
 
-		public static bool TryParse (string commandline, out string[] argv)
+		public static bool TryParse (string commandline, out string [] argv)
 		{
 			Exception ex;
 
 			return TryParse (commandline, out argv, out ex);
 		}
 
-		public static string[] Parse (string commandline)
+		public static string [] Parse (string commandline)
 		{
-			string[] argv;
+			string [] argv;
 			Exception ex;
 
 			if (!TryParse (commandline, out argv, out ex))

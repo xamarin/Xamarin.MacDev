@@ -26,10 +26,8 @@
 using System;
 using System.IO;
 
-namespace Xamarin.MacDev
-{
-	public sealed class MonoMacSdk : IMonoMacSdk
-	{
+namespace Xamarin.MacDev {
+	public sealed class MonoMacSdk : IMonoMacSdk {
 		static DateTime lastExeWrite = DateTime.MinValue;
 
 		public string SdkDir {
@@ -55,7 +53,7 @@ namespace Xamarin.MacDev
 		void Init ()
 		{
 			IsInstalled = File.Exists (LegacyFrameworkAssembly);
-			
+
 			if (IsInstalled) {
 				lastExeWrite = File.GetLastWriteTimeUtc (LegacyFrameworkAssembly);
 				Version = ReadVersion ();
@@ -69,7 +67,7 @@ namespace Xamarin.MacDev
 				LoggingService.LogInfo ("MonoMac not installed. Can't find {0}.", LegacyFrameworkAssembly);
 			}
 		}
-		
+
 		AppleSdkVersion ReadVersion ()
 		{
 			var versionFile = Path.Combine (SdkDir, "Version");
@@ -80,13 +78,13 @@ namespace Xamarin.MacDev
 					LoggingService.LogError ("Failed to read MonoMac version", ex);
 				}
 			}
-			
+
 			return new AppleSdkVersion ();
 		}
-		
+
 		public bool IsInstalled { get; private set; }
 		public AppleSdkVersion Version { get; private set; }
-		
+
 		public void CheckCaches ()
 		{
 			DateTime lastWrite = DateTime.MinValue;
@@ -96,7 +94,7 @@ namespace Xamarin.MacDev
 					return;
 			} catch (IOException) {
 			}
-			
+
 			Init ();
 		}
 	}

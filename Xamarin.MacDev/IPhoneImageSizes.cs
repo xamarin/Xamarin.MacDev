@@ -24,10 +24,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-namespace Xamarin.MacDev
-{
-	public struct ImageSize
-	{
+namespace Xamarin.MacDev {
+	public struct ImageSize {
 		public static readonly ImageSize Empty = new ImageSize (0, 0);
 		public readonly int Width, Height;
 
@@ -71,8 +69,7 @@ namespace Xamarin.MacDev
 	}
 
 	// http://developer.apple.com/library/ios/#qa/qa1686/_index.html
-	public static class IPhoneImageSizes
-	{
+	public static class IPhoneImageSizes {
 		public static readonly ImageSize Icon = new ImageSize (57, 57);
 		public static readonly ImageSize RetinaIcon = new ImageSize (114, 114);
 
@@ -81,7 +78,7 @@ namespace Xamarin.MacDev
 
 		public static readonly ImageSize Spotlight = new ImageSize (29, 29);
 		public static readonly ImageSize RetinaSpotlight = new ImageSize (58, 58);
-		
+
 		public static readonly ImageSize Launch = new ImageSize (320, 480);
 		public static readonly ImageSize LaunchRetina = new ImageSize (640, 960);
 		public static readonly ImageSize LaunchRetinaTall = new ImageSize (640, 1136);
@@ -100,20 +97,19 @@ namespace Xamarin.MacDev
 		public static readonly ImageSize LaunchRetinaXSMaxLandscape = new ImageSize (2688, 1242);
 	}
 
-	public static class IPadImageSizes
-	{
+	public static class IPadImageSizes {
 		public static readonly ImageSize Icon = new ImageSize (72, 72);
 		public static readonly ImageSize RetinaIcon = new ImageSize (144, 144);
 		public static readonly ImageSize Spotlight = new ImageSize (50, 50);
 		public static readonly ImageSize RetinaSpotlight = new ImageSize (100, 100);
 		public static readonly ImageSize Settings = new ImageSize (29, 29);
 		public static readonly ImageSize RetinaSettings = new ImageSize (58, 58);
-		
+
 		public static readonly ImageSize LaunchPortrait = new ImageSize (768, 1004);
 		public static readonly ImageSize LaunchLandscape = new ImageSize (1024, 748);
 		public static readonly ImageSize LaunchPortraitFull = new ImageSize (768, 1024);
 		public static readonly ImageSize LaunchLandscapeFull = new ImageSize (1024, 768);
-		
+
 		public static readonly ImageSize LaunchRetinaPortrait = new ImageSize (1536, 2008);
 		public static readonly ImageSize LaunchRetinaLandscape = new ImageSize (2048, 1496);
 		public static readonly ImageSize LaunchRetinaPortraitFull = new ImageSize (1536, 2048);
@@ -123,8 +119,7 @@ namespace Xamarin.MacDev
 		public static readonly ImageSize ProLaunchRetinaLandscapeFull = new ImageSize (2732, 2048);
 	}
 
-	public static class IOS7ImageSizes
-	{
+	public static class IOS7ImageSizes {
 		public static readonly ImageSize IPhoneRetinaIcon = new ImageSize (120, 120);
 		public static readonly ImageSize IPadProRetinaIcon = new ImageSize (167, 167);
 		public static readonly ImageSize IPadRetinaIcon = new ImageSize (152, 152);
@@ -152,8 +147,7 @@ namespace Xamarin.MacDev
 		public static readonly ImageSize IPadProRetinaLaunchImageLandscape = new ImageSize (2732, 2048);
 	}
 
-	public static class AppleWatchImageSizes
-	{
+	public static class AppleWatchImageSizes {
 		public static readonly ImageSize NotificationCenter38mm = new ImageSize (44, 44);
 		public static readonly ImageSize NotificationCenter42mm = new ImageSize (55, 55);
 
@@ -170,14 +164,12 @@ namespace Xamarin.MacDev
 		public static readonly ImageSize LaunchImage42mm = new ImageSize (312, 390);
 	}
 
-	public static class AppleTVSizes
-	{
+	public static class AppleTVSizes {
 		public static readonly ImageSize FullScreenHD = new ImageSize (1920, 1080);
 		public static readonly ImageSize FullScreen4K = new ImageSize (3840, 2160);
 	}
 
-	public static class ITunesArtworkSizes
-	{
+	public static class ITunesArtworkSizes {
 		public static readonly ImageSize Standard = new ImageSize (512, 512);
 		public static readonly ImageSize Retina = new ImageSize (1024, 1024);
 	}

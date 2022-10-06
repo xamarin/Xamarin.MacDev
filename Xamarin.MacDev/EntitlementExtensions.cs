@@ -1,4 +1,4 @@
-﻿//
+//
 // EntitlementExtensions.cs
 //
 // Author: Jeffrey Stedfast <jeff@xamarin.com>
@@ -10,14 +10,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Xamarin.MacDev
-{
-	public static class EntitlementKeys
-	{
+namespace Xamarin.MacDev {
+	public static class EntitlementKeys {
 		public const string SystemExtension = "com.apple.developer.system-extension.install";
 		public const string UserManagement = "com.apple.developer.user-management";
 		public const string Fonts = "com.apple.developer.user-fonts";
-		public const string AccessWiFiInfo =  "com.apple.developer.networking.wifi-info";
+		public const string AccessWiFiInfo = "com.apple.developer.networking.wifi-info";
 		public const string SignInWithApple = "com.apple.developer.applesignin";
 		public const string ClassKit = "com.apple.developer.ClassKit-environment";
 		public const string DataProtection = "com.apple.developer.default-data-protection";
@@ -58,7 +56,7 @@ namespace Xamarin.MacDev
 		public const string Calendar = "com.apple.security.personal-information.calendars";
 		public const string PhotosLibrary = "com.apple.security.personal-information.photos-library";
 		public const string AppleEvents = "com.apple.security.automation.apple-events";
-		
+
 		public const string AppAttest = "com.apple.developer.devicecheck.appattest-environment";
 		public const string CommunicatesWithDrivers = "com.apple.developer.driverkit.communicates-with-drivers";
 		public const string CommunicationNotifications = "com.apple.developer.usernotifications.communication";
@@ -76,9 +74,9 @@ namespace Xamarin.MacDev
 		public const string TimeSensitiveNotifications = "com.apple.developer.usernotifications.time-sensitive";
 		public const string WeatherKit = "com.apple.developer.weatherkit";
 
-		static string[] allKeys;
+		static string [] allKeys;
 
-		public static string[] AllKeys {
+		public static string [] AllKeys {
 			get {
 				if (allKeys == null) {
 					allKeys = typeof (EntitlementKeys).GetFields (BindingFlags.Public | BindingFlags.Static).
@@ -92,8 +90,7 @@ namespace Xamarin.MacDev
 		}
 	}
 
-	public static class EntitlementExtensions
-	{
+	public static class EntitlementExtensions {
 		public static PArray GetApplePayMerchants (this PDictionary dict)
 		{
 			return dict.Get<PArray> (EntitlementKeys.InAppPayments);
@@ -104,7 +101,7 @@ namespace Xamarin.MacDev
 			if (value == null)
 				dict.Remove (EntitlementKeys.InAppPayments);
 			else
-				dict[EntitlementKeys.InAppPayments] = value;
+				dict [EntitlementKeys.InAppPayments] = value;
 		}
 
 		public static PArray GetApplicationGroups (this PDictionary dict)
@@ -117,7 +114,7 @@ namespace Xamarin.MacDev
 			if (value == null)
 				dict.Remove (EntitlementKeys.ApplicationGroups);
 			else
-				dict[EntitlementKeys.ApplicationGroups] = value;
+				dict [EntitlementKeys.ApplicationGroups] = value;
 		}
 
 		public static PArray GetAssociatedDomains (this PDictionary dict)
@@ -130,7 +127,7 @@ namespace Xamarin.MacDev
 			if (value == null)
 				dict.Remove (EntitlementKeys.AssociatedDomains);
 			else
-				dict[EntitlementKeys.AssociatedDomains] = value;
+				dict [EntitlementKeys.AssociatedDomains] = value;
 		}
 
 		public static PArray GetiCloudContainers (this PDictionary dict)
@@ -143,7 +140,7 @@ namespace Xamarin.MacDev
 			if (value == null)
 				dict.Remove (EntitlementKeys.iCloudContainers);
 			else
-				dict[EntitlementKeys.iCloudContainers] = value;
+				dict [EntitlementKeys.iCloudContainers] = value;
 		}
 
 		public static string GetUbiquityKeyValueStore (this PDictionary dict)
@@ -157,7 +154,7 @@ namespace Xamarin.MacDev
 			if (string.IsNullOrEmpty (value))
 				dict.Remove (EntitlementKeys.UbiquityKeyValueStore);
 			else
-				dict[EntitlementKeys.UbiquityKeyValueStore] = value;
+				dict [EntitlementKeys.UbiquityKeyValueStore] = value;
 		}
 
 		public static PArray GetiCloudServices (this PDictionary dict)
@@ -170,7 +167,7 @@ namespace Xamarin.MacDev
 			if (value == null)
 				dict.Remove (EntitlementKeys.iCloudServices);
 			else
-				dict[EntitlementKeys.iCloudServices] = value;
+				dict [EntitlementKeys.iCloudServices] = value;
 		}
 
 		public static PArray GetKeychainAccessGroups (this PDictionary dict)
@@ -183,7 +180,7 @@ namespace Xamarin.MacDev
 			if (value == null)
 				dict.Remove (EntitlementKeys.KeychainAccessGroups);
 			else
-				dict[EntitlementKeys.KeychainAccessGroups] = value;
+				dict [EntitlementKeys.KeychainAccessGroups] = value;
 		}
 
 		public static PArray GetPassBookIdentifiers (this PDictionary dict)
@@ -196,7 +193,7 @@ namespace Xamarin.MacDev
 			if (value == null)
 				dict.Remove (EntitlementKeys.PassBookIdentifiers);
 			else
-				dict[EntitlementKeys.PassBookIdentifiers] = value;
+				dict [EntitlementKeys.PassBookIdentifiers] = value;
 		}
 
 		public static List<string> GetEntitlementKeys (this PDictionary dict)
@@ -205,8 +202,8 @@ namespace Xamarin.MacDev
 			var keys = EntitlementKeys.AllKeys;
 
 			for (int i = 0; i < keys.Length; i++) {
-				if (dict.ContainsKey (keys[i]))
-					enabledEntitlements.Add (keys[i]);
+				if (dict.ContainsKey (keys [i]))
+					enabledEntitlements.Add (keys [i]);
 			}
 
 			return enabledEntitlements;
