@@ -27,6 +27,7 @@ namespace Xamarin.MacDev {
 
 		string monoMacAppLauncherPath;
 		PDictionary versions;
+		ExtendedVersion extended_version;
 
 		public bool IsInstalled { get; private set; }
 
@@ -302,6 +303,18 @@ namespace Xamarin.MacDev {
 
 		public bool SupportsSiriIntents {
 			get { return CheckSupportsFeature ("siri-intents"); }
+		}
+
+		public ExtendedVersion ExtendedVersion
+		{
+			get
+			{
+				if (extended_version == null)
+				{
+					extended_version = ExtendedVersion.Read(Path.Combine(FrameworkDirectory, "buildinfo"));
+				}
+				return extended_version;
+			}
 		}
 	}
 }

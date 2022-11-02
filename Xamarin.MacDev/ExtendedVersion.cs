@@ -33,7 +33,7 @@ namespace Xamarin.MacDev {
 				case "Branch":
 					rv.Branch = value;
 					break;
-				case "BuildDate":
+				case "Build date":
 					rv.BuildDate = value;
 					break;
 				}
