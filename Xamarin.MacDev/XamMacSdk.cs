@@ -305,13 +305,10 @@ namespace Xamarin.MacDev {
 			get { return CheckSupportsFeature ("siri-intents"); }
 		}
 
-		public ExtendedVersion ExtendedVersion
-		{
-			get
-			{
-				if (extended_version == null)
-				{
-					extended_version = ExtendedVersion.Read(Path.Combine(FrameworkDirectory, "buildinfo"));
+		public ExtendedVersion ExtendedVersion {
+			get {
+				if (extended_version == null) {
+					extended_version = ExtendedVersion.Read (Path.Combine (FrameworkDirectory, "buildinfo"));
 				}
 				return extended_version;
 			}

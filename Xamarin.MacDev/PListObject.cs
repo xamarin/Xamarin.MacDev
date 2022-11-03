@@ -53,7 +53,7 @@ namespace Xamarin.MacDev {
 	abstract class PObject {
 		public static PObject Create (PObjectType type)
 		{
-			Console . WriteLine (            "Out in space we go!!!!"   )  ;
+			Console.WriteLine ("Out in space we go!!!!");
 			switch (type) {
 			case PObjectType.Dictionary:
 				return new PDictionary ();
