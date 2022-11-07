@@ -385,6 +385,11 @@ namespace Xamarin.MacDev {
 			var index = OpenIndex (MobileProvision.ProfileDirectory, IndexFileName);
 			var latestCreationDate = DateTime.MinValue;
 
+			if (index.ProvisioningProfiles.Count == 0) {
+				failures?.Add ($"Could not find any provisioning profiles on this machine.");
+				return null;
+			}
+
 			foreach (var profile in index.ProvisioningProfiles) {
 				if (!profile.FileName.EndsWith (extension, StringComparison.Ordinal)) {
 					failures?.Add ($"The profile '{profile.Name}' is not applicable because its FileName ({profile.FileName}) does not end with '{extension}'.");
@@ -412,6 +417,11 @@ namespace Xamarin.MacDev {
 			var dictionary = new Dictionary<string, int> ();
 			var list = new List<MobileProvision> ();
 			var now = DateTime.UtcNow;
+
+			if (index.ProvisioningProfiles.Count == 0) {
+				failures?.Add ($"Could not find any provisioning profiles on this machine.");
+				return list;
+			}
 
 			// iterate over the profiles in reverse order so that we load newer profiles first (optimization for the 'unique' case)
 			for (int i = index.ProvisioningProfiles.Count - 1; i >= 0; i--) {
@@ -459,6 +469,11 @@ namespace Xamarin.MacDev {
 			var dictionary = new Dictionary<string, int> ();
 			var list = new List<MobileProvision> ();
 			var now = DateTime.UtcNow;
+
+			if (index.ProvisioningProfiles.Count == 0) {
+				failures?.Add ($"Could not find any provisioning profiles on this machine.");
+				return list;
+			}
 
 			// iterate over the profiles in reverse order so that we load newer profiles first (optimization for the 'unique' case)
 			for (int i = index.ProvisioningProfiles.Count - 1; i >= 0; i--) {
@@ -516,11 +531,18 @@ namespace Xamarin.MacDev {
 			if (developerCertificates == null)
 				throw new ArgumentNullException (nameof (developerCertificates));
 
+			if (index.ProvisioningProfiles.Count == 0) {
+				failures?.Add ($"Could not find any provisioning profiles on this machine.");
+				return list;
+			}
+
 			foreach (var certificate in developerCertificates)
 				thumbprints.Add (certificate.Thumbprint);
 
-			if (thumbprints.Count == 0)
+			if (thumbprints.Count == 0) {
+				failures?.Add ($"Could not find any provisioning profiles because there are no developer certificates.");
 				return list;
+			}
 
 			// iterate over the profiles in reverse order so that we load newer profiles first (optimization for the 'unique' case)
 			for (int i = index.ProvisioningProfiles.Count - 1; i >= 0; i--) {
@@ -584,6 +606,11 @@ namespace Xamarin.MacDev {
 
 			if (bundleIdentifier == null)
 				throw new ArgumentNullException (nameof (bundleIdentifier));
+
+			if (index.ProvisioningProfiles.Count == 0) {
+				failures?.Add ($"Could not find any provisioning profiles on this machine.");
+				return list;
+			}
 
 			// iterate over the profiles in reverse order so that we load newer profiles first (optimization for the 'unique' case)
 			for (int i = index.ProvisioningProfiles.Count - 1; i >= 0; i--) {
@@ -665,11 +692,18 @@ namespace Xamarin.MacDev {
 			if (developerCertificates == null)
 				throw new ArgumentNullException (nameof (developerCertificates));
 
+			if (index.ProvisioningProfiles.Count == 0) {
+				failures?.Add ($"Could not find any provisioning profiles on this machine.");
+				return list;
+			}
+
 			foreach (var certificate in developerCertificates)
 				thumbprints.Add (certificate.Thumbprint);
 
-			if (thumbprints.Count == 0)
+			if (thumbprints.Count == 0) {
+				failures?.Add ($"Could not find any provisioning profiles because there are no developer certificates.");
 				return list;
+			}
 
 			// iterate over the profiles in reverse order so that we load newer profiles first (optimization for the 'unique' case)
 			for (int i = index.ProvisioningProfiles.Count - 1; i >= 0; i--) {
