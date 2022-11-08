@@ -1,4 +1,4 @@
-﻿//
+//
 // MobileProvisionIndex.cs
 //
 // Author: Jeffrey Stedfast <jeff@xamarin.com>
@@ -199,7 +199,7 @@ namespace Xamarin.MacDev
 
             if (Environment.OSVersion.Platform == PlatformID.Unix || Environment.OSVersion.Platform == PlatformID.MacOSX)
             {
-                xamarinFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Library", "Xamarin");
+                xamarinFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Library", "Xamarin");
             }
             else
             {
