@@ -26,6 +26,9 @@
 #nullable enable
 
 using System;
+#if NET
+using System.Diagnostics.CodeAnalysis;
+#endif
 using System.Collections.Generic;
 using System.IO;
 
@@ -58,7 +61,7 @@ namespace Xamarin.MacDev {
 			}
 		}
 
-		public static bool TryGetMacOSVersion (string sdkDirectory, Version iOSVersion, out Version? macOSVersion, out ICollection<string> knowniOSVersions)
+		public static bool TryGetMacOSVersion (string sdkDirectory, Version iOSVersion, [NotNullWhen (true)] out Version? macOSVersion, out ICollection<string> knowniOSVersions)
 		{
 			macOSVersion = null;
 
@@ -68,7 +71,7 @@ namespace Xamarin.MacDev {
 			return Version.TryParse (strValue, out macOSVersion);
 		}
 
-		public static bool TryGetMacOSVersion (string sdkDirectory, string iOSVersion, out string macOSVersion, out ICollection<string> knowniOSVersions)
+		public static bool TryGetMacOSVersion (string sdkDirectory, string iOSVersion, [NotNullWhen (true)] out string? macOSVersion, out ICollection<string> knowniOSVersions)
 		{
 			LoadVersionMaps (sdkDirectory, out var map, out var _);
 
@@ -77,7 +80,7 @@ namespace Xamarin.MacDev {
 			return map.TryGetValue (iOSVersion.ToString (), out macOSVersion);
 		}
 
-		public static bool TryGetiOSVersion (string sdkDirectory, Version macOSVersion, out Version? iOSVersion, out ICollection<string> knownMacOSVersions)
+		public static bool TryGetiOSVersion (string sdkDirectory, Version macOSVersion, [NotNullWhen (true)] out Version? iOSVersion, out ICollection<string> knownMacOSVersions)
 		{
 			iOSVersion = null;
 
@@ -87,7 +90,7 @@ namespace Xamarin.MacDev {
 			return Version.TryParse (strValue, out iOSVersion);
 		}
 
-		public static bool TryGetiOSVersion (string sdkDirectory, string macOSVersion, out string iOSVersion, out ICollection<string> knownMacOSVersions)
+		public static bool TryGetiOSVersion (string sdkDirectory, string macOSVersion, [NotNullWhen (true)] out string? iOSVersion, out ICollection<string> knownMacOSVersions)
 		{
 			LoadVersionMaps (sdkDirectory, out var _, out var map);
 
@@ -97,3 +100,14 @@ namespace Xamarin.MacDev {
 		}
 	}
 }
+
+#if !NET
+namespace System.Diagnostics.CodeAnalysis {
+	// from: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Diagnostics/CodeAnalysis/NullableAttributes.cs
+	[AttributeUsage (AttributeTargets.Parameter, Inherited = false)]
+	internal sealed class NotNullWhenAttribute : Attribute {
+		public NotNullWhenAttribute (bool returnValue) => ReturnValue = returnValue;
+		public bool ReturnValue { get; }
+	}
+}
+#endif // !NET
