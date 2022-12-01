@@ -26,9 +26,7 @@
 #nullable enable
 
 using System;
-#if NET
 using System.Diagnostics.CodeAnalysis;
-#endif
 using System.Collections.Generic;
 using System.IO;
 
