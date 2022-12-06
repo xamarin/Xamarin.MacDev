@@ -30,9 +30,12 @@
 
 // Binary format reference: http://opensource.apple.com/source/CF/CF-635.21/CFBinaryPList.c
 
+#nullable enable
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -75,22 +78,22 @@ namespace Xamarin.MacDev {
 			}
 		}
 
-		public static IEnumerable<KeyValuePair<string, PObject>> ToEnumerable (PObject obj)
+		public static IEnumerable<KeyValuePair<string?, PObject>> ToEnumerable (PObject obj)
 		{
 			if (obj is PDictionary)
 				return (PDictionary) obj;
 
 			if (obj is PArray)
-				return ((PArray) obj).Select (k => new KeyValuePair<string, PObject> (k is IPValueObject ? ((IPValueObject) k).Value.ToString () : null, k));
+				return ((PArray) obj).Select (k => new KeyValuePair<string?, PObject> (k is IPValueObject ? ((IPValueObject) k).Value.ToString () : null, k));
 
-			return Enumerable.Empty<KeyValuePair<string, PObject>> ();
+			return Enumerable.Empty<KeyValuePair<string?, PObject>> ();
 		}
 
-		PObjectContainer parent;
-		public PObjectContainer Parent {
+		PObjectContainer? parent;
+		public PObjectContainer? Parent {
 			get { return parent; }
 			set {
-				if (parent != null && value != null)
+				if (parent is not null && value is not null)
 					throw new NotSupportedException ("Already parented.");
 
 				parent = value;
@@ -102,10 +105,9 @@ namespace Xamarin.MacDev {
 		public void Replace (PObject newObject)
 		{
 			var p = Parent;
-			if (p is PDictionary) {
-				var dict = (PDictionary) p;
+			if (p is PDictionary dict) {
 				var key = dict.GetKey (this);
-				if (key == null)
+				if (key is null)
 					return;
 				Remove ();
 				dict [key] = newObject;
@@ -115,10 +117,9 @@ namespace Xamarin.MacDev {
 			}
 		}
 
-		public string Key {
+		public string? Key {
 			get {
-				if (Parent is PDictionary) {
-					var dict = (PDictionary) Parent;
+				if (Parent is PDictionary dict) {
 					return dict.GetKey (this);
 				}
 				return null;
@@ -127,14 +128,12 @@ namespace Xamarin.MacDev {
 
 		public void Remove ()
 		{
-			if (Parent is PDictionary) {
-				var dict = (PDictionary) Parent;
-				dict.Remove (Key);
-			} else if (Parent is PArray) {
-				var arr = (PArray) Parent;
+			if (Parent is PDictionary dict) {
+				dict.Remove (Key!);
+			} else if (Parent is PArray arr) {
 				arr.Remove (this);
 			} else {
-				if (Parent == null)
+				if (Parent is null)
 					throw new InvalidOperationException ("Can't remove from null parent");
 				throw new InvalidOperationException ("Can't remove from parent " + Parent);
 			}
@@ -182,18 +181,18 @@ namespace Xamarin.MacDev {
 				return;
 
 			var handler = Changed;
-			if (handler != null)
+			if (handler is not null)
 				handler (this, e);
 
-			if (Parent != null)
-				Parent.OnCollectionChanged (Key, this);
+			if (Parent is not null)
+				Parent.OnCollectionChanged (Key!, this);
 		}
 
 		protected bool SuppressChangeEvents {
 			get; set;
 		}
 
-		public event EventHandler Changed;
+		public event EventHandler? Changed;
 
 		public byte [] ToByteArray (PropertyListFormat format)
 		{
@@ -226,11 +225,11 @@ namespace Xamarin.MacDev {
 
 		public static PObject FromNSObject (NSObject val)
 		{
-			if (val == null)
+			if (val is null)
 				return null;
 			
 			var dict = val as NSDictionary;
-			if (dict != null) {
+			if (dict is not null) {
 				var result = new PDictionary ();
 				foreach (var pair in dict) {
 					string k = pair.Key.ToString ();
@@ -240,23 +239,23 @@ namespace Xamarin.MacDev {
 			}
 			
 			var arr = val as NSArray;
-			if (arr != null) {
+			if (arr is not null) {
 				var result = new PArray ();
 				uint count = arr.Count;
 				for (uint i = 0; i < count; i++) {
 					var obj = Runtime.GetNSObject (arr.ValueAt (i));
-					if (obj != null)
+					if (obj is not null)
 						result.Add (FromNSObject (obj));
 				}
 				return result;
 			}
 			
 			var str = val as NSString;
-			if (str != null)
+			if (str is not null)
 				return str.ToString ();
 			
 			var nr = val as NSNumber;
-			if (nr != null) {
+			if (nr is not null) {
 				char t;
 				unsafe {
 					t = (char) *((byte*) MonoMac.ObjCRuntime.Messaging.IntPtr_objc_msgSend (val.Handle, selObjCType));
@@ -267,11 +266,11 @@ namespace Xamarin.MacDev {
 			}
 			
 			var date = val as NSDate;
-			if (date != null)
+			if (date is not null)
 				return (DateTime) date;
 			
 			var data = val as NSData;
-			if (data != null) {
+			if (data is not null) {
 				var bytes = new byte[data.Length];
 				System.Runtime.InteropServices.Marshal.Copy (data.Bytes, bytes, 0, (int)data.Length);
 				return bytes;
@@ -281,55 +280,50 @@ namespace Xamarin.MacDev {
 		}
 #endif
 
-		public static PObject FromByteArray (byte [] array, int startIndex, int length, out bool isBinary)
+		public static PObject? FromByteArray (byte [] array, int startIndex, int length, out bool isBinary)
 		{
 			var ctx = PropertyListFormat.Binary.StartReading (array, startIndex, length);
 
 			isBinary = true;
 
 			try {
-				if (ctx == null) {
+				if (ctx is null) {
 					isBinary = false;
 					ctx = PropertyListFormat.CreateReadContext (array, startIndex, length);
-					if (ctx == null)
+					if (ctx is null)
 						return null;
 				}
 
 				return ctx.ReadObject ();
 			} finally {
-				if (ctx != null)
-					ctx.Dispose ();
+				ctx?.Dispose ();
 			}
 		}
 
-		public static PObject FromByteArray (byte [] array, out bool isBinary)
+		public static PObject? FromByteArray (byte [] array, out bool isBinary)
 		{
 			return FromByteArray (array, 0, array.Length, out isBinary);
 		}
 
-		public static PObject FromString (string str)
+		public static PObject? FromString (string str)
 		{
 			var ctx = PropertyListFormat.CreateReadContext (Encoding.UTF8.GetBytes (str));
-			if (ctx == null)
-				return null;
-			return ctx.ReadObject ();
+			return ctx?.ReadObject ();
 		}
 
-		public static PObject FromStream (Stream stream)
+		public static PObject? FromStream (Stream stream)
 		{
 			var ctx = PropertyListFormat.CreateReadContext (stream);
-			if (ctx == null)
-				return null;
-			return ctx.ReadObject ();
+			return ctx?.ReadObject ();
 		}
 
-		public static PObject FromFile (string fileName)
+		public static PObject? FromFile (string fileName)
 		{
 			bool isBinary;
 			return FromFile (fileName, out isBinary);
 		}
 
-		public static Task<PObject> FromFileAsync (string fileName)
+		public static Task<PObject?> FromFileAsync (string fileName)
 		{
 			return Task.Run (() => {
 				bool isBinary;
@@ -337,7 +331,7 @@ namespace Xamarin.MacDev {
 			});
 		}
 
-		public static PObject FromFile (string fileName, out bool isBinary)
+		public static PObject? FromFile (string fileName, out bool isBinary)
 		{
 			using (var stream = new FileStream (fileName, FileMode.Open, FileAccess.Read)) {
 				var ctx = PropertyListFormat.Binary.StartReading (stream);
@@ -345,18 +339,17 @@ namespace Xamarin.MacDev {
 				isBinary = true;
 
 				try {
-					if (ctx == null) {
+					if (ctx is null) {
 						ctx = PropertyListFormat.CreateReadContext (stream);
 						isBinary = false;
 
-						if (ctx == null)
+						if (ctx is null)
 							throw new FormatException ("Unrecognized property list format.");
 					}
 
 					return ctx.ReadObject ();
 				} finally {
-					if (ctx != null)
-						ctx.Dispose ();
+					ctx?.Dispose ();
 				}
 			}
 		}
@@ -415,7 +408,7 @@ namespace Xamarin.MacDev {
 		{
 			using (var stream = new FileStream (fileName, FileMode.Open, FileAccess.Read)) {
 				using (var ctx = PropertyListFormat.CreateReadContext (stream)) {
-					if (ctx == null)
+					if (ctx is null)
 						return false;
 
 					return Reload (ctx);
@@ -425,7 +418,7 @@ namespace Xamarin.MacDev {
 
 		protected abstract bool Reload (PropertyListFormat.ReadWriteContext ctx);
 
-		protected void OnChildAdded (string key, PObject child)
+		protected void OnChildAdded (string? key, PObject child)
 		{
 			child.Parent = this;
 
@@ -437,14 +430,14 @@ namespace Xamarin.MacDev {
 			OnCollectionChanged (PObjectContainerAction.Changed, key, null, child);
 		}
 
-		protected void OnChildRemoved (string key, PObject child)
+		protected void OnChildRemoved (string? key, PObject child)
 		{
 			child.Parent = null;
 
 			OnCollectionChanged (PObjectContainerAction.Removed, key, child, null);
 		}
 
-		protected void OnChildReplaced (string key, PObject oldChild, PObject newChild)
+		protected void OnChildReplaced (string? key, PObject oldChild, PObject newChild)
 		{
 			oldChild.Parent = null;
 			newChild.Parent = this;
@@ -457,22 +450,22 @@ namespace Xamarin.MacDev {
 			OnCollectionChanged (PObjectContainerAction.Cleared, null, null, null);
 		}
 
-		protected void OnCollectionChanged (PObjectContainerAction action, string key, PObject oldChild, PObject newChild)
+		protected void OnCollectionChanged (PObjectContainerAction action, string? key, PObject? oldChild, PObject? newChild)
 		{
 			if (SuppressChangeEvents)
 				return;
 
 			var handler = CollectionChanged;
-			if (handler != null)
+			if (handler is not null)
 				handler (this, new PObjectContainerEventArgs (action, key, oldChild, newChild));
 
 			OnChanged (EventArgs.Empty);
 
-			if (Parent != null)
-				Parent.OnCollectionChanged (Key, this);
+			if (Parent is not null)
+				Parent.OnCollectionChanged (Key!, this);
 		}
 
-		public event EventHandler<PObjectContainerEventArgs> CollectionChanged;
+		public event EventHandler<PObjectContainerEventArgs>? CollectionChanged;
 	}
 
 #if !POBJECT_INTERNAL
@@ -499,22 +492,21 @@ namespace Xamarin.MacDev {
 		}
 
 		object IPValueObject.Value {
-			get { return Value; }
+			get { return Value!; }
 			set { Value = (T) value; }
 		}
 
 		protected PValueObject (T value)
 		{
+			// Make sure the compiler understands that all fields have been assigned at the end of the constructor
+			val = value;
+			// This calls the OnChanged virtual method.
 			Value = value;
-		}
-
-		protected PValueObject ()
-		{
 		}
 
 		public static implicit operator T (PValueObject<T> pObj)
 		{
-			return pObj != null ? pObj.Value : default (T);
+			return pObj is not null ? pObj.Value : default (T)!;
 		}
 
 		public abstract bool TrySetValueFromString (string text, IFormatProvider formatProvider);
@@ -523,30 +515,30 @@ namespace Xamarin.MacDev {
 #if !POBJECT_INTERNAL
 	public
 #endif
-	class PDictionary : PObjectContainer, IEnumerable<KeyValuePair<string, PObject>> {
+	class PDictionary : PObjectContainer, IEnumerable<KeyValuePair<string?, PObject>> {
 		static readonly byte [] BeginMarkerBytes = Encoding.ASCII.GetBytes ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 		static readonly byte [] EndMarkerBytes = Encoding.ASCII.GetBytes ("</plist>");
 
 		readonly Dictionary<string, PObject> dict;
 		readonly List<string> order;
 
-		public PObject this [string key] {
+		public PObject? this [string key] {
 			get {
-				PObject value;
-				if (dict.TryGetValue (key, out value))
+				if (dict.TryGetValue (key, out var value))
 					return value;
 				return null;
 			}
 			set {
-				PObject existing;
-				bool exists = dict.TryGetValue (key, out existing);
+				if (value is null)
+					throw new ArgumentNullException (nameof (value));
+				bool exists = dict.TryGetValue (key, out var existing);
 				if (!exists)
 					order.Add (key);
 
 				dict [key] = value;
 
 				if (exists)
-					OnChildReplaced (key, existing, value);
+					OnChildReplaced (key, existing!, value);
 				else
 					OnChildAdded (key, value);
 			}
@@ -573,10 +565,10 @@ namespace Xamarin.MacDev {
 		}
 
 		#region IEnumerable[KeyValuePair[System.String,PObject]] implementation
-		public IEnumerator<KeyValuePair<string, PObject>> GetEnumerator ()
+		public IEnumerator<KeyValuePair<string?, PObject>> GetEnumerator ()
 		{
 			foreach (var key in order)
-				yield return new KeyValuePair<string, PObject> (key, dict [key]);
+				yield return new KeyValuePair<string?, PObject> (key, dict [key]);
 		}
 		#endregion
 
@@ -598,7 +590,7 @@ namespace Xamarin.MacDev {
 			var clone = new PDictionary ();
 
 			foreach (var kv in this)
-				clone.Add (kv.Key, kv.Value.Clone ());
+				clone.Add (kv.Key!, kv.Value.Clone ());
 
 			return clone;
 		}
@@ -610,8 +602,7 @@ namespace Xamarin.MacDev {
 
 		public bool Remove (string key)
 		{
-			PObject obj;
-			if (dict.TryGetValue (key, out obj)) {
+			if (dict.TryGetValue (key, out var obj)) {
 				dict.Remove (key);
 				order.Remove (key);
 				OnChildRemoved (key, obj);
@@ -632,16 +623,16 @@ namespace Xamarin.MacDev {
 			return ChangeKey (obj, newKey, null);
 		}
 
-		public bool ChangeKey (PObject obj, string newKey, PObject newValue)
+		public bool ChangeKey (PObject obj, string newKey, PObject? newValue)
 		{
 			var oldkey = GetKey (obj);
-			if (oldkey == null || dict.ContainsKey (newKey))
+			if (oldkey is null || dict.ContainsKey (newKey))
 				return false;
 
 			dict.Remove (oldkey);
 			dict.Add (newKey, newValue ?? obj);
 			order [order.IndexOf (oldkey)] = newKey;
-			if (newValue != null) {
+			if (newValue is not null) {
 				OnChildRemoved (oldkey, obj);
 				OnChildAdded (newKey, newValue);
 			} else {
@@ -651,7 +642,7 @@ namespace Xamarin.MacDev {
 			return true;
 		}
 
-		public string GetKey (PObject obj)
+		public string? GetKey (PObject obj)
 		{
 			foreach (var pair in dict) {
 				if (pair.Value == obj)
@@ -660,28 +651,23 @@ namespace Xamarin.MacDev {
 			return null;
 		}
 
-		public T Get<T> (string key) where T : PObject
+		public T? Get<T> (string key) where T : PObject
 		{
-			PObject obj;
-
-			if (!dict.TryGetValue (key, out obj))
+			if (!dict.TryGetValue (key, out var obj))
 				return null;
 
 			return obj as T;
 		}
 
-		public bool TryGetValue<T> (string key, out T value) where T : PObject
+		public bool TryGetValue<T> (string key, [NotNullWhen (true)] out T? value) where T : PObject
 		{
-			PObject obj;
-
-			if (!dict.TryGetValue (key, out obj)) {
-				value = default (T);
-				return false;
+			if (dict.TryGetValue (key, out var obj) && obj is T tobj) {
+				value = tobj;
+				return true;
 			}
 
-			value = obj as T;
-
-			return value != null;
+			value = default (T);
+			return false;
 		}
 
 #if POBJECT_MONOMAC
@@ -717,17 +703,17 @@ namespace Xamarin.MacDev {
 			return -1;
 		}
 
-		public static new PDictionary FromByteArray (byte [] array, int startIndex, int length, out bool isBinary)
+		public static new PDictionary? FromByteArray (byte [] array, int startIndex, int length, out bool isBinary)
 		{
-			return (PDictionary) PObject.FromByteArray (array, startIndex, length, out isBinary);
+			return (PDictionary?) PObject.FromByteArray (array, startIndex, length, out isBinary);
 		}
 
-		public static new PDictionary FromByteArray (byte [] array, out bool isBinary)
+		public static new PDictionary? FromByteArray (byte [] array, out bool isBinary)
 		{
-			return (PDictionary) PObject.FromByteArray (array, out isBinary);
+			return (PDictionary?) PObject.FromByteArray (array, out isBinary);
 		}
 
-		public static PDictionary FromBinaryXml (byte [] array)
+		public static PDictionary? FromBinaryXml (byte [] array)
 		{
 			//find the raw plist within the .mobileprovision file
 			int start = IndexOf (array, 0, BeginMarkerBytes);
@@ -743,32 +729,29 @@ namespace Xamarin.MacDev {
 		}
 
 		[Obsolete ("Use FromFile")]
-		public static PDictionary Load (string fileName)
+		public static PDictionary? Load (string fileName)
 		{
-			bool isBinary;
-			return FromFile (fileName, out isBinary);
+			return FromFile (fileName, out _);
 		}
 
-		public new static PDictionary FromFile (string fileName)
+		public new static PDictionary? FromFile (string fileName)
 		{
-			bool isBinary;
-			return FromFile (fileName, out isBinary);
+			return FromFile (fileName, out _);
 		}
 
-		public new static Task<PDictionary> FromFileAsync (string fileName)
+		public new static Task<PDictionary?> FromFileAsync (string fileName)
 		{
 			return Task.Run (() => {
-				bool isBinary;
-				return FromFile (fileName, out isBinary);
+				return FromFile (fileName, out _);
 			});
 		}
 
-		public new static PDictionary FromFile (string fileName, out bool isBinary)
+		public new static PDictionary? FromFile (string fileName, out bool isBinary)
 		{
-			return (PDictionary) PObject.FromFile (fileName, out isBinary);
+			return (PDictionary?) PObject.FromFile (fileName, out isBinary);
 		}
 
-		public static PDictionary FromBinaryXml (string fileName)
+		public static PDictionary? FromBinaryXml (string fileName)
 		{
 			return FromBinaryXml (File.ReadAllBytes (fileName));
 		}
@@ -792,7 +775,7 @@ namespace Xamarin.MacDev {
 		{
 			var result = Get<PString> (key);
 
-			if (result == null)
+			if (result is null)
 				this [key] = new PString (value);
 			else
 				result.Value = value;
@@ -802,7 +785,7 @@ namespace Xamarin.MacDev {
 		{
 			var result = Get<PString> (key);
 
-			if (result == null)
+			if (result is null)
 				this [key] = result = new PString ("");
 
 			return result;
@@ -812,7 +795,7 @@ namespace Xamarin.MacDev {
 		{
 			var result = Get<PArray> (key);
 
-			if (result == null)
+			if (result is null)
 				this [key] = result = new PArray ();
 
 			return result;
@@ -1170,7 +1153,7 @@ namespace Xamarin.MacDev {
 	class PString : PValueObject<string> {
 		public PString (string value) : base (value)
 		{
-			if (value == null)
+			if (value is null)
 				throw new ArgumentNullException (nameof (value));
 		}
 
@@ -1206,31 +1189,31 @@ namespace Xamarin.MacDev {
 		public static readonly PropertyListFormat Json = new JsonFormat ();
 
 		// Stream must be seekable
-		public static ReadWriteContext CreateReadContext (Stream input)
+		public static ReadWriteContext? CreateReadContext (Stream input)
 		{
 			return Binary.StartReading (input) ?? Xml.StartReading (input);
 		}
 
-		public static ReadWriteContext CreateReadContext (byte [] array, int startIndex, int length)
+		public static ReadWriteContext? CreateReadContext (byte [] array, int startIndex, int length)
 		{
 			return CreateReadContext (new MemoryStream (array, startIndex, length));
 		}
 
-		public static ReadWriteContext CreateReadContext (byte [] array)
+		public static ReadWriteContext? CreateReadContext (byte [] array)
 		{
 			return CreateReadContext (new MemoryStream (array, 0, array.Length));
 		}
 
 		// returns null if the input is not of the correct format. Stream must be seekable
-		public abstract ReadWriteContext StartReading (Stream input);
+		public abstract ReadWriteContext? StartReading (Stream input);
 		public abstract ReadWriteContext StartWriting (Stream output);
 
-		public ReadWriteContext StartReading (byte [] array, int startIndex, int length)
+		public ReadWriteContext? StartReading (byte [] array, int startIndex, int length)
 		{
 			return StartReading (new MemoryStream (array, startIndex, length));
 		}
 
-		public ReadWriteContext StartReading (byte [] array)
+		public ReadWriteContext? StartReading (byte [] array)
 		{
 			return StartReading (new MemoryStream (array, 0, array.Length));
 		}
@@ -1240,7 +1223,7 @@ namespace Xamarin.MacDev {
 			static readonly byte [] BPLIST_MAGIC = { 0x62, 0x70, 0x6C, 0x69, 0x73, 0x74 };  // "bplist"
 			static readonly byte [] BPLIST_VERSION = { 0x30, 0x30 }; // "00"
 
-			public override ReadWriteContext StartReading (Stream input)
+			public override ReadWriteContext? StartReading (Stream input)
 			{
 				if (input.Length < BPLIST_MAGIC.Length + 2)
 					return null;
@@ -1281,10 +1264,11 @@ namespace Xamarin.MacDev {
 				//for writing
 				List<object> objectRefs;
 				int currentRef;
-				long [] offsets;
+				long []? offsets;
 
 				public Context (Stream stream, bool reading)
 				{
+					objectRefs = new List<object> ();
 					this.stream = stream;
 					if (reading) {
 						trailer = CFBinaryPlistTrailer.Read (this);
@@ -1388,7 +1372,7 @@ namespace Xamarin.MacDev {
 					var len = currentLength;
 					for (var i = 0; i < len; i++) {
 						var obj = ReadObjectByRef ();
-						if (obj != null)
+						if (obj is not null)
 							array.Add (obj);
 					}
 
@@ -1406,14 +1390,14 @@ namespace Xamarin.MacDev {
 					var len = currentLength;
 					var keys = new string [len];
 					for (var i = 0; i < len; i++)
-						keys [i] = ((PString) ReadObjectByRef ()).Value;
+						keys [i] = ((PString) ReadObjectByRef ()!).Value;
 					for (var i = 0; i < len; i++)
-						dict.Add (keys [i], ReadObjectByRef ());
+						dict.Add (keys [i], ReadObjectByRef ()!);
 
 					return true;
 				}
 
-				PObject ReadObjectByRef ()
+				PObject? ReadObjectByRef ()
 				{
 					// read index into offset table
 					var objRef = (long) ReadBigEndianUInteger (trailer.ObjectRefSize);
@@ -1482,7 +1466,7 @@ namespace Xamarin.MacDev {
 				#region Binary writing members
 				public override void WriteObject (PObject value)
 				{
-					if (offsets == null)
+					if (offsets is null)
 						InitOffsetTable (value);
 					base.WriteObject (value);
 				}
@@ -1563,7 +1547,7 @@ namespace Xamarin.MacDev {
 
 					//write key refs
 					foreach (var item in dict)
-						Write (GetObjRef (item.Key), trailer.ObjectRefSize);
+						Write (GetObjRef (item.Key!), trailer.ObjectRefSize);
 
 					//write value refs
 					foreach (var item in dict)
@@ -1573,7 +1557,7 @@ namespace Xamarin.MacDev {
 
 					//write keys and values
 					foreach (var item in dict)
-						WriteObject (item.Key);
+						WriteObject (item.Key!);
 					foreach (var item in dict)
 						WriteObject (item.Value);
 				}
@@ -1581,7 +1565,7 @@ namespace Xamarin.MacDev {
 				bool WriteObjectHead (PObject obj, PlistType type, int size = 0)
 				{
 					var id = GetObjRef (obj);
-					if (offsets [id] != 0) // if we've already been written, don't write us again
+					if (offsets! [id] != 0) // if we've already been written, don't write us again
 						return false;
 					offsets [id] = stream.Position;
 					switch (type) {
@@ -1668,8 +1652,6 @@ namespace Xamarin.MacDev {
 
 				void InitOffsetTable (PObject topLevel)
 				{
-					objectRefs = new List<object> ();
-
 					var count = 0;
 					MakeObjectRefs (topLevel, ref count);
 					trailer.ObjectRefSize = GetMinByteLength (count);
@@ -1678,7 +1660,7 @@ namespace Xamarin.MacDev {
 
 				void MakeObjectRefs (object obj, ref int count)
 				{
-					if (obj == null)
+					if (obj is null)
 						return;
 
 					if (ShouldDuplicate (obj) || !objectRefs.Any (val => PObjectEqualityComparer.Instance.Equals (val, obj))) {
@@ -1688,7 +1670,7 @@ namespace Xamarin.MacDev {
 
 					// for containers, also count their contents
 					var pobj = obj as PObject;
-					if (pobj != null) {
+					if (pobj is not null) {
 						switch (pobj.Type) {
 
 						case PObjectType.Array:
@@ -1697,7 +1679,7 @@ namespace Xamarin.MacDev {
 							break;
 						case PObjectType.Dictionary:
 							foreach (var child in (PDictionary) obj)
-								MakeObjectRefs (child.Key, ref count);
+								MakeObjectRefs (child.Key!, ref count);
 							foreach (var child in (PDictionary) obj)
 								MakeObjectRefs (child.Value, ref count);
 							break;
@@ -1708,7 +1690,7 @@ namespace Xamarin.MacDev {
 				static bool ShouldDuplicate (object obj)
 				{
 					var pobj = obj as PObject;
-					if (pobj == null)
+					if (pobj is null)
 						return false;
 
 					return pobj.Type == PObjectType.Boolean || pobj.Type == PObjectType.Array || pobj.Type == PObjectType.Dictionary ||
@@ -1744,7 +1726,7 @@ namespace Xamarin.MacDev {
 
 				public override void Dispose ()
 				{
-					if (offsets != null) {
+					if (offsets is not null) {
 						trailer.OffsetTableOffset = stream.Position;
 						trailer.OffsetEntrySize = GetMinByteLength (trailer.OffsetTableOffset);
 						foreach (var offset in offsets)
@@ -1765,30 +1747,30 @@ namespace Xamarin.MacDev {
 					{
 					}
 
-					public new bool Equals (object x, object y)
+					public new bool Equals (object? x, object? y)
 					{
 						var vx = x as IPValueObject;
 						var vy = y as IPValueObject;
 
-						if (vx == null && vy == null)
-							return EqualityComparer<object>.Default.Equals (x, y);
+						if (vx is null && vy is null)
+							return EqualityComparer<object?>.Default.Equals (x, y);
 
-						if (vx == null && x != null && vy.Value != null)
+						if (vx is null && x is not null && vy?.Value is not null)
 							return vy.Value.Equals (x);
 
-						if (vy == null && y != null && vx.Value != null)
+						if (vy is null && y is not null && vx?.Value is not null)
 							return vx.Value.Equals (y);
 
-						if (vx == null || vy == null)
+						if (vx is null || vy is null)
 							return false;
 
-						return vx.Value.Equals (vy.Value);
+						return vx.Value?.Equals (vy.Value) == true;
 					}
 
 					public int GetHashCode (object obj)
 					{
 						var valueObj = obj as IPValueObject;
-						if (valueObj != null)
+						if (valueObj is not null)
 							return valueObj.Value.GetHashCode ();
 						return obj.GetHashCode ();
 					}
@@ -1824,7 +1806,7 @@ namespace Xamarin.MacDev {
 						ctx.stream.WriteByte ((byte) OffsetEntrySize);
 						ctx.stream.WriteByte ((byte) ObjectRefSize);
 						//LAMESPEC: apple's comments say this is the number of entries in the offset table, but this really *is* number of objects??!?!
-						bytes = MakeBigEndian (BitConverter.GetBytes ((long) ctx.objectRefs.Count));
+						bytes = MakeBigEndian (BitConverter.GetBytes ((long) ctx.objectRefs!.Count));
 						ctx.stream.Write (bytes, 0, bytes.Length);
 						bytes = new byte [8]; //top level always at offset 0
 						ctx.stream.Write (bytes, 0, bytes.Length);
@@ -1844,7 +1826,7 @@ namespace Xamarin.MacDev {
 ";
 			static readonly Encoding outputEncoding = new UTF8Encoding (false, false);
 
-			public override ReadWriteContext StartReading (Stream input)
+			public override ReadWriteContext? StartReading (Stream input)
 			{
 				//allow DTD but not try to resolve it from web
 				var settings = new XmlReaderSettings () {
@@ -1853,7 +1835,7 @@ namespace Xamarin.MacDev {
 					XmlResolver = null,
 				};
 
-				XmlReader reader = null;
+				XmlReader? reader = null;
 				input.Seek (0, SeekOrigin.Begin);
 				try {
 					reader = XmlReader.Create (input, settings);
@@ -1864,7 +1846,7 @@ namespace Xamarin.MacDev {
 					Console.WriteLine ("Exception: {0}", ex);
 				}
 
-				if (reader == null || reader.EOF)
+				if (reader is null || reader.EOF)
 					return null;
 
 				return new Context (reader);
@@ -1881,11 +1863,11 @@ namespace Xamarin.MacDev {
 			class Context : ReadWriteContext {
 				const string DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssK";
 
-				XmlReader reader;
-				TextWriter writer;
+				XmlReader? reader;
+				TextWriter? writer;
 
 				int indentLevel;
-				string indentString;
+				string indentString = string.Empty;
 
 				public Context (XmlReader reader)
 				{
@@ -1895,16 +1877,15 @@ namespace Xamarin.MacDev {
 				public Context (TextWriter writer)
 				{
 					this.writer = writer;
-					indentString = "";
 				}
 
 				#region XML reading members
 				protected override void ReadObjectHead ()
 				{
 					try {
-						CurrentType = (PlistType) Enum.Parse (typeof (PlistType), reader.LocalName);
+						CurrentType = (PlistType) Enum.Parse (typeof (PlistType), reader!.LocalName);
 					} catch (Exception ex) {
-						throw new ArgumentException (string.Format ("Failed to parse PList data type: {0}", reader.LocalName), ex);
+						throw new ArgumentException (string.Format ("Failed to parse PList data type: {0}", reader?.LocalName), ex);
 					}
 				}
 
@@ -1915,33 +1896,33 @@ namespace Xamarin.MacDev {
 					// content so we have to move the reader manually, unlike integers which
 					// implicitly move to the next node because we parse the content.
 					var result = CurrentType == PlistType.@true;
-					reader.Read ();
+					reader!.Read ();
 					return result;
 				}
 
 				protected override long ReadInteger ()
 				{
-					return reader.ReadElementContentAsLong ();
+					return reader!.ReadElementContentAsLong ();
 				}
 
 				protected override double ReadReal ()
 				{
-					return reader.ReadElementContentAsDouble ();
+					return reader!.ReadElementContentAsDouble ();
 				}
 
 				protected override DateTime ReadDate ()
 				{
-					return DateTime.ParseExact (reader.ReadElementContentAsString (), DATETIME_FORMAT, CultureInfo.InvariantCulture).ToUniversalTime ();
+					return DateTime.ParseExact (reader!.ReadElementContentAsString (), DATETIME_FORMAT, CultureInfo.InvariantCulture).ToUniversalTime ();
 				}
 
 				protected override byte [] ReadData ()
 				{
-					return Convert.FromBase64String (reader.ReadElementContentAsString ());
+					return Convert.FromBase64String (reader!.ReadElementContentAsString ());
 				}
 
 				protected override string ReadString ()
 				{
-					return reader.ReadElementContentAsString ();
+					return reader!.ReadElementContentAsString ();
 				}
 
 				public override bool ReadArray (PArray array)
@@ -1951,7 +1932,7 @@ namespace Xamarin.MacDev {
 
 					array.Clear ();
 
-					if (reader.IsEmptyElement) {
+					if (reader!.IsEmptyElement) {
 						reader.Read ();
 						return true;
 					}
@@ -1968,7 +1949,7 @@ namespace Xamarin.MacDev {
 							ReadObjectHead ();
 
 							var val = ReadObject ();
-							if (val != null)
+							if (val is not null)
 								array.Add (val);
 						} else if (!reader.Read ()) {
 							break;
@@ -1990,7 +1971,7 @@ namespace Xamarin.MacDev {
 
 					dict.Clear ();
 
-					if (reader.IsEmptyElement) {
+					if (reader!.IsEmptyElement) {
 						reader.Read ();
 						return true;
 					}
@@ -2007,7 +1988,7 @@ namespace Xamarin.MacDev {
 
 						ReadObjectHead ();
 						var result = ReadObject ();
-						if (result != null) {
+						if (result is not null) {
 							// Keys are not required to be unique. The last entry wins.
 							dict [key] = result;
 						}
@@ -2099,7 +2080,7 @@ namespace Xamarin.MacDev {
 
 				void WriteLine (string value)
 				{
-					writer.Write (indentString);
+					writer!.Write (indentString);
 					writer.Write (value);
 					writer.Write ('\n');
 				}
@@ -2117,7 +2098,7 @@ namespace Xamarin.MacDev {
 
 				public override void Dispose ()
 				{
-					if (writer != null) {
+					if (writer is not null) {
 						writer.Write ("</plist>\n");
 						writer.Flush ();
 						writer.Dispose ();
@@ -2285,7 +2266,7 @@ namespace Xamarin.MacDev {
 					int i = 0;
 					foreach (var kv in dict) {
 						writer.Write (indentString);
-						Quote (kv.Key);
+						Quote (kv.Key!);
 						writer.Write (": ");
 						WriteObject (kv.Value);
 						if (++i < dict.Count)
@@ -2311,7 +2292,7 @@ namespace Xamarin.MacDev {
 
 				public override void Dispose ()
 				{
-					if (writer != null) {
+					if (writer is not null) {
 						writer.WriteLine ();
 						writer.Flush ();
 						writer.Dispose ();
@@ -2339,7 +2320,7 @@ namespace Xamarin.MacDev {
 			}
 
 			#region Reading members
-			public PObject ReadObject ()
+			public PObject? ReadObject ()
 			{
 				switch (CurrentType) {
 				case PlistType.@true:
@@ -2451,7 +2432,7 @@ namespace Xamarin.MacDev {
 	public
 #endif
 	sealed class PObjectContainerEventArgs : EventArgs {
-		internal PObjectContainerEventArgs (PObjectContainerAction action, string key, PObject oldItem, PObject newItem)
+		internal PObjectContainerEventArgs (PObjectContainerAction action, string? key, PObject? oldItem, PObject? newItem)
 		{
 			Action = action;
 			Key = key;
@@ -2463,15 +2444,15 @@ namespace Xamarin.MacDev {
 			get; private set;
 		}
 
-		public string Key {
+		public string? Key {
 			get; private set;
 		}
 
-		public PObject OldItem {
+		public PObject? OldItem {
 			get; private set;
 		}
 
-		public PObject NewItem {
+		public PObject? NewItem {
 			get; private set;
 		}
 	}
