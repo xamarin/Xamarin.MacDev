@@ -59,7 +59,7 @@ namespace Xamarin.MacDev
 			if (Environment.OSVersion.Platform == PlatformID.MacOSX
 				|| Environment.OSVersion.Platform == PlatformID.Unix)
 			{
-				string personal = Environment.GetFolderPath(Environment.SpecialFolder.UserPersonal);
+				string personal = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 				ProfileDirectory = Path.Combine(personal, "Library", "MobileDevice", "Provisioning Profiles");
 			}
 			else
