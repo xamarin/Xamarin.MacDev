@@ -47,14 +47,19 @@ namespace Xamarin.MacDev {
 
 			var fn = Path.Combine (sdkDirectory, "SDKSettings.plist");
 			var plist = PDictionary.FromFile (fn);
-			if (plist.TryGetValue ("VersionMap", out PDictionary versionMap)) {
-				if (versionMap.TryGetValue ("iOSMac_macOS", out PDictionary versionMapiOSToMac)) {
+#if NET
+			if (plist?.TryGetValue ("VersionMap", out PDictionary? versionMap) == true) {
+#else
+			// Earlier versions of the C# compiler aren't able to understand the syntax above, and complains about "Use of unassigned local variable 'versionMap'", so do something else here.
+			if (plist!.TryGetValue ("VersionMap", out PDictionary? versionMap)) {
+#endif
+				if (versionMap.TryGetValue ("iOSMac_macOS", out PDictionary? versionMapiOSToMac)) {
 					foreach (var kvp in versionMapiOSToMac)
-						map_ios_to_macos [kvp.Key] = ((PString) kvp.Value).Value;
+						map_ios_to_macos [kvp.Key!] = ((PString) kvp.Value).Value;
 				}
-				if (versionMap.TryGetValue ("macOS_iOSMac", out PDictionary versionMapMacToiOS)) {
+				if (versionMap.TryGetValue ("macOS_iOSMac", out PDictionary? versionMapMacToiOS)) {
 					foreach (var kvp in versionMapMacToiOS)
-						map_macos_to_ios [kvp.Key] = ((PString) kvp.Value).Value;
+						map_macos_to_ios [kvp.Key!] = ((PString) kvp.Value).Value;
 				}
 			}
 		}
