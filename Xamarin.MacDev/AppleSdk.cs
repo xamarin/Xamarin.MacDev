@@ -146,7 +146,7 @@ namespace Xamarin.MacDev {
 			settings.DeviceFamilies = props.GetUIDeviceFamily ("SUPPORTED_DEVICE_FAMILIES");
 			var plstPlist = Path.Combine (GetPlatformPath (isSim), PLATFORM_VERSION_PLIST);
 			settings.DTSDKBuild = GrabRootString (plstPlist, "ProductBuildVersion");
-			
+
 			return settings;
 		}
 
