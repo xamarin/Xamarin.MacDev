@@ -144,10 +144,8 @@ namespace Xamarin.MacDev {
 				settings.DTCompiler = gcc.Value;
 
 			settings.DeviceFamilies = props.GetUIDeviceFamily ("SUPPORTED_DEVICE_FAMILIES");
-			if (!isSim) {
-				var plstPlist = Path.Combine (GetPlatformPath (isSim), PLATFORM_VERSION_PLIST);
-				settings.DTSDKBuild = GrabRootString (plstPlist, "ProductBuildVersion");
-			}
+			var plstPlist = Path.Combine (GetPlatformPath (isSim), PLATFORM_VERSION_PLIST);
+			settings.DTSDKBuild = GrabRootString (plstPlist, "ProductBuildVersion");
 
 			return settings;
 		}
