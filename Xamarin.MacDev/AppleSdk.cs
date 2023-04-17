@@ -83,6 +83,21 @@ namespace Xamarin.MacDev {
 			return Path.Combine (DevicePlatform, "Developer/SDKs/" + DevicePlatformName + version + ".sdk");
 		}
 
+		public string GetSdkPath (bool isSimulator)
+		{
+			return GetSdkPath (string.Empty, isSimulator);
+		}
+
+		public string GetSdkPath ()
+		{
+			throw new InvalidOperationException ($"This AppleSdk requires specifying whether we're targeting the simulator or not, so please use the other overload taking a 'bool isSimulator' parameter.");
+		}
+
+		public string GetSdkPath (string version)
+		{
+			throw new InvalidOperationException ($"This AppleSdk requires specifying whether we're targeting the simulator or not, so please use the other overload taking a 'bool isSimulator' parameter.");
+		}
+
 		string GetSdkPlistFilename (string version, bool sim)
 		{
 			return Path.Combine (GetSdkPath (version, sim), "SDKSettings.plist");
