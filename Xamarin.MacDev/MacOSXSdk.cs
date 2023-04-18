@@ -152,6 +152,16 @@ namespace Xamarin.MacDev {
 			return GetSdkPath (version);
 		}
 
+		public string GetSdkPath (bool isSimulator)
+		{
+			return GetSdkPath (string.Empty);
+		}
+
+		public string GetSdkPath ()
+		{
+			return GetSdkPath (string.Empty);
+		}
+
 		string GetSdkPlistFilename (string version)
 		{
 			return Path.Combine (GetSdkPath (version), "SDKSettings.plist");

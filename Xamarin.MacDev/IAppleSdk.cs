@@ -7,6 +7,9 @@ namespace Xamarin.MacDev {
 		string DeveloperRoot { get; }
 		string GetPlatformPath (bool isSimulator);
 		string GetSdkPath (string version, bool isSimulator);
+		string GetSdkPath (bool isSimulator);
+		string GetSdkPath (string version);
+		string GetSdkPath ();
 		bool SdkIsInstalled (IAppleSdkVersion version, bool isSimulator);
 		bool TryParseSdkVersion (string value, out IAppleSdkVersion version);
 		IAppleSdkVersion GetClosestInstalledSdk (IAppleSdkVersion version, bool isSimulator);
