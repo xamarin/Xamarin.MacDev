@@ -103,14 +103,3 @@ namespace Xamarin.MacDev {
 		}
 	}
 }
-
-#if !NET
-namespace System.Diagnostics.CodeAnalysis {
-	// from: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Diagnostics/CodeAnalysis/NullableAttributes.cs
-	[AttributeUsage (AttributeTargets.Parameter, Inherited = false)]
-	internal sealed class NotNullWhenAttribute : Attribute {
-		public NotNullWhenAttribute (bool returnValue) => ReturnValue = returnValue;
-		public bool ReturnValue { get; }
-	}
-}
-#endif // !NET
