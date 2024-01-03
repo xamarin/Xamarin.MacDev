@@ -172,13 +172,12 @@ namespace Xamarin.MacDev {
 
 			var dict = PDictionary.FromFile (Path.Combine (DevicePlatform, "Info.plist"));
 			var infos = dict.Get<PDictionary> ("AdditionalInfo");
-			var systemVersionPlist = Path.Combine (DeveloperRoot, SYSTEM_VERSION_PLIST);
 
 			return (dtSettings = new AppleDTSettings {
 				DTPlatformVersion = infos.Get<PString> ("DTPlatformVersion").Value,
 				DTPlatformBuild = GrabRootString (Path.Combine (DevicePlatform, "version.plist"), "ProductBuildVersion"),
 				DTXcodeBuild = GrabRootString (VersionPlist, "ProductBuildVersion"),
-				BuildMachineOSBuild = GrabRootString (systemVersionPlist, "ProductBuildVersion"),
+				BuildMachineOSBuild = GrabRootString (SYSTEM_VERSION_PLIST, "ProductBuildVersion"),
 			});
 		}
 

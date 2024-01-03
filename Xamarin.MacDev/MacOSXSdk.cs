@@ -260,7 +260,10 @@ namespace Xamarin.MacDev {
 			else
 				settings.DTCompiler = gcc.Value;
 
-			settings.DTSDKBuild = GrabRootString (Path.Combine (DeveloperRoot, SYSTEM_VERSION_PLIST), "ProductBuildVersion");
+			var sdkPath = GetSdkPath (sdk.ToString ());
+			// Do not do 'Path.Combine (sdkPath, SYSTEM_VERSION_PLIST)', because SYSTEM_VERSION_PLIST starts with a slash,
+			// and thus Path.Combine wouldn't combine, just return SYSTEM_VERSION_PLIST.
+			settings.DTSDKBuild = GrabRootString (sdkPath + SYSTEM_VERSION_PLIST, "ProductBuildVersion");
 
 			return settings;
 		}
@@ -278,13 +281,12 @@ namespace Xamarin.MacDev {
 
 			var dict = PDictionary.FromFile (Path.Combine (DesktopPlatform, "Info.plist"));
 			var infos = dict.Get<PDictionary> ("AdditionalInfo");
-			var systemVersionPlist = Path.Combine (DeveloperRoot, SYSTEM_VERSION_PLIST);
 
 			return (dtSettings = new DTSettings {
 				DTPlatformVersion = infos.Get<PString> ("DTPlatformVersion").Value,
 				DTPlatformBuild = GrabRootString (Path.Combine (DesktopPlatform, "version.plist"), "ProductBuildVersion") ?? GrabRootString (VersionPlist, "ProductBuildVersion"),
 				DTXcodeBuild = GrabRootString (VersionPlist, "ProductBuildVersion"),
-				BuildMachineOSBuild = GrabRootString (systemVersionPlist, "ProductBuildVersion"),
+				BuildMachineOSBuild = GrabRootString (SYSTEM_VERSION_PLIST, "ProductBuildVersion"),
 			});
 		}
 
