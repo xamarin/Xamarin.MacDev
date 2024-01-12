@@ -2699,9 +2699,6 @@ namespace Xamarin.MacDev.SQLite {
 		}
 
 #if !USE_CSHARP_SQLITE && !USE_WP8_NATIVE_SQLITE
-		[DllImport ("sqlite3", EntryPoint = "sqlite3_open", CallingConvention = CallingConvention.Cdecl)]
-		public static extern Result Open ([MarshalAs (UnmanagedType.LPStr)] string filename, out IntPtr db);
-
 		[DllImport ("sqlite3", EntryPoint = "sqlite3_open_v2", CallingConvention = CallingConvention.Cdecl)]
 		public static extern Result Open ([MarshalAs (UnmanagedType.LPStr)] string filename, out IntPtr db, int flags, IntPtr zvfs);
 
