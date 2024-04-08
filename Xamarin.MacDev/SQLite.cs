@@ -94,7 +94,7 @@ namespace Xamarin.MacDev.SQLite {
 		private long _elapsedMilliseconds = 0;
 
 		private int _transactionDepth = 0;
-		private RandomNumberGenerator _rand = RandomNumberGenerator.Create();
+		private RandomNumberGenerator _rand = RandomNumberGenerator.Create ();
 
 		public Sqlite3DatabaseHandle Handle { get; private set; }
 		internal static readonly Sqlite3DatabaseHandle NullHandle = default (Sqlite3DatabaseHandle);
@@ -856,7 +856,7 @@ namespace Xamarin.MacDev.SQLite {
 		public string SaveTransactionPoint ()
 		{
 			int depth = Interlocked.Increment (ref _transactionDepth) - 1;
-			byte[] random = new byte[2];
+			byte [] random = new byte [2];
 
 			_rand.GetNonZeroBytes (random);
 			var sv = BitConverter.ToUInt16 (random, 0);
