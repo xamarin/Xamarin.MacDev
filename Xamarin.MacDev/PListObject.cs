@@ -1340,7 +1340,11 @@ namespace Xamarin.MacDev {
 				protected override byte [] ReadData ()
 				{
 					var bytes = new byte [currentLength];
+#if NET7_0_OR_GREATER
+					stream.ReadExactly (bytes, 0, currentLength);
+#else
 					stream.Read (bytes, 0, currentLength);
+#endif
 					return bytes;
 				}
 
@@ -1350,11 +1354,19 @@ namespace Xamarin.MacDev {
 					switch (CurrentType) {
 					case PlistType.@string: // ASCII
 						bytes = new byte [currentLength];
+#if NET7_0_OR_GREATER
+						stream.ReadExactly (bytes, 0, bytes.Length);
+#else
 						stream.Read (bytes, 0, bytes.Length);
+#endif
 						return Encoding.ASCII.GetString (bytes);
 					case PlistType.wideString: //CFBinaryPList.c: Unicode string...big-endian 2-byte uint16_t
 						bytes = new byte [currentLength * 2];
+#if NET7_0_OR_GREATER
+						stream.ReadExactly (bytes, 0, bytes.Length);
+#else
 						stream.Read (bytes, 0, bytes.Length);
+#endif
 						return Encoding.BigEndianUnicode.GetString (bytes);
 					}
 
@@ -1418,7 +1430,11 @@ namespace Xamarin.MacDev {
 				byte [] ReadBigEndianBytes (int count)
 				{
 					var bytes = new byte [count];
+#if NET7_0_OR_GREATER
+					stream.ReadExactly (bytes, 0, count);
+#else
 					stream.Read (bytes, 0, count);
+#endif
 					if (BitConverter.IsLittleEndian)
 						Array.Reverse (bytes);
 					return bytes;
