@@ -263,6 +263,24 @@ namespace Xamarin.MacDev {
 			}
 		}
 
+		/// <summary>
+		/// Determines the last write time in UTC for the specified directory path or the target directory if the path is a symbolic link.
+		/// Returns the latest date of both.
+		/// </summary>
+		static DateTime GetLastWriteTimeUtcForPath(string path)
+		{
+			var lastWriteTimeUtcForPath = Directory.GetLastWriteTimeUtc(path);
+			
+			// check symbolic link
+			var dirInfo = new DirectoryInfo(path);
+			if ( dirInfo.LinkTarget != null) {
+				var lastWriteTimeUtcforLink = Directory.GetLastWriteTimeUtc(dirInfo.LinkTarget);
+				return new DateTime(Math.Max(lastWriteTimeUtcForPath.Ticks, lastWriteTimeUtcforLink.Ticks));
+			}
+
+			return lastWriteTimeUtcForPath; 
+		}
+
 		public static MobileProvisionIndex CreateIndex (string profilesDir, string indexName)
 		{
 			var index = new MobileProvisionIndex ();
@@ -286,7 +304,7 @@ namespace Xamarin.MacDev {
 			}
 
 			index.Version = IndexVersion;
-			index.LastModified = Directory.GetLastWriteTimeUtc (profilesDir);
+			index.LastModified = GetLastWriteTimeUtcForPath (profilesDir);
 
 			index.Save (indexName);
 
@@ -301,7 +319,7 @@ namespace Xamarin.MacDev {
 				index = Load (indexName);
 
 				if (Directory.Exists (profilesDir)) {
-					var mtime = Directory.GetLastWriteTimeUtc (profilesDir);
+					var mtime = GetLastWriteTimeUtcForPath (profilesDir);
 
 					if (index.Version != IndexVersion) {
 						index = CreateIndex (profilesDir, indexName);
@@ -351,7 +369,7 @@ namespace Xamarin.MacDev {
 						foreach (var item in table)
 							index.ProvisioningProfiles.Remove (item.Value);
 
-						index.LastModified = Directory.GetLastWriteTimeUtc (profilesDir);
+						index.LastModified = GetLastWriteTimeUtcForPath (profilesDir);
 						index.Version = IndexVersion;
 
 						index.ProvisioningProfiles.Sort (CreationDateComparer);
