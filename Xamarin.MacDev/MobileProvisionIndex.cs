@@ -267,18 +267,18 @@ namespace Xamarin.MacDev {
 		/// Determines the last write time in UTC for the specified directory path or the target directory if the path is a symbolic link.
 		/// Returns the latest date of both.
 		/// </summary>
-		static DateTime GetLastWriteTimeUtcForPath(string path)
+		static DateTime GetLastWriteTimeUtcForPath (string path)
 		{
-			var lastWriteTimeUtcForPath = Directory.GetLastWriteTimeUtc(path);
-			
+			var lastWriteTimeUtcForPath = Directory.GetLastWriteTimeUtc (path);
+
 			// check symbolic link
-			var dirInfo = new DirectoryInfo(path);
-			if ( dirInfo.LinkTarget != null) {
-				var lastWriteTimeUtcforLink = Directory.GetLastWriteTimeUtc(dirInfo.LinkTarget);
-				return new DateTime(Math.Max(lastWriteTimeUtcForPath.Ticks, lastWriteTimeUtcforLink.Ticks));
+			var dirInfo = new DirectoryInfo (path);
+			if (dirInfo.LinkTarget is not null) {
+				var lastWriteTimeUtcforLink = Directory.GetLastWriteTimeUtc (dirInfo.LinkTarget);
+				return new DateTime (Math.Max (lastWriteTimeUtcForPath.Ticks, lastWriteTimeUtcforLink.Ticks));
 			}
 
-			return lastWriteTimeUtcForPath; 
+			return lastWriteTimeUtcForPath;
 		}
 
 		public static MobileProvisionIndex CreateIndex (string profilesDir, string indexName)
