@@ -64,13 +64,13 @@ namespace UnitTests {
 			using (var stream = GetType ().Assembly.GetManifestResourceStream ($"UnitTests.TestData.PropertyLists.{fileName}"))
 				plist = (PDictionary) PObject.FromStream (stream);
 
-			Assert.AreEqual (IntegerKeyValuePairs.Length, plist.Count);
+			Assert.That (plist.Count, Is.EqualTo (IntegerKeyValuePairs.Length));
 
 			foreach (var kvp in IntegerKeyValuePairs) {
-				Assert.IsTrue (plist.TryGetValue (kvp.Key, out PObject value));
-				Assert.IsInstanceOf<PNumber> (value);
+				Assert.That (plist.TryGetValue (kvp.Key, out PObject value), Is.True);
+				Assert.That (value, Is.InstanceOf<PNumber> ());
 				var integer = (PNumber) value;
-				Assert.AreEqual (kvp.Value, integer.Value);
+				Assert.That (integer.Value, Is.EqualTo (kvp.Value));
 			}
 		}
 
@@ -92,7 +92,7 @@ namespace UnitTests {
 				expected = Encoding.UTF8.GetString (buffer);
 			}
 
-			Assert.AreEqual (expected, output);
+			Assert.That (output, Is.EqualTo (expected));
 		}
 
 		[Test]
@@ -107,14 +107,14 @@ namespace UnitTests {
 
 			plist = (PDictionary) PObject.FromByteArray (output, 0, output.Length, out var isBinary);
 
-			Assert.IsTrue (isBinary);
-			Assert.AreEqual (IntegerKeyValuePairs.Length, plist.Count);
+			Assert.That (isBinary, Is.True);
+			Assert.That (plist.Count, Is.EqualTo (IntegerKeyValuePairs.Length));
 
 			foreach (var kvp in IntegerKeyValuePairs) {
-				Assert.IsTrue (plist.TryGetValue (kvp.Key, out PObject value));
-				Assert.IsInstanceOf<PNumber> (value);
+				Assert.That (plist.TryGetValue (kvp.Key, out PObject value), Is.True);
+				Assert.That (value, Is.InstanceOf<PNumber> ());
 				var integer = (PNumber) value;
-				Assert.AreEqual (kvp.Value, integer.Value);
+				Assert.That (integer.Value, Is.EqualTo (kvp.Value));
 			}
 		}
 	}
