@@ -33,10 +33,19 @@ using Xamarin.MacDev;
 namespace UnitTests {
 	[TestFixture]
 	public class TestMobileProvisionIndex {
+		static readonly string [] ProfileDirectories;
+
+		static TestMobileProvisionIndex ()
+		{
+			ProfileDirectories = new string [] {
+				Path.Combine (TestHelper.ProjectDir, "TestData", "Provisioning Profiles")
+			};
+		}
+
 		[Test]
 		public void TestCreateIndex ()
 		{
-			var index = MobileProvisionIndex.CreateIndex ("../../TestData/Provisioning Profiles", "profiles.index");
+			var index = MobileProvisionIndex.CreateIndex (ProfileDirectories, "profiles.index");
 
 			Assert.AreEqual (2, index.ProvisioningProfiles.Count);
 
@@ -77,7 +86,7 @@ namespace UnitTests {
 		[Test]
 		public void TestOpenIndex ()
 		{
-			var index = MobileProvisionIndex.OpenIndex ("../../TestData/Provisioning Profiles", "profiles.index");
+			var index = MobileProvisionIndex.OpenIndex (ProfileDirectories, "profiles.index");
 
 			Assert.AreEqual (2, index.ProvisioningProfiles.Count);
 

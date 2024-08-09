@@ -50,21 +50,27 @@ namespace Xamarin.MacDev {
 		public const string AutomaticAppStore = "Automatic:AppStore";
 		public const string AutomaticInHouse = "Automatic:InHouse";
 		public const string AutomaticAdHoc = "Automatic:AdHoc";
-		public static readonly string ProfileDirectory;
+		public static readonly string [] ProfileDirectories;
 
 		static MobileProvision ()
 		{
 			if (Environment.OSVersion.Platform == PlatformID.MacOSX
 				|| Environment.OSVersion.Platform == PlatformID.Unix) {
 				string personal = Environment.GetFolderPath (Environment.SpecialFolder.UserProfile);
-				ProfileDirectory = Path.Combine (personal, "Library", "MobileDevice", "Provisioning Profiles");
+
+				ProfileDirectories = new string [] {
+					// Xcode >= 16.x uses ~/Library/Developer/Xcode/UserData/Provisioning Profiles
+					Path.Combine (personal, "Library", "Developer", "Xcode", "UserData", "Provisioning Profiles"),
+
+					// Xcode < 16.x uses ~/Library/MobileDevice/Provisioning Profiles
+					Path.Combine (personal, "Library", "MobileDevice", "Provisioning Profiles"),
+				};
 			} else {
-				ProfileDirectory = Path.Combine (
-					Environment.GetFolderPath (Environment.SpecialFolder.LocalApplicationData),
-					"Xamarin",
-					"iOS",
-					"Provisioning",
-					"Profiles");
+				var appDataLocal = Environment.GetFolderPath (Environment.SpecialFolder.LocalApplicationData);
+
+				ProfileDirectories = new string [] {
+					Path.Combine (appDataLocal, "Xamarin", "iOS", "Provisioning", "Profiles")
+				};
 			}
 		}
 
@@ -145,9 +151,6 @@ namespace Xamarin.MacDev {
 		/// </summary>
 		public static IList<MobileProvision> GetAllInstalledProvisions (MobileProvisionPlatform platform, bool includeExpired)
 		{
-			if (!Directory.Exists (ProfileDirectory))
-				return new MobileProvision [0];
-
 			var uuids = new Dictionary<string, MobileProvision> ();
 			var list = new List<MobileProvision> ();
 			var now = DateTime.Now;
@@ -165,33 +168,38 @@ namespace Xamarin.MacDev {
 				throw new ArgumentOutOfRangeException (nameof (platform));
 			}
 
-			foreach (var file in Directory.EnumerateFiles (ProfileDirectory, pattern)) {
-				try {
-					var data = File.ReadAllBytes (file);
+			foreach (var profileDir in ProfileDirectories) {
+				if (!Directory.Exists (profileDir))
+					continue;
 
-					var m = new MobileProvision ();
-					m.Load (PDictionary.FromBinaryXml (data));
-					m.Data = data;
+				foreach (var file in Directory.EnumerateFiles (profileDir, pattern)) {
+					try {
+						var data = File.ReadAllBytes (file);
 
-					if (includeExpired || m.ExpirationDate > now) {
-						if (uuids.ContainsKey (m.Uuid)) {
-							// we always want the most recently created/updated provision
-							if (m.CreationDate > uuids [m.Uuid].CreationDate) {
-								int index = list.IndexOf (uuids [m.Uuid]);
-								uuids [m.Uuid] = m;
-								list [index] = m;
+						var m = new MobileProvision ();
+						m.Load (PDictionary.FromBinaryXml (data));
+						m.Data = data;
+
+						if (includeExpired || m.ExpirationDate > now) {
+							if (uuids.ContainsKey (m.Uuid)) {
+								// we always want the most recently created/updated provision
+								if (m.CreationDate > uuids [m.Uuid].CreationDate) {
+									int index = list.IndexOf (uuids [m.Uuid]);
+									uuids [m.Uuid] = m;
+									list [index] = m;
+								}
+							} else {
+								uuids.Add (m.Uuid, m);
+								list.Add (m);
 							}
-						} else {
-							uuids.Add (m.Uuid, m);
-							list.Add (m);
 						}
+					} catch (Exception ex) {
+						LoggingService.LogWarning ("Error reading " + platform + " provision file '" + file + "'", ex);
 					}
-				} catch (Exception ex) {
-					LoggingService.LogWarning ("Error reading " + platform + " provision file '" + file + "'", ex);
 				}
 			}
 
-			//newest first
+			// newest first
 			list.Sort ((x, y) => y.CreationDate.CompareTo (x.CreationDate));
 
 			return list;
