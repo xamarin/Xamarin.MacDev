@@ -33,7 +33,7 @@ using Xamarin.MacDev;
 namespace UnitTests {
 	[TestFixture]
 	public class TestMobileProvisionIndex {
-		static readonly string[] ProfileDirectories;
+		static readonly string [] ProfileDirectories;
 
 		static TestMobileProvisionIndex ()
 		{

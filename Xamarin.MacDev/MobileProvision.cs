@@ -50,7 +50,7 @@ namespace Xamarin.MacDev {
 		public const string AutomaticAppStore = "Automatic:AppStore";
 		public const string AutomaticInHouse = "Automatic:InHouse";
 		public const string AutomaticAdHoc = "Automatic:AdHoc";
-		public static readonly string[] ProfileDirectories;
+		public static readonly string [] ProfileDirectories;
 
 		static MobileProvision ()
 		{
@@ -58,7 +58,7 @@ namespace Xamarin.MacDev {
 				|| Environment.OSVersion.Platform == PlatformID.Unix) {
 				string personal = Environment.GetFolderPath (Environment.SpecialFolder.UserProfile);
 
-				ProfileDirectories = new string[] {
+				ProfileDirectories = new string [] {
 					// Xcode >= 16.x uses ~/Library/Developer/Xcode/UserData/Provisioning Profiles
 					Path.Combine (personal, "Library", "Developer", "Xcode", "UserData", "Provisioning Profiles"),
 

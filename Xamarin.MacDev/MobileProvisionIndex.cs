@@ -263,7 +263,7 @@ namespace Xamarin.MacDev {
 			}
 		}
 
-		public static MobileProvisionIndex CreateIndex (string[] profileDirs, string indexName)
+		public static MobileProvisionIndex CreateIndex (string [] profileDirs, string indexName)
 		{
 			var index = new MobileProvisionIndex ();
 			var mtime = DateTime.MinValue;
@@ -300,7 +300,7 @@ namespace Xamarin.MacDev {
 			return index;
 		}
 
-		static bool AnyProfileDirModifiedSince (string[] dirs, DateTime mtime)
+		static bool AnyProfileDirModifiedSince (string [] dirs, DateTime mtime)
 		{
 			foreach (var dir in dirs) {
 				if (!Directory.Exists (dir)) {
@@ -318,7 +318,7 @@ namespace Xamarin.MacDev {
 			return false;
 		}
 
-		public static MobileProvisionIndex OpenIndex (string[] profileDirs, string indexName)
+		public static MobileProvisionIndex OpenIndex (string [] profileDirs, string indexName)
 		{
 			MobileProvisionIndex index;
 

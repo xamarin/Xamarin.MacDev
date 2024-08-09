@@ -1,4 +1,4 @@
-﻿//
+//
 // TestHelper.cs
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
@@ -30,8 +30,7 @@ using NUnit.Framework;
 
 namespace UnitTests {
 	[SetUpFixture]
-	static class TestHelper
-	{
+	static class TestHelper {
 		public static readonly string ProjectDir;
 
 		static TestHelper ()
@@ -44,7 +43,7 @@ namespace UnitTests {
 				codeBase = codeBase.Substring ("file://".Length);
 
 			if (Path.DirectorySeparatorChar == '\\') {
-				if (codeBase[0] == '/')
+				if (codeBase [0] == '/')
 					codeBase = codeBase.Substring (1);
 
 				codeBase = codeBase.Replace ('/', '\\');
