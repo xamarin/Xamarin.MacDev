@@ -57,7 +57,16 @@ namespace Xamarin.MacDev {
 			if (Environment.OSVersion.Platform == PlatformID.MacOSX
 				|| Environment.OSVersion.Platform == PlatformID.Unix) {
 				string personal = Environment.GetFolderPath (Environment.SpecialFolder.UserProfile);
-				ProfileDirectory = Path.Combine (personal, "Library", "MobileDevice", "Provisioning Profiles");
+
+				// Xcode >= 16.x uses ~/Library/Developer/Xcode/UserData/Provisioning Profiles
+				string profileDir = Path.Combine (personal, "Library", "Developer", "Xcode", "UserData", "Provisioning Profiles");
+
+				if (!Directory.Exists (profileDir)) {
+					// Xcode < 16.x uses ~/Library/MobileDevice/Provisioning Profiles
+					profileDir = Path.Combine (personal, "Library", "MobileDevice", "Provisioning Profiles");
+				}
+
+				ProfileDirectory = profileDir;
 			} else {
 				ProfileDirectory = Path.Combine (
 					Environment.GetFolderPath (Environment.SpecialFolder.LocalApplicationData),
