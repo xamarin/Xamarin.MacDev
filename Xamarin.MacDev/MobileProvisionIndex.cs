@@ -263,102 +263,72 @@ namespace Xamarin.MacDev {
 			}
 		}
 
-		public static MobileProvisionIndex CreateIndex (string profilesDir, string indexName)
+		public static MobileProvisionIndex CreateIndex (string[] profileDirs, string indexName)
 		{
 			var index = new MobileProvisionIndex ();
+			var mtime = DateTime.MinValue;
 
-			if (Directory.Exists (profilesDir)) {
-				foreach (var fileName in Directory.EnumerateFiles (profilesDir)) {
-					if (!fileName.EndsWith (".mobileprovision", StringComparison.Ordinal) && !fileName.EndsWith (".provisionprofile", StringComparison.Ordinal))
-						continue;
+			foreach (var profileDir in profileDirs) {
+				if (Directory.Exists (profileDir)) {
+					var mtime2 = Directory.GetLastWriteTimeUtc (profileDir);
 
-					try {
-						var profile = ProvisioningProfile.Load (fileName);
-						index.ProvisioningProfiles.Add (profile);
-					} catch (Exception ex) {
-						LoggingService.LogWarning ("Error reading provisioning profile '{0}': {1}", fileName, ex);
+					if (mtime2 > mtime)
+						mtime = mtime2;
+
+					foreach (var fileName in Directory.EnumerateFiles (profileDir)) {
+						if (!fileName.EndsWith (".mobileprovision", StringComparison.Ordinal) && !fileName.EndsWith (".provisionprofile", StringComparison.Ordinal))
+							continue;
+
+						try {
+							var profile = ProvisioningProfile.Load (fileName);
+							index.ProvisioningProfiles.Add (profile);
+						} catch (Exception ex) {
+							LoggingService.LogWarning ("Error reading provisioning profile '{0}': {1}", fileName, ex);
+						}
 					}
+				} else {
+					Directory.CreateDirectory (profileDir);
 				}
-
-				index.ProvisioningProfiles.Sort (CreationDateComparer);
-			} else {
-				Directory.CreateDirectory (profilesDir);
 			}
 
+			index.ProvisioningProfiles.Sort (CreationDateComparer);
 			index.Version = IndexVersion;
-			index.LastModified = Directory.GetLastWriteTimeUtc (profilesDir);
+			index.LastModified = mtime;
 
 			index.Save (indexName);
 
 			return index;
 		}
 
-		public static MobileProvisionIndex OpenIndex (string profilesDir, string indexName)
+		static bool AnyProfileDirModifiedSince (string[] dirs, DateTime mtime)
+		{
+			foreach (var dir in dirs) {
+				if (!Directory.Exists (dir)) {
+					// Note: When creating the index, we make sure to create each profile dir which means if any
+					// are deleted, then we likely need to reindex.
+					return true;
+				}
+
+				var mtime2 = Directory.GetLastWriteTimeUtc (dir);
+
+				if (mtime2 > mtime)
+					return true;
+			}
+
+			return false;
+		}
+
+		public static MobileProvisionIndex OpenIndex (string[] profileDirs, string indexName)
 		{
 			MobileProvisionIndex index;
 
 			try {
 				index = Load (indexName);
 
-				if (Directory.Exists (profilesDir)) {
-					var mtime = Directory.GetLastWriteTimeUtc (profilesDir);
+				if (index.Version != IndexVersion || AnyProfileDirModifiedSince (profileDirs, index.LastModified))
+					index = CreateIndex (profileDirs, indexName);
 
-					if (index.Version != IndexVersion) {
-						index = CreateIndex (profilesDir, indexName);
-					} else if (index.LastModified < mtime) {
-						var table = new Dictionary<string, ProvisioningProfile> ();
-
-						foreach (var profile in index.ProvisioningProfiles)
-							table [profile.FileName] = profile;
-
-						foreach (var fileName in Directory.EnumerateFiles (profilesDir)) {
-							if (!fileName.EndsWith (".mobileprovision", StringComparison.Ordinal) && !fileName.EndsWith (".provisionprofile", StringComparison.Ordinal))
-								continue;
-
-							ProvisioningProfile profile;
-							bool unknown = false;
-
-							if (table.TryGetValue (Path.GetFileName (fileName), out profile)) {
-								// remove from our lookup table (any leftover key/valie pairs will be used to determine deleted files)
-								table.Remove (Path.GetFileName (fileName));
-
-								// check if the file has changed since our last resync
-								mtime = File.GetLastWriteTimeUtc (fileName);
-
-								if (profile.LastModified < mtime) {
-									// remove the old record
-									index.ProvisioningProfiles.Remove (profile);
-
-									// treat this provisioning profile as if it is unknown
-									unknown = true;
-								}
-							} else {
-								unknown = true;
-							}
-
-							if (unknown) {
-								// unknown provisioning profile; add it to our ProvisioningProfiles array
-								try {
-									profile = ProvisioningProfile.Load (fileName);
-									index.ProvisioningProfiles.Add (profile);
-								} catch (Exception ex) {
-									LoggingService.LogWarning ("Error reading provisioning profile '{0}': {1}", fileName, ex);
-								}
-							}
-						}
-
-						// remove provisioning profiles which have been deleted from the file system
-						foreach (var item in table)
-							index.ProvisioningProfiles.Remove (item.Value);
-
-						index.LastModified = Directory.GetLastWriteTimeUtc (profilesDir);
-						index.Version = IndexVersion;
-
-						index.ProvisioningProfiles.Sort (CreationDateComparer);
-
-						index.Save (indexName);
-					}
-				} else {
+				if (index.ProvisioningProfiles.Count == 0) {
 					try {
 						File.Delete (indexName);
 					} catch (Exception ex) {
@@ -368,7 +338,7 @@ namespace Xamarin.MacDev {
 					index.ProvisioningProfiles.Clear ();
 				}
 			} catch {
-				index = CreateIndex (profilesDir, indexName);
+				index = CreateIndex (profileDirs, indexName);
 			}
 
 			return index;
@@ -377,12 +347,15 @@ namespace Xamarin.MacDev {
 		public static MobileProvision GetMobileProvision (MobileProvisionPlatform platform, string name, List<string> failures = null)
 		{
 			var extension = MobileProvision.GetFileExtension (platform);
-			var path = Path.Combine (MobileProvision.ProfileDirectory, name + extension);
 
-			if (File.Exists (path))
-				return MobileProvision.LoadFromFile (path);
+			foreach (var profileDir in MobileProvision.ProfileDirectories) {
+				var path = Path.Combine (profileDir, name + extension);
 
-			var index = OpenIndex (MobileProvision.ProfileDirectory, IndexFileName);
+				if (File.Exists (path))
+					return MobileProvision.LoadFromFile (path);
+			}
+
+			var index = OpenIndex (MobileProvision.ProfileDirectories, IndexFileName);
 			var latestCreationDate = DateTime.MinValue;
 
 			if (index.ProvisioningProfiles.Count == 0) {
@@ -402,7 +375,7 @@ namespace Xamarin.MacDev {
 				}
 
 				if (name == profile.Name || name == profile.Uuid)
-					return MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
+					return MobileProvision.LoadFromFile (profile.FileName);
 
 				failures?.Add ($"The profile '{profile.Name}' is not applicable because its Name and Uuid ({profile.Uuid}) do not match '{name}'.");
 			}
@@ -412,7 +385,7 @@ namespace Xamarin.MacDev {
 
 		public static IList<MobileProvision> GetMobileProvisions (MobileProvisionPlatform platform, bool includeExpired = false, bool unique = false, List<string> failures = null)
 		{
-			var index = OpenIndex (MobileProvision.ProfileDirectory, IndexFileName);
+			var index = OpenIndex (MobileProvision.ProfileDirectories, IndexFileName);
 			var extension = MobileProvision.GetFileExtension (platform);
 			var dictionary = new Dictionary<string, int> ();
 			var list = new List<MobileProvision> ();
@@ -447,14 +420,14 @@ namespace Xamarin.MacDev {
 
 					if (dictionary.TryGetValue (profile.Name, out idx)) {
 						if (profile.CreationDate > list [idx].CreationDate)
-							list [idx] = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
+							list [idx] = MobileProvision.LoadFromFile (profile.FileName);
 					} else {
-						var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
+						var provision = MobileProvision.LoadFromFile (profile.FileName);
 						dictionary.Add (profile.Name, list.Count);
 						list.Add (provision);
 					}
 				} else {
-					var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
+					var provision = MobileProvision.LoadFromFile (profile.FileName);
 					list.Add (provision);
 				}
 			}
@@ -464,7 +437,7 @@ namespace Xamarin.MacDev {
 
 		public static IList<MobileProvision> GetMobileProvisions (MobileProvisionPlatform platform, MobileProvisionDistributionType type, bool includeExpired = false, bool unique = false, List<string> failures = null)
 		{
-			var index = OpenIndex (MobileProvision.ProfileDirectory, IndexFileName);
+			var index = OpenIndex (MobileProvision.ProfileDirectories, IndexFileName);
 			var extension = MobileProvision.GetFileExtension (platform);
 			var dictionary = new Dictionary<string, int> ();
 			var list = new List<MobileProvision> ();
@@ -504,14 +477,14 @@ namespace Xamarin.MacDev {
 
 					if (dictionary.TryGetValue (profile.Name, out idx)) {
 						if (profile.CreationDate > list [idx].CreationDate)
-							list [idx] = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
+							list [idx] = MobileProvision.LoadFromFile (profile.FileName);
 					} else {
-						var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
+						var provision = MobileProvision.LoadFromFile (profile.FileName);
 						dictionary.Add (profile.Name, list.Count);
 						list.Add (provision);
 					}
 				} else {
-					var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
+					var provision = MobileProvision.LoadFromFile (profile.FileName);
 					list.Add (provision);
 				}
 			}
@@ -521,7 +494,7 @@ namespace Xamarin.MacDev {
 
 		public static IList<MobileProvision> GetMobileProvisions (MobileProvisionPlatform platform, MobileProvisionDistributionType type, IList<X509Certificate2> developerCertificates, bool includeExpired = false, bool unique = false, List<string> failures = null)
 		{
-			var index = OpenIndex (MobileProvision.ProfileDirectory, IndexFileName);
+			var index = OpenIndex (MobileProvision.ProfileDirectories, IndexFileName);
 			var extension = MobileProvision.GetFileExtension (platform);
 			var dictionary = new Dictionary<string, int> ();
 			var thumbprints = new HashSet<string> ();
@@ -579,14 +552,14 @@ namespace Xamarin.MacDev {
 
 						if (dictionary.TryGetValue (profile.Name, out idx)) {
 							if (profile.CreationDate > list [idx].CreationDate)
-								list [idx] = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
+								list [idx] = MobileProvision.LoadFromFile (profile.FileName);
 						} else {
-							var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
+							var provision = MobileProvision.LoadFromFile (profile.FileName);
 							dictionary.Add (profile.Name, list.Count);
 							list.Add (provision);
 						}
 					} else {
-						var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
+						var provision = MobileProvision.LoadFromFile (profile.FileName);
 						list.Add (provision);
 					}
 					break;
@@ -598,7 +571,7 @@ namespace Xamarin.MacDev {
 
 		public static IList<MobileProvision> GetMobileProvisions (MobileProvisionPlatform platform, string bundleIdentifier, MobileProvisionDistributionType type, bool includeExpired = false, bool unique = false, List<string> failures = null)
 		{
-			var index = OpenIndex (MobileProvision.ProfileDirectory, IndexFileName);
+			var index = OpenIndex (MobileProvision.ProfileDirectories, IndexFileName);
 			var extension = MobileProvision.GetFileExtension (platform);
 			var dictionary = new Dictionary<string, int> ();
 			var list = new List<MobileProvision> ();
@@ -662,14 +635,14 @@ namespace Xamarin.MacDev {
 
 					if (dictionary.TryGetValue (profile.Name, out idx)) {
 						if (profile.CreationDate > list [idx].CreationDate)
-							list [idx] = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
+							list [idx] = MobileProvision.LoadFromFile (profile.FileName);
 					} else {
-						var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
+						var provision = MobileProvision.LoadFromFile (profile.FileName);
 						dictionary.Add (profile.Name, list.Count);
 						list.Add (provision);
 					}
 				} else {
-					var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
+					var provision = MobileProvision.LoadFromFile (profile.FileName);
 					list.Add (provision);
 				}
 			}
@@ -679,7 +652,7 @@ namespace Xamarin.MacDev {
 
 		public static IList<MobileProvision> GetMobileProvisions (MobileProvisionPlatform platform, string bundleIdentifier, MobileProvisionDistributionType type, IList<X509Certificate2> developerCertificates, bool includeExpired = false, bool unique = false, List<string> failures = null)
 		{
-			var index = OpenIndex (MobileProvision.ProfileDirectory, IndexFileName);
+			var index = OpenIndex (MobileProvision.ProfileDirectories, IndexFileName);
 			var extension = MobileProvision.GetFileExtension (platform);
 			var dictionary = new Dictionary<string, int> ();
 			var thumbprints = new HashSet<string> ();
@@ -761,14 +734,14 @@ namespace Xamarin.MacDev {
 
 						if (dictionary.TryGetValue (profile.Name, out idx)) {
 							if (profile.CreationDate > list [idx].CreationDate)
-								list [idx] = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
+								list [idx] = MobileProvision.LoadFromFile (profile.FileName);
 						} else {
-							var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
+							var provision = MobileProvision.LoadFromFile (profile.FileName);
 							dictionary.Add (profile.Name, list.Count);
 							list.Add (provision);
 						}
 					} else {
-						var provision = MobileProvision.LoadFromFile (Path.Combine (MobileProvision.ProfileDirectory, profile.FileName));
+						var provision = MobileProvision.LoadFromFile (profile.FileName);
 						list.Add (provision);
 					}
 					break;
