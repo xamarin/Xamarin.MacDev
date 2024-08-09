@@ -47,40 +47,40 @@ namespace UnitTests {
 		{
 			var index = MobileProvisionIndex.CreateIndex (ProfileDirectories, "profiles.index");
 
-			Assert.AreEqual (2, index.ProvisioningProfiles.Count);
+			Assert.That (index.ProvisioningProfiles.Count, Is.EqualTo (2));
 
 			var idCompanyName = index.ProvisioningProfiles.FindIndex ((v) => v.ApplicationIdentifier.Contains ("companyname"));
 			var idXamarin = index.ProvisioningProfiles.FindIndex ((v) => v.ApplicationIdentifier.Contains ("xamarin"));
-			Assert.AreNotEqual (-1, idCompanyName, "Company Name Index");
-			Assert.AreNotEqual (-1, idXamarin, "Xamarin Index");
-			Assert.AreNotEqual (idXamarin, idCompanyName, "Indices");
-			Assert.AreEqual ("YHT9CR87YA.com.companyname.*", index.ProvisioningProfiles [idCompanyName].ApplicationIdentifier);
-			Assert.AreEqual (new DateTime (2017, 07, 19, 19, 43, 45, DateTimeKind.Utc), index.ProvisioningProfiles [idCompanyName].CreationDate);
-			Assert.AreEqual (1, index.ProvisioningProfiles [idCompanyName].DeveloperCertificates.Count);
-			Assert.AreEqual ("iPhone Developer: Jeffrey Stedfast (FZ77UAV9SW)", index.ProvisioningProfiles [idCompanyName].DeveloperCertificates [0].Name);
-			Assert.AreEqual ("2097D37F4D16AB7D8D927E7C1872F2A94D8DC718", index.ProvisioningProfiles [idCompanyName].DeveloperCertificates [0].Thumbprint);
-			Assert.AreEqual (MobileProvisionDistributionType.Development, index.ProvisioningProfiles [idCompanyName].Distribution);
-			Assert.AreEqual (new DateTime (2018, 07, 19, 19, 43, 45, DateTimeKind.Utc), index.ProvisioningProfiles [idCompanyName].ExpirationDate);
-			Assert.AreEqual ("29cbf4b4-a170-4c74-a29a-64ecd55b102e.mobileprovision", Path.GetFileName (index.ProvisioningProfiles [idCompanyName].FileName));
+			Assert.That (idCompanyName, Is.Not.EqualTo (-1), "Company Name Index");
+			Assert.That (idXamarin, Is.Not.EqualTo (-1), "Xamarin Index");
+			Assert.That (idCompanyName, Is.Not.EqualTo (idXamarin), "Indices");
+			Assert.That (index.ProvisioningProfiles [idCompanyName].ApplicationIdentifier, Is.EqualTo ("YHT9CR87YA.com.companyname.*"));
+			Assert.That (index.ProvisioningProfiles [idCompanyName].CreationDate, Is.EqualTo (new DateTime (2017, 07, 19, 19, 43, 45, DateTimeKind.Utc)));
+			Assert.That (index.ProvisioningProfiles [idCompanyName].DeveloperCertificates.Count, Is.EqualTo (1));
+			Assert.That (index.ProvisioningProfiles [idCompanyName].DeveloperCertificates [0].Name, Is.EqualTo ("iPhone Developer: Jeffrey Stedfast (FZ77UAV9SW)"));
+			Assert.That (index.ProvisioningProfiles [idCompanyName].DeveloperCertificates [0].Thumbprint, Is.EqualTo ("2097D37F4D16AB7D8D927E7C1872F2A94D8DC718"));
+			Assert.That (index.ProvisioningProfiles [idCompanyName].Distribution, Is.EqualTo (MobileProvisionDistributionType.Development));
+			Assert.That (index.ProvisioningProfiles [idCompanyName].ExpirationDate, Is.EqualTo (new DateTime (2018, 07, 19, 19, 43, 45, DateTimeKind.Utc)));
+			Assert.That (Path.GetFileName (index.ProvisioningProfiles [idCompanyName].FileName), Is.EqualTo ("29cbf4b4-a170-4c74-a29a-64ecd55b102e.mobileprovision"));
 			//Assert.AreEqual (index.ProvisioningProfiles[0].LastModified);
-			Assert.AreEqual ("CompanyName Development Profile", index.ProvisioningProfiles [idCompanyName].Name);
-			Assert.AreEqual (1, index.ProvisioningProfiles [0].Platforms.Count);
-			Assert.AreEqual (MobileProvisionPlatform.iOS, index.ProvisioningProfiles [idCompanyName].Platforms [0]);
-			Assert.AreEqual ("29cbf4b4-a170-4c74-a29a-64ecd55b102e", index.ProvisioningProfiles [idCompanyName].Uuid);
+			Assert.That (index.ProvisioningProfiles [idCompanyName].Name, Is.EqualTo ("CompanyName Development Profile"));
+			Assert.That (index.ProvisioningProfiles [0].Platforms.Count, Is.EqualTo (1));
+			Assert.That (index.ProvisioningProfiles [idCompanyName].Platforms [0], Is.EqualTo (MobileProvisionPlatform.iOS));
+			Assert.That (index.ProvisioningProfiles [idCompanyName].Uuid, Is.EqualTo ("29cbf4b4-a170-4c74-a29a-64ecd55b102e"));
 
-			Assert.AreEqual ("YHT9CR87YA.com.xamarin.*", index.ProvisioningProfiles [idXamarin].ApplicationIdentifier);
-			Assert.AreEqual (new DateTime (2017, 07, 19, 19, 44, 0, DateTimeKind.Utc), index.ProvisioningProfiles [idXamarin].CreationDate);
-			Assert.AreEqual (1, index.ProvisioningProfiles [idXamarin].DeveloperCertificates.Count);
-			Assert.AreEqual ("iPhone Developer: Jeffrey Stedfast (FZ77UAV9SW)", index.ProvisioningProfiles [idXamarin].DeveloperCertificates [0].Name);
-			Assert.AreEqual ("2097D37F4D16AB7D8D927E7C1872F2A94D8DC718", index.ProvisioningProfiles [idXamarin].DeveloperCertificates [0].Thumbprint);
-			Assert.AreEqual (MobileProvisionDistributionType.Development, index.ProvisioningProfiles [idXamarin].Distribution);
-			Assert.AreEqual (new DateTime (2018, 07, 19, 19, 44, 0, DateTimeKind.Utc), index.ProvisioningProfiles [idXamarin].ExpirationDate);
-			Assert.AreEqual ("7079f389-6ff4-4290-bf76-c8a222947616.mobileprovision", Path.GetFileName (index.ProvisioningProfiles [idXamarin].FileName));
+			Assert.That (index.ProvisioningProfiles [idXamarin].ApplicationIdentifier, Is.EqualTo ("YHT9CR87YA.com.xamarin.*"));
+			Assert.That (index.ProvisioningProfiles [idXamarin].CreationDate, Is.EqualTo (new DateTime (2017, 07, 19, 19, 44, 0, DateTimeKind.Utc)));
+			Assert.That (index.ProvisioningProfiles [idXamarin].DeveloperCertificates.Count, Is.EqualTo (1));
+			Assert.That (index.ProvisioningProfiles [idXamarin].DeveloperCertificates [0].Name, Is.EqualTo ("iPhone Developer: Jeffrey Stedfast (FZ77UAV9SW)"));
+			Assert.That (index.ProvisioningProfiles [idXamarin].DeveloperCertificates [0].Thumbprint, Is.EqualTo ("2097D37F4D16AB7D8D927E7C1872F2A94D8DC718"));
+			Assert.That (index.ProvisioningProfiles [idXamarin].Distribution, Is.EqualTo (MobileProvisionDistributionType.Development));
+			Assert.That (index.ProvisioningProfiles [idXamarin].ExpirationDate, Is.EqualTo (new DateTime (2018, 07, 19, 19, 44, 0, DateTimeKind.Utc)));
+			Assert.That (Path.GetFileName (index.ProvisioningProfiles [idXamarin].FileName), Is.EqualTo ("7079f389-6ff4-4290-bf76-c8a222947616.mobileprovision"));
 			//Assert.AreEqual (index.ProvisioningProfiles[0].LastModified);
-			Assert.AreEqual ("Xamarin Development Profile", index.ProvisioningProfiles [idXamarin].Name);
-			Assert.AreEqual (1, index.ProvisioningProfiles [idXamarin].Platforms.Count);
-			Assert.AreEqual (MobileProvisionPlatform.iOS, index.ProvisioningProfiles [idXamarin].Platforms [0]);
-			Assert.AreEqual ("7079f389-6ff4-4290-bf76-c8a222947616", index.ProvisioningProfiles [idXamarin].Uuid);
+			Assert.That (index.ProvisioningProfiles [idXamarin].Name, Is.EqualTo ("Xamarin Development Profile"));
+			Assert.That (index.ProvisioningProfiles [idXamarin].Platforms.Count, Is.EqualTo (1));
+			Assert.That (index.ProvisioningProfiles [idXamarin].Platforms [0], Is.EqualTo (MobileProvisionPlatform.iOS));
+			Assert.That (index.ProvisioningProfiles [idXamarin].Uuid, Is.EqualTo ("7079f389-6ff4-4290-bf76-c8a222947616"));
 		}
 
 		[Test]
@@ -88,40 +88,40 @@ namespace UnitTests {
 		{
 			var index = MobileProvisionIndex.OpenIndex (ProfileDirectories, "profiles.index");
 
-			Assert.AreEqual (2, index.ProvisioningProfiles.Count);
+			Assert.That (index.ProvisioningProfiles.Count, Is.EqualTo (2));
 
 			var idCompanyName = index.ProvisioningProfiles.FindIndex ((v) => v.ApplicationIdentifier.Contains ("companyname"));
 			var idXamarin = index.ProvisioningProfiles.FindIndex ((v) => v.ApplicationIdentifier.Contains ("xamarin"));
-			Assert.AreNotEqual (-1, idCompanyName, "Company Name Index");
-			Assert.AreNotEqual (-1, idXamarin, "Xamarin Index");
-			Assert.AreNotEqual (idXamarin, idCompanyName, "Indices");
-			Assert.AreEqual ("YHT9CR87YA.com.companyname.*", index.ProvisioningProfiles [idCompanyName].ApplicationIdentifier);
-			Assert.AreEqual (new DateTime (2017, 07, 19, 19, 43, 45, DateTimeKind.Utc), index.ProvisioningProfiles [idCompanyName].CreationDate);
-			Assert.AreEqual (1, index.ProvisioningProfiles [idCompanyName].DeveloperCertificates.Count);
-			Assert.AreEqual ("iPhone Developer: Jeffrey Stedfast (FZ77UAV9SW)", index.ProvisioningProfiles [idCompanyName].DeveloperCertificates [0].Name);
-			Assert.AreEqual ("2097D37F4D16AB7D8D927E7C1872F2A94D8DC718", index.ProvisioningProfiles [idCompanyName].DeveloperCertificates [0].Thumbprint);
-			Assert.AreEqual (MobileProvisionDistributionType.Development, index.ProvisioningProfiles [idCompanyName].Distribution);
-			Assert.AreEqual (new DateTime (2018, 07, 19, 19, 43, 45, DateTimeKind.Utc), index.ProvisioningProfiles [idCompanyName].ExpirationDate);
-			Assert.AreEqual ("29cbf4b4-a170-4c74-a29a-64ecd55b102e.mobileprovision", Path.GetFileName (index.ProvisioningProfiles [idCompanyName].FileName));
+			Assert.That (idCompanyName, Is.Not.EqualTo (-1), "Company Name Index");
+			Assert.That (idXamarin, Is.Not.EqualTo (-1), "Xamarin Index");
+			Assert.That (idCompanyName, Is.Not.EqualTo (idXamarin), "Indices");
+			Assert.That (index.ProvisioningProfiles [idCompanyName].ApplicationIdentifier, Is.EqualTo ("YHT9CR87YA.com.companyname.*"));
+			Assert.That (index.ProvisioningProfiles [idCompanyName].CreationDate, Is.EqualTo (new DateTime (2017, 07, 19, 19, 43, 45, DateTimeKind.Utc)));
+			Assert.That (index.ProvisioningProfiles [idCompanyName].DeveloperCertificates.Count, Is.EqualTo (1));
+			Assert.That (index.ProvisioningProfiles [idCompanyName].DeveloperCertificates [0].Name, Is.EqualTo ("iPhone Developer: Jeffrey Stedfast (FZ77UAV9SW)"));
+			Assert.That (index.ProvisioningProfiles [idCompanyName].DeveloperCertificates [0].Thumbprint, Is.EqualTo ("2097D37F4D16AB7D8D927E7C1872F2A94D8DC718"));
+			Assert.That (index.ProvisioningProfiles [idCompanyName].Distribution, Is.EqualTo (MobileProvisionDistributionType.Development));
+			Assert.That (index.ProvisioningProfiles [idCompanyName].ExpirationDate, Is.EqualTo (new DateTime (2018, 07, 19, 19, 43, 45, DateTimeKind.Utc)));
+			Assert.That (Path.GetFileName (index.ProvisioningProfiles [idCompanyName].FileName), Is.EqualTo ("29cbf4b4-a170-4c74-a29a-64ecd55b102e.mobileprovision"));
 			//Assert.AreEqual (index.ProvisioningProfiles[0].LastModified);
-			Assert.AreEqual ("CompanyName Development Profile", index.ProvisioningProfiles [idCompanyName].Name);
-			Assert.AreEqual (1, index.ProvisioningProfiles [idCompanyName].Platforms.Count);
-			Assert.AreEqual (MobileProvisionPlatform.iOS, index.ProvisioningProfiles [idCompanyName].Platforms [0]);
-			Assert.AreEqual ("29cbf4b4-a170-4c74-a29a-64ecd55b102e", index.ProvisioningProfiles [idCompanyName].Uuid);
+			Assert.That (index.ProvisioningProfiles [idCompanyName].Name, Is.EqualTo ("CompanyName Development Profile"));
+			Assert.That (index.ProvisioningProfiles [idCompanyName].Platforms.Count, Is.EqualTo (1));
+			Assert.That (index.ProvisioningProfiles [idCompanyName].Platforms [0], Is.EqualTo (MobileProvisionPlatform.iOS));
+			Assert.That (index.ProvisioningProfiles [idCompanyName].Uuid, Is.EqualTo ("29cbf4b4-a170-4c74-a29a-64ecd55b102e"));
 
-			Assert.AreEqual ("YHT9CR87YA.com.xamarin.*", index.ProvisioningProfiles [idXamarin].ApplicationIdentifier);
-			Assert.AreEqual (new DateTime (2017, 07, 19, 19, 44, 0, DateTimeKind.Utc), index.ProvisioningProfiles [idXamarin].CreationDate);
-			Assert.AreEqual (1, index.ProvisioningProfiles [idXamarin].DeveloperCertificates.Count);
-			Assert.AreEqual ("iPhone Developer: Jeffrey Stedfast (FZ77UAV9SW)", index.ProvisioningProfiles [idXamarin].DeveloperCertificates [0].Name);
-			Assert.AreEqual ("2097D37F4D16AB7D8D927E7C1872F2A94D8DC718", index.ProvisioningProfiles [idXamarin].DeveloperCertificates [0].Thumbprint);
-			Assert.AreEqual (MobileProvisionDistributionType.Development, index.ProvisioningProfiles [idXamarin].Distribution);
-			Assert.AreEqual (new DateTime (2018, 07, 19, 19, 44, 0, DateTimeKind.Utc), index.ProvisioningProfiles [idXamarin].ExpirationDate);
-			Assert.AreEqual ("7079f389-6ff4-4290-bf76-c8a222947616.mobileprovision", Path.GetFileName (index.ProvisioningProfiles [idXamarin].FileName));
+			Assert.That (index.ProvisioningProfiles [idXamarin].ApplicationIdentifier, Is.EqualTo ("YHT9CR87YA.com.xamarin.*"));
+			Assert.That (index.ProvisioningProfiles [idXamarin].CreationDate, Is.EqualTo (new DateTime (2017, 07, 19, 19, 44, 0, DateTimeKind.Utc)));
+			Assert.That (index.ProvisioningProfiles [idXamarin].DeveloperCertificates.Count, Is.EqualTo (1));
+			Assert.That (index.ProvisioningProfiles [idXamarin].DeveloperCertificates [0].Name, Is.EqualTo ("iPhone Developer: Jeffrey Stedfast (FZ77UAV9SW)"));
+			Assert.That (index.ProvisioningProfiles [idXamarin].DeveloperCertificates [0].Thumbprint, Is.EqualTo ("2097D37F4D16AB7D8D927E7C1872F2A94D8DC718"));
+			Assert.That (index.ProvisioningProfiles [idXamarin].Distribution, Is.EqualTo (MobileProvisionDistributionType.Development));
+			Assert.That (index.ProvisioningProfiles [idXamarin].ExpirationDate, Is.EqualTo (new DateTime (2018, 07, 19, 19, 44, 0, DateTimeKind.Utc)));
+			Assert.That (Path.GetFileName (index.ProvisioningProfiles [idXamarin].FileName), Is.EqualTo ("7079f389-6ff4-4290-bf76-c8a222947616.mobileprovision"));
 			//Assert.AreEqual (index.ProvisioningProfiles[0].LastModified);
-			Assert.AreEqual ("Xamarin Development Profile", index.ProvisioningProfiles [idXamarin].Name);
-			Assert.AreEqual (1, index.ProvisioningProfiles [idXamarin].Platforms.Count);
-			Assert.AreEqual (MobileProvisionPlatform.iOS, index.ProvisioningProfiles [idXamarin].Platforms [0]);
-			Assert.AreEqual ("7079f389-6ff4-4290-bf76-c8a222947616", index.ProvisioningProfiles [idXamarin].Uuid);
+			Assert.That (index.ProvisioningProfiles [idXamarin].Name, Is.EqualTo ("Xamarin Development Profile"));
+			Assert.That (index.ProvisioningProfiles [idXamarin].Platforms.Count, Is.EqualTo (1));
+			Assert.That (index.ProvisioningProfiles [idXamarin].Platforms [0], Is.EqualTo (MobileProvisionPlatform.iOS));
+			Assert.That (index.ProvisioningProfiles [idXamarin].Uuid, Is.EqualTo ("7079f389-6ff4-4290-bf76-c8a222947616"));
 		}
 	}
 }
