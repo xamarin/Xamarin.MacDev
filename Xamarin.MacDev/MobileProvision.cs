@@ -130,6 +130,8 @@ namespace Xamarin.MacDev {
 				}
 			}
 
+			LoggingService.LogInfo ($"Loaded provisioning profile from '{fileName}'");
+
 			return m;
 		}
 
