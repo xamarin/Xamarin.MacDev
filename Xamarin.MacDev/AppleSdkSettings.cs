@@ -114,14 +114,17 @@ namespace Xamarin.MacDev {
 			}
 
 			// First try the configured location in Visual Studio
-			if (plist != null && plist.TryGetValue ("AppleSdkRoot", out value) && !string.IsNullOrEmpty (value?.Value))
+			if (plist != null && plist.TryGetValue ("AppleSdkRoot", out value) && !string.IsNullOrEmpty (value?.Value)) {
+				LoggingService.LogInfo (string.Format ("An Xcode location was found in the file '{0}': {1}", SettingsPath, value.Value));
 				return value.Value;
+			}
 
 			// Then check the system's default Xcode
 			if (TryGetSystemXcode (out var path))
 				return path;
 
 			// Finally return the hardcoded default
+			LoggingService.LogInfo (string.Format ("Using the default Xcode location '{0}'", DefaultRoots [0]));
 			return DefaultRoots [0];
 		}
 
@@ -173,6 +176,7 @@ namespace Xamarin.MacDev {
 						stdout = stdout.Substring (0, stdout.Length - "/Contents/Developer".Length);
 
 					path = stdout;
+					LoggingService.LogInfo (string.Format ("Using the Xcode location configured for this system (found using 'xcode-select -p'): {0}", path));
 					return true;
 				}
 
@@ -193,6 +197,9 @@ namespace Xamarin.MacDev {
 			SetInvalid ();
 
 			DeveloperRoot = Environment.GetEnvironmentVariable ("MD_APPLE_SDK_ROOT");
+			if (!string.IsNullOrEmpty (DeveloperRoot))
+				LoggingService.LogInfo (string.Format ("An Xcode location was specified in the environment variable 'MD_APPLE_SDK_ROOT': {0}", DeveloperRoot));
+
 			if (string.IsNullOrEmpty (DeveloperRoot))
 				DeveloperRoot = GetConfiguredSdkLocation ();
 
